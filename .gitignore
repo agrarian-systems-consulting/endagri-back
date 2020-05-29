@@ -1,7 +1,5 @@
-# dependencies
-/node_modules
-/build
+node_modules
+build
 npm-debug.log
-# misc
 .env
 .DS_Store
