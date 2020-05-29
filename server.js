@@ -13,15 +13,15 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}))
 
 /*app.use(express.static(__dirname + '/app')) */
 
-app.get('/',function(req,res){
+/*app.get('/',function(req,res){
   res.sendFile('index.html')
-});
+});*/
 
 app.get('/fiches', ficheController.getFiches)
-app.post('/fiche', ficheController.setFiche)
-/*app.get('/fiche/:id', ficheController.getFicheById)
-app.put('/fiche/:id', ficheController.updFicheById)
-app.post('/settemplate', db.setTemplateContent)*/
+app.post('/fiche', ficheController.postFiche)
+app.get('/fiche/:id', ficheController.getFicheById)
+app.put('/fiche/:id', ficheController.putFicheById)
+app.delete('/fiche/:id', ficheController.deleteFicheById)
 
 const port = 3333;
 app.listen(port, () => console.log(`Listening on port ${port}`));
