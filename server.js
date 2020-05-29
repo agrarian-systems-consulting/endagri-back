@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 
 const ficheController = require('./app/controllers/fiche/ficheTechniqueController')
 const productionController = require('./app/controllers/production/productionController')
-const marcheController = require('./app/controllers/fiche/marcheController')
+const marcheController = require('./app/controllers/marche/marcheController')
 
 const analyseController = require('./app/controllers/analyse/analyseTresorieController')
 
