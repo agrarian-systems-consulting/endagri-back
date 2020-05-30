@@ -45,4 +45,4 @@ app.get('/analyses', analyseController.getAnalyses);
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(port, () => console.log(`Listening on port ${PORT}`));
+app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
