@@ -3,8 +3,8 @@ const dbConn = require('../../db/pool');
 // RECUPERE LA LISTE DES FICHES
 // TODO :
 // - Asc : Renvoyer le nom de la production en plus de l'id_production
-// - Asc : Ajouter attribut created (Généré par postgre automatiquement lors du post ?)
-// - Asc : Ajouter attribut modified (Géré par postgre lors de chaque put ?)
+// - Asc : Ajouter attribut created si easy (Généré par postgre automatiquement lors du post ?)
+// - Asc : Ajouter attribut modified si easy (Géré par postgre lors de chaque put ?)
 // - ENDA : Renvoyer le fullname de l'utilisateur quand la table User sera implémentée
 const getFiches = (request, response) => {
   // Récupère le paramètre optionnel id_utilisateur pour filtrer les fiches techniques
