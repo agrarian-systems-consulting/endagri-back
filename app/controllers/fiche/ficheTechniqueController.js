@@ -27,7 +27,7 @@ const getFiches = (request, response) => {
 
 // CREER UNE NOUVELLE FICHE
 // TODO :
-// - Enda : Ajouter id_utilisateur dans la première requête SQL
+// - Enda : Gérer id_utilisateur avec votre table User
 const postFiche = (request, response) => {
   // Je t'ai fait une proposition. Pas mal de nested requests. A voir si on laisse comme ça, ou si on met du ES6 async/await.
   // J'ai pas testé, il y a peut-être des coquilles.
@@ -36,6 +36,7 @@ const postFiche = (request, response) => {
   const {
     libelle_fiche,
     id_production,
+    id_utilisateur,
     ini_debut,
     ini_fin,
     ventes,
@@ -44,12 +45,12 @@ const postFiche = (request, response) => {
 
   // Construction de la requête pour créer la fiche technique
   const postFicheQuery =
-    'INSERT INTO fiche.fiche_technique(id, libelle, id_production, ini_debut, ini_fin) VALUES (DEFAULT, $1, $2, $3, $4)';
+    'INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin) VALUES (DEFAULT, $1, $2, $3, $4, $5)';
 
   // Envoi de la requête
   dbConn.pool.query(
     postFicheQuery,
-    [libelle_fiche, id_production, ini_debut, ini_fin],
+    [id_utilisateur, libelle_fiche, id_production, ini_debut, ini_fin],
     (error, results) => {
       if (error) {
         throw error;
