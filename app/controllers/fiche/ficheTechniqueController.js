@@ -158,7 +158,7 @@ const getFicheById = (request, response) => {
 };
 
 // MODIFIER UNE FICHE
-// A DISCUTER
+// A DISCUTER de vive voix peut-être
 const putFicheById = (request, response) => {
   const id_fiche = request.params.id;
   const { libelle_fiche } = request.body;
@@ -176,7 +176,9 @@ const putFicheById = (request, response) => {
   );
 };
 
-// DONE
+// SUPPRIME UNE FICHE
+// TODO :
+// - Asc : Faire les delete en cascade sur activités, ventes et dépenses (si ce n'est pas déjà le cas dans postgre)
 const deleteFicheById = (request, response) => {
   const id_fiche = request.params.id;
   const deleteFicheByIdQuery = 'DELETE FROM fiche.fiche_technique WHERE id=$1';
@@ -188,9 +190,14 @@ const deleteFicheById = (request, response) => {
   });
 };
 
-// CREER VUE
+// RECUPERE UNE SYNTHESE DES FLUX FINANCIERS PAR MOIS
+// TODO :
+// - Asc : Créer vue
 const getFicheByIdFluxMensuels = (request, response) => {
+  // Récupère l'id de la fiche
   const id_fiche = request.params.id;
+
+  // Construction de la requête pour récupérer les flux
   const getFicheByIdFluxMensuelsQuery =
     'SELECT * FROM fiche.fiche_technique WHERE id=$1';
   dbConn.pool.query(
@@ -205,7 +212,10 @@ const getFicheByIdFluxMensuels = (request, response) => {
   );
 };
 
-// CREER VUE
+// RECUPERE UNE SYNTHESE DES FLUX FINANCIERS PAR CATEGORIE AVEC CHACUNE DES TRANSACTIONS PAR CATEGORIE
+// TODO :
+// - Réflechir à la pertinence d'avoir les flux détaillés
+// - Asc : Créer vue
 const getFicheByIdFluxCategorie = (request, response) => {
   const id_fiche = request.params.id;
   const getFicheByIdFluxCategorieQuery =
