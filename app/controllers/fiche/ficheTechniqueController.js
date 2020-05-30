@@ -2,15 +2,15 @@ const dbConn = require('../../db/pool');
 
 // RECUPERE LA LISTE DES FICHES
 // TODO :
-// - Asc : Renvoyer le nom de la production en plus de l'id_production
-// - Asc : Ajouter attribut created si easy (Généré par postgre automatiquement lors du post ?)
-// - Asc : Ajouter attribut modified si easy (Géré par postgre lors de chaque put ?)
-// - ENDA : Renvoyer le fullname de l'utilisateur quand la table User sera implémentée
+// @Asc : Renvoyer le nom de la production en plus de l'id_production
+// @Asc : Ajouter attribut created si easy (Généré par postgre automatiquement lors du post ?)
+// @Asc : Ajouter attribut modified si easy (Géré par postgre lors de chaque put ?)
+// @ENDA : Renvoyer le fullname de l'utilisateur quand la table User sera implémentée
 const getFiches = (request, response) => {
   // Récupère le paramètre optionnel id_utilisateur pour filtrer les fiches techniques
-  const id_utilisateur = request.query.id_utilisateur;
+  const id_utilisateur = request.query.id_utilisateur; // J'ai essayé const id_utilisateur = request.query.id_utilisateur || true pour ne pas avoir à créer la condition ci-après mais ne marche pas
 
-  if (id_utilisateur !== null) {
+  if (id_utilisateur !== undefined) {
     // Construction de la requête pour récupérer la liste des fiches techniques associées à l'id_utilisateur
     const getFichesQuery =
       'SELECT id,id_production,id_utilisateur,libelle FROM fiche.fiche_technique WHERE id_utilisateur=$1 ORDER BY id ASC';
@@ -21,7 +21,7 @@ const getFiches = (request, response) => {
         throw error;
       }
 
-      // Renvoi un array avec les fiches techniques
+      // Renvoi un array avec les fiches techniques de l'auteur
       response.status(200).send(results.rows);
     });
   } else {
@@ -34,17 +34,17 @@ const getFiches = (request, response) => {
       if (error) {
         throw error;
       }
+
+      // Renvoi un array avec les fiches techniques de l'auteur
+      response.status(200).send(results.rows);
     });
   }
 };
 
 // CREER UNE NOUVELLE FICHE
-// TODO :
-// - Enda : Gérer id_utilisateur avec votre table User
+// @Asc Trouver le problème. Problème lié à asynchrone ??
+// @Enda Gérer id_utilisateur avec la table User
 const postFiche = (request, response) => {
-  // Je t'ai fait une proposition. Pas mal de nested requests. A voir si on laisse comme ça, ou si on met du ES6 async/await.
-  // J'ai pas testé, il y a peut-être des coquilles.
-
   // Destructure les données contenus dans la requête
   const {
     libelle_fiche,
@@ -58,7 +58,7 @@ const postFiche = (request, response) => {
 
   // Construction de la requête pour créer la fiche technique
   const postFicheQuery =
-    'INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin) VALUES (DEFAULT, $1, $2, $3, $4, $5)';
+    'INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin) VALUES (DEFAULT, $1, $2, $3, $4, $5) RETURNING id';
 
   // Envoi de la requête
   dbConn.pool.query(
@@ -67,19 +67,49 @@ const postFiche = (request, response) => {
     (error, results) => {
       if (error) {
         throw error;
+        console.log(error);
       }
 
-      console.log(`Création de la fiche technique : ${libelle_fiche}`);
+      // Récupère l'id de la nouvelle fiche technique
+      const id_fiche_technique = results.rows[0].id;
 
-      // TODO Récupérer l'id_fiche_technique pour le mettre dans les activités
-      // const id_fiche_technique = results.body.id Là je ne sais pas trop à quoi ressemble results
+      console.log(
+        `Création de la fiche technique ${id_fiche_technique} : ${libelle_fiche}`
+      );
 
       // Ajoute les ventes
-      ventes.map(
-        ({ id_marche, libelle_vente, quantite, mois_relatif, mois }) => {
-          // Construction de la requête pour créer une vente
-          const postVenteQuery =
-            'INSERT INTO fiche.vente(id, id_marche, libelle_vente, quantite, mois_relatif, mois) VALUES (DEFAULT, $1, $2, $3, $4, $5)';
+      if (ventes) {
+        ventes.map(
+          ({ id_marche, libelle_vente, quantite, mois_relatif, mois }) => {
+            // Construction de la requête pour créer une vente
+            const postVenteQuery =
+              'INSERT INTO fiche.vente(id, id_marche, libelle, quantite, mois_relatif, mois) VALUES (DEFAULT, $1, $2, $3, $4, $5) RETURNING id';
+
+            // Envoi de la requête
+            dbConn.pool.query(
+              postActiviteQuery,
+              [id_fiche_technique, libelle_vente, quantite, mois_relatif, mois],
+              (error, results) => {
+                if (error) {
+                  throw error;
+                }
+
+                // Récupère l'id de la nouvelle vente
+                const id_vente = results.rows[0].id;
+
+                console.log(`Ajout de la vente ${id_vente} : ${libelle_vente}`);
+              }
+            );
+          }
+        );
+      }
+
+      // Ajoute les activités
+      if (activites) {
+        activites.map(({ libelle_activite, mois_relatif, mois, depenses }) => {
+          // Construction de la requête pour créer une activité
+          const postActiviteQuery =
+            'INSERT INTO fiche.activite(id, id_fiche_technique, libelle, mois_relatif, mois) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING id';
 
           // Envoi de la requête
           dbConn.pool.query(
@@ -89,59 +119,48 @@ const postFiche = (request, response) => {
               if (error) {
                 throw error;
               }
+              // Récupère l'id de la nouvelle activité
+              const id_activite = results.rows[0].id;
 
-              console.log(`Ajout d'une vente ${libelle_vente}`);
+              console.log(
+                `Ajout de l'activité ${id_activite} : ${libelle_activite}`
+              );
+
+              // TODO : Récupérer l'id de l'activité pour attacher les dépenses
+              // const id_activite = results.body.id Là je ne sais pas trop à quoi ressemble results
+
+              // Ajoute les dépenses
+              if (depenses) {
+                depenses.map(({ libelle_depense, montant }) => {
+                  // Construction de la requête pour créer une dépense
+                  const postDepenseQuery =
+                    'INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING id';
+
+                  // Envoi de la requête
+                  dbConn.pool.query(
+                    postDepenseQuery,
+                    [id_activite, libelle_depense, montant],
+                    (error, results) => {
+                      if (error) {
+                        throw error;
+                      }
+                      // Récupère l'id de la nouvelle dépense
+                      const id_depense = results.rows[0].id;
+
+                      console.log(
+                        `Ajout de la dépense ${id_depense} : ${libelle_depense}`
+                      );
+                    }
+                  );
+                });
+              }
             }
           );
-        }
-      );
+        });
+      }
 
-      // Ajoute les activités
-      activites.map(({ libelle_activite, mois_relatif, mois, depenses }) => {
-        // Construction de la requête pour créer une activité
-        const postActiviteQuery =
-          'INSERT INTO fiche.activite(id, id_fiche_technique, libelle, mois_relatif, mois) VALUES (DEFAULT, $1, $2, $3, $4)';
-
-        // Envoi de la requête
-        dbConn.pool.query(
-          postActiviteQuery,
-          [id_fiche_technique, libelle_activite, mois_relatif, mois],
-          (error, results) => {
-            if (error) {
-              throw error;
-            }
-
-            console.log(`Ajout d'une activité : ${libelle_activite}`);
-
-            // TODO : Récupérer l'id de l'activité pour attacher les dépenses
-            // const id_activite = results.body.id Là je ne sais pas trop à quoi ressemble results
-
-            // Ajoute les dépenses
-            depenses.map(({ libelle_depense, montant }) => {
-              // Construction de la requête pour créer une dépense
-              const postDepenseQuery =
-                'INSERT INTO fiche.activite(id, id_activite, libelle_depense, montant) VALUES (DEFAULT, $1, $2, $3)';
-
-              // Envoi de la requête
-              dbConn.pool.query(
-                postDepenseQuery,
-                [id_activite, libelle_depense, montant],
-                (error, results) => {
-                  if (error) {
-                    throw error;
-                  }
-
-                  console.log(`Ajout d'une dépense : ${libelle_depense}`);
-                }
-              );
-            });
-          }
-        );
-      });
-
-      // Retourne l'id de la fiche technique pour rediriger
-      // l'application cliente vers la fiche technique qui vient d'être créée
-      // response.status(201).send(id_fiche_technique);
+      // Retourne l'id de la fiche technique pour rediriger l'application cliente vers la fiche technique qui vient d'être créée
+      response.sendStatus(201).send({ id_fiche_technique });
     }
   );
 };

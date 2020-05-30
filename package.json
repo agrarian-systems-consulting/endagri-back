@@ -4,9 +4,9 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js",
-    "test": "jest --watch --maxWorkers=1"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
@@ -31,7 +31,9 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "setupFilesAfterEnv": ["jest-expect-message"],
+    "setupFilesAfterEnv": [
+      "jest-expect-message"
+    ],
     "coveragePathIgnorePatterns": [
       "/node_modules/"
     ]
