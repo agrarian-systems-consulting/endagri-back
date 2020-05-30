@@ -42,7 +42,7 @@ const getFiches = (request, response) => {
 };
 
 // CREER UNE NOUVELLE FICHE
-// @Asc Trouver le problème. Problème lié à asynchrone ??
+// @Asc Trouver le problème :D
 // @Enda Gérer id_utilisateur avec la table User
 const postFiche = (request, response) => {
   // Destructure les données contenus dans la requête
@@ -52,8 +52,8 @@ const postFiche = (request, response) => {
     id_utilisateur,
     ini_debut,
     ini_fin,
-    // ventes,
-    // activites,
+    ventes,
+    activites,
   } = request.body;
 
   // Construction de la requête pour créer la fiche technique
