@@ -4,7 +4,7 @@ const dbConn = require('../../db/pool');
 //TODO :
 // - Asc : Créer jointure avec la table Produit (et peut-être même avec Production idéalement)
 // Ca permettrait de montrer les marchés production > produit > marchés associés avec des GROUP BY
-// A discuter
+// - Ajouter des params optionnels sur productions et produits ?
 const getMarches = (request, response) => {
   const getMarchesQuery = `SELECT id,id_produit,type_marche,localisation,prix_janvier,prix_fevrier,prix_mars,prix_avril,prix_mai,prix_juin
     prix_juillet,prix_aout,prix_septembre,prix_octobre,prix_novembre,prix_decembre FROM fiche.marche ORDER BY id ASC`;
@@ -17,8 +17,10 @@ const getMarches = (request, response) => {
 };
 
 // A DISCUTER
+// Que faut-il discuter ?
 const postMarche = (request, response) => {
   const { id_produit, type_marche } = request.body;
+
   const postMarcheQuery =
     'INSERT INTO fiche.marche(id,id_produit,type_marche) VALUES (DEFAULT, $1,$2)';
   dbConn.pool.query(
@@ -28,13 +30,16 @@ const postMarche = (request, response) => {
       if (error) {
         throw error;
       }
+
       response.status(201).send(`Create`);
     }
   );
 };
 
+// RECUPERER LES VALEURS D'UN MARCHE
 // CREER VUE
 const getMarcheById = (request, response) => {
+  // Récupère l'identifiant du marché recherché
   const id_marche = request.params.id;
   const getMarcheByIdQuery = `SELECT id,id_produit,type_marche,localisation,prix_janvier,prix_fevrier,prix_mars,prix_avril,prix_mai,prix_juin
   prix_juillet,prix_aout,prix_septembre,prix_octobre,prix_novembre,prix_decembre FROM fiche.marche WHERE id=$1`;
