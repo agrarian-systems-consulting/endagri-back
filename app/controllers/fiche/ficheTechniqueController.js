@@ -8,21 +8,34 @@ const dbConn = require('../../db/pool');
 // - ENDA : Renvoyer le fullname de l'utilisateur quand la table User sera implémentée
 const getFiches = (request, response) => {
   // Récupère le paramètre optionnel id_utilisateur pour filtrer les fiches techniques
-  const id_utilisateur = request.query.id_utilisateur || true;
+  const id_utilisateur = request.query.id_utilisateur;
 
-  // Construction de la requête pour récupérer la liste des fiches techniques
-  const getFichesQuery =
-    'SELECT id,id_production,id_utilisateur,libelle FROM fiche.fiche_technique WHERE id_utilisateur=$1 ORDER BY id ASC';
+  if (id_utilisateur !== null) {
+    // Construction de la requête pour récupérer la liste des fiches techniques associées à l'id_utilisateur
+    const getFichesQuery =
+      'SELECT id,id_production,id_utilisateur,libelle FROM fiche.fiche_technique WHERE id_utilisateur=$1 ORDER BY id ASC';
 
-  // Envoi de la requête
-  dbConn.pool.query(getFichesQuery, [id_utilisateur], (error, results) => {
-    if (error) {
-      throw error;
-    }
+    // Envoi de la requête
+    dbConn.pool.query(getFichesQuery, [id_utilisateur], (error, results) => {
+      if (error) {
+        throw error;
+      }
 
-    // Renvoi un array avec les fiches techniques
-    response.status(200).send(results.rows);
-  });
+      // Renvoi un array avec les fiches techniques
+      response.status(200).send(results.rows);
+    });
+  } else {
+    // Construction de la requête pour récupérer la liste des fiches techniques associées à l'id_utilisateur
+    const getFichesQuery =
+      'SELECT id,id_production,id_utilisateur,libelle FROM fiche.fiche_technique ORDER BY id ASC';
+
+    // Envoi de la requête
+    dbConn.pool.query(getFichesQuery, (error, results) => {
+      if (error) {
+        throw error;
+      }
+    });
+  }
 };
 
 // CREER UNE NOUVELLE FICHE

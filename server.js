@@ -26,10 +26,6 @@ app.use(productionRoutes);
 app.use(marcheRoutes);
 app.use(analyseRoutes);
 
-// Défini le port de l'application
-const PORT = process.env.PORT || 3000;
+// L'application est lancée depuis le fichier index.js pour permettre à Jest de faire fonctionner les tests
 
-// Lance l'application
-app.listen(PORT, () =>
-  console.log(`🚀 L'application tourne sur le port ${PORT}`)
-);
+module.exports = app;
