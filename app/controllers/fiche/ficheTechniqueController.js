@@ -51,6 +51,7 @@ const postFiche = (request, response) => {
       console.log(`Création de la fiche technique : ${libelle_fiche}`);
 
       // TODO Récupérer l'id_fiche_technique pour le mettre dans les activités
+      // const id_fiche_technique = results.body.id Là je ne sais pas trop à quoi ressemble results
 
       // Ajoute les ventes
       ventes.map(
@@ -92,6 +93,7 @@ const postFiche = (request, response) => {
             console.log(`Ajout d'une activité : ${libelle_activite}`);
 
             // TODO : Récupérer l'id de l'activité pour attacher les dépenses
+            // const id_activite = results.body.id Là je ne sais pas trop à quoi ressemble results
 
             // Ajoute les dépenses
             depenses.map(({ libelle_depense, montant }) => {
@@ -116,7 +118,8 @@ const postFiche = (request, response) => {
         );
       });
 
-      // Retourne l'id de la fiche technique pour rediriger l'application cliente vers la fiche technique qui vient d'être créée
+      // Retourne l'id de la fiche technique pour rediriger
+      // l'application cliente vers la fiche technique qui vient d'être créée
       // response.status(201).send(id_fiche_technique);
     }
   );
