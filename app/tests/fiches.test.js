@@ -2,8 +2,8 @@ const request = require('supertest');
 const assert = require('assert');
 const app = require('../../server');
 
-test('Doit retourner toutes les fiches techniques', async () => {
-  await request(app)
+test('Doit retourner toutes les fiches techniques', () => {
+  request(app)
     .get('/fiches')
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
@@ -16,8 +16,8 @@ test('Doit retourner toutes les fiches techniques', async () => {
     });
 });
 
-test("Doit retourner les fiches techniques d'un seul utilisateur", async () => {
-  await request(app)
+test("Doit retourner les fiches techniques d'un seul utilisateur", () => {
+  request(app)
     .get('/fiches/?id_utilisateur=1')
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
@@ -30,9 +30,10 @@ test("Doit retourner les fiches techniques d'un seul utilisateur", async () => {
     });
 });
 
-test('Doit créer une fiche technique sans activités ni ventes', async () => {
-  const response = await request(app)
+test('Doit créer une fiche technique sans activités ni ventes', (done) => {
+  request(app)
     .post('/fiche')
+
     .send({
       libelle_fiche: 'Tomates hors-sol en agriculture biologique',
       id_utilisateur: 62,
@@ -42,40 +43,6 @@ test('Doit créer une fiche technique sans activités ni ventes', async () => {
     })
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
-    .expect(201);
-
-  console.log(response);
+    .expect(201)
+    .then((response) => done());
 });
-
-// test('Doit créer une fiche technique avec des activités', async () => {
-//   await request(app)
-//     .post('/fiche')
-//     .send({
-//       libelle_fiche: 'Tomates hors-sol en agriculture biologique',
-//       id_utilisateur: 62,
-//       id_production: 5,
-//       ini_debut: 3,
-//       ini_fin: 5,
-//       activites: [
-//         {
-//           libelle_activite: 'Labour',
-//           mois_relatif: -1,
-//         },
-//         {
-//           libelle_activite: 'Semis',
-//           mois_relatif: 0,
-//         },
-//         {
-//           libelle_activite: 'Récolte',
-//           mois_relatif: 5,
-//         },
-//       ],
-//     })
-//     .set('Accept', 'application/json')
-//     .expect('Content-Type', /json/)
-//     .expect(201)
-//     .then((response) => {
-//       //TODO : Tester le retour  d'un integer = id nouvelle fiche technique
-//       done();
-//     });
-// });

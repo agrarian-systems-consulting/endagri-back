@@ -52,8 +52,8 @@ const postFiche = (request, response) => {
     id_utilisateur,
     ini_debut,
     ini_fin,
-    ventes,
-    activites,
+    // ventes,
+    // activites,
   } = request.body;
 
   // Construction de la requête pour créer la fiche technique
@@ -67,12 +67,10 @@ const postFiche = (request, response) => {
     (error, results) => {
       if (error) {
         throw error;
-        console.log(error);
       }
 
       // Récupère l'id de la nouvelle fiche technique
       const id_fiche_technique = results.rows[0].id;
-
       console.log(
         `Création de la fiche technique ${id_fiche_technique} : ${libelle_fiche}`
       );
@@ -160,7 +158,7 @@ const postFiche = (request, response) => {
       }
 
       // Retourne l'id de la fiche technique pour rediriger l'application cliente vers la fiche technique qui vient d'être créée
-      response.sendStatus(201).send({ id_fiche_technique });
+      response.status(201).send();
     }
   );
 };
