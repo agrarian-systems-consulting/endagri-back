@@ -3,6 +3,7 @@ const dbConn = require('../../db/pool');
 // RECUPERE LA LISTE DES FICHES
 // TODO :
 // @Asc : Renvoyer le nom de la production en plus de l'id_production
+// @Asc : Eventuellement optimiser l'écriture de la fonction avec ou sans le paramètre optionnel id_utilisateur
 // @Asc : Ajouter attribut created si easy (Généré par postgre automatiquement lors du post ?)
 // @Asc : Ajouter attribut modified si easy (Géré par postgre lors de chaque put ?)
 // @ENDA : Renvoyer le fullname de l'utilisateur quand la table User sera implémentée
@@ -158,7 +159,8 @@ const postFiche = (request, response) => {
       }
 
       // Retourne l'id de la fiche technique pour rediriger l'application cliente vers la fiche technique qui vient d'être créée
-      response.status(201).send();
+      response.set('Content-Type', 'application/json');
+      response.status(201).json({ id: 123 });
     }
   );
 };
