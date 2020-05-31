@@ -188,7 +188,6 @@ const getFicheById = (request, response) => {
 };
 
 // MODIFIER UNE FICHE
-// @Asc v1 Créer le test associé
 // @Asc v1 ou v2 Update modified
 const putFicheById = (request, response) => {
   const id_fiche = request.params.id;
@@ -199,10 +198,12 @@ const putFicheById = (request, response) => {
     putFicheByIdQuery,
     [libelle_fiche, ini_debut, ini_fin, commentaire, id_fiche],
     (error, results) => {
+      // TODO : Tester Not Found
       if (error) {
         throw error;
       }
-      response.sendStatus(200);
+      // console.log(results.rows[0]);
+      response.status(200).send(results.rows[0]);
     }
   );
 };

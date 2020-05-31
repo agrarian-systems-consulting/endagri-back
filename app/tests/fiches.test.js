@@ -161,6 +161,26 @@ test('Doit créer une fiche technique avec des ventes, des activités et des dé
     });
 });
 
+test("Doit modifier les informations principales d'une fiche technique", (done) => {
+  request(app)
+    .put('/fiche/999')
+    .send({
+      libelle_fiche: 'Un titre modifié',
+      ini_debut: 1,
+      ini_fin: 3,
+      commentaire: 'Un commentaire sur une fiche modifiée',
+    })
+    .expect(200)
+    .end(function (err, res) {
+      if (err) return done(err);
+      expect(res.body.libelle).toBe('Un titre modifié');
+      expect(res.body.commentaire).toBe(
+        'Un commentaire sur une fiche modifiée'
+      );
+      done();
+    });
+});
+
 //TODO :
 //@Asc Tester les suppressions en cascade
 test('Doit supprimer une fiche technique', (done) => {
