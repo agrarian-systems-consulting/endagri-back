@@ -43,7 +43,7 @@ const getFiches = (request, response) => {
 };
 
 // CREER UNE NOUVELLE FICHE
-// @Asc Trouver le problème :D
+// @Asc Utiliser les transactions ?
 // @Enda Gérer id_utilisateur avec la table User
 const postFiche = (request, response) => {
   // Destructure les données contenus dans la requête
@@ -159,9 +159,9 @@ const postFiche = (request, response) => {
                       // Récupère l'id de la nouvelle dépense
                       const id_depense = results.rows[0].id;
 
-                      console.log(
-                        `Ajout de la dépense ${id_depense} : ${libelle_depense}`
-                      );
+                      // console.log(
+                      //   `Ajout de la dépense ${id_depense} : ${libelle_depense}`
+                      // );
                     }
                   );
                 });

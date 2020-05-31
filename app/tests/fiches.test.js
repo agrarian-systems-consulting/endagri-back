@@ -58,7 +58,7 @@ test('Doit créer une fiche technique sans activités ni ventes', (done) => {
     });
 });
 
-test('Doit créer une fiche technique avec des ventes', (done) => {
+test('Doit créer une fiche technique avec des ventes, des activités et des dépenses associées', (done) => {
   request(app)
     .post('/fiche')
     .send({
@@ -83,6 +83,46 @@ test('Doit créer une fiche technique avec des ventes', (done) => {
           mois_relatif: 6,
         },
       ],
+      activites: [
+        {
+          libelle_activite: 'Labour',
+          mois_relatif: -1,
+          depenses: [
+            {
+              libelle_depense: 'Tracteur',
+              montant: 1500,
+            },
+            {
+              libelle_depense: "Main d'oeuvre",
+              montant: 500,
+            },
+          ],
+        },
+        {
+          libelle_activite: 'Semis',
+          mois_relatif: 0,
+          depenses: [
+            {
+              libelle_depense: 'Tracteur',
+              montant: 500,
+            },
+            {
+              libelle_depense: "Main d'oeuvre",
+              montant: 500,
+            },
+          ],
+        },
+        {
+          libelle_activite: 'Récolte',
+          mois_relatif: 5,
+          depenses: [
+            {
+              libelle_depense: "Main d'oeuvre",
+              montant: 200,
+            },
+          ],
+        },
+      ],
     })
     .set('Accept', 'application/json')
     .expect('Content-Type', /json/)
@@ -95,14 +135,3 @@ test('Doit créer une fiche technique avec des ventes', (done) => {
       done();
     });
 });
-
-// test("Doit récupérer le contenu d'une fiche technique", () => {
-//   request(app)
-//     .get('/fiche/24')
-//     .set('Accept', 'application/json')
-//     .expect('Content-Type', /json/)
-//     .expect(200)
-//     .then((response) => {
-//       expect(response.body.length).toBeGreaterThan(0);
-//     });
-// });
