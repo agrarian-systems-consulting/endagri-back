@@ -159,8 +159,10 @@ const postFiche = (request, response) => {
       }
 
       // Retourne l'id de la fiche technique pour rediriger l'application cliente vers la fiche technique qui vient d'être créée
-      response.set('Content-Type', 'application/json');
-      response.status(201).json({ id: 123 });
+      response
+        .set('Content-Type', 'application/json')
+        .status(201)
+        .json({ id: id_fiche_technique });
     }
   );
 };

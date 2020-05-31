@@ -52,29 +52,11 @@ test('Doit créer une fiche technique sans activités ni ventes', (done) => {
     .expect(201)
     .end(function (err, res) {
       if (err) return done(err);
-      console.log('response.body =', res.body);
+      // console.log('res.body =', res.body);
+      expect(res.body.id).toBeDefined();
       done();
     });
 });
-
-// test('Doit créer une fiche technique sans activités ni ventes', (done) => {
-//   request(app)
-//     .post('/fiche')
-
-//     .send({
-//       libelle_fiche: 'Tomates hors-sol en agriculture biologique',
-//       id_utilisateur: 62,
-//       id_production: 5,
-//       ini_debut: 3,
-//       ini_fin: 5,
-//     })
-//     .set('Accept', 'application/json')
-//     .expect('Content-Type', /json/)
-//     .expect(201)
-//     .end(function (err, res) {
-//       if (err) return done(err);
-//     });
-// });
 
 // test("Doit récupérer le contenu d'une fiche technique", () => {
 //   request(app)
