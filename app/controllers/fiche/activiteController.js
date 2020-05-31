@@ -52,7 +52,55 @@ const postActivite = (request, response) => {
   response.sendStatus(200);
 };
 
-//
+// MODIFIER UNE ACTIVITE
+// @Asc v1 Faut-il inclure les dépenses ici également ? Ou créer des routes PUT depenses et DELETE depense à part ?
+// @Asc v1 ou v2 Gérer comme il faut le Not Found
+const putActivite = (request, response) => {
+  // Récupère l'id de l'activité et de la fiche technique depuis les params de l'URL
+  const id_fiche_technique = request.params.id; // Sera utile pour tester le droit d'accès de l'utilisateur
+  const id_activite = request.params.id;
+
+  const { libelle_activite, mois_relatif, mois } = request.body;
+
+  const putActiviteQuery =
+    'UPDATE fiche.activite SET libelle=$1, mois_relatif=$2, mois=$3, WHERE id=$4 RETURNING *';
+  dbConn.pool.query(
+    putFicheByIdQuery,
+    [libelle_activite, mois_relatif, mois, id_activite],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      // console.log(results.rows[0]);
+      response.status(200).send(results.rows[0]);
+    }
+  );
+};
+
+// SUPPRIME UNE ACTIVITE
+// @Asc v1 Faire les DELETE en cascade sur dépenses
+// @Asc @Enda v1 ou v2 Utiliser les transactions
+const deleteActivite = (request, response) => {
+  // Récupère l'id de l'activité et de la fiche technique depuis les params de l'URL
+  const id_fiche_technique = request.params.id; // Sera utile pour tester le droit d'accès de l'utilisateur
+  const id_activite = request.params.id;
+
+  const deleteActiviteQuery =
+    'DELETE FROM fiche.activite WHERE id=$1 RETURNING *';
+  dbConn.pool.query(deleteActiviteQuery, [id_activite], (error, results) => {
+    if (error) {
+      throw error;
+    }
+    // console.log(results.rows);
+    if (results.rows[0] !== undefined) {
+      // console.log('Deleted : ' + JSON.stringify(results.rows[0], true, 2));
+      response.sendStatus(204);
+    } else {
+      response.sendStatus(404);
+    }
+  });
+};
+
 module.exports = {
   postActivite,
   putActivite,
