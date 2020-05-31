@@ -63,7 +63,7 @@ test('Doit créer une fiche technique avec des ventes, des activités et des dé
     .post('/fiche')
     .send({
       libelle_fiche: 'Bananes en agriculture biologique',
-      id_utilisateur: 85,
+      id_utilisateur: 86,
       id_production: 17,
       ini_debut: null,
       ini_fin: null,
