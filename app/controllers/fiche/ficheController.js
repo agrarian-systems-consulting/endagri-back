@@ -2,7 +2,7 @@ const dbConn = require('../../db/pool');
 
 // RECUPERE LA LISTE DES FICHES
 // TODO :
-// @Asc v1 Renvoyer le nom de la production en plus de l'id_production
+// @Asc v1 Renvoyer le libelle de la production en plus de l'id_production
 // @Asc v1 Eventuellement optimiser l'écriture de la fonction avec ou sans le paramètre optionnel id_utilisateur
 // @Asc v1 ou v2 Ajouter attribut created ADD COLUMN created SET DEFAULT now()
 // @Asc v1 ou v2 Ajouter attribut modified ADD COLUMN modified SET DEFAULT now() avec mise à jour lors d'un PUT
@@ -43,7 +43,7 @@ const getFiches = (request, response) => {
 };
 
 // CREER UNE NOUVELLE FICHE
-// @Asc v2 : Utiliser les transactions
+// @Asc v2 : Utiliser les transactions ?
 // @Enda v2 : Gérer id_utilisateur avec la table User
 const postFiche = (request, response) => {
   // Destructure les données contenus dans la requête
@@ -164,7 +164,7 @@ const postFiche = (request, response) => {
 // RECUPERE LE CONTENU D'UNE FICHE
 // @Asc v1 Créer vue postgre
 // @Asc v1 Vérifier qu'à chaque niveau on revient bien l'id (activité, dépense, vente)
-// @Asc @Enda v1 ou v2 Créer le test associé
+// @Asc @Enda v1 Créer le test associé
 const getFicheById = (request, response) => {
   // Récupère l'id de la fiche technique depuis l'URL
   const id_fiche = request.params.id;
@@ -189,6 +189,7 @@ const getFicheById = (request, response) => {
 
 // MODIFIER UNE FICHE
 // @Asc v1 ou v2 Update modified
+// @Asc v1 ou v2 Gérer comme il faut le Not Found
 const putFicheById = (request, response) => {
   const id_fiche = request.params.id;
   const { libelle_fiche, ini_debut, ini_fin, commentaire } = request.body;
@@ -198,7 +199,7 @@ const putFicheById = (request, response) => {
     putFicheByIdQuery,
     [libelle_fiche, ini_debut, ini_fin, commentaire, id_fiche],
     (error, results) => {
-      // TODO : Tester Not Found
+
       if (error) {
         throw error;
       }
@@ -229,27 +230,7 @@ const deleteFicheById = (request, response) => {
   });
 };
 
-// RECUPERE UNE SYNTHESE DES FLUX FINANCIERS PAR MOIS
-// @Asc v1 Créer vue
-// @Asc @Enda v1 ou v2 Créer le test associé
-const getFicheByIdFluxMensuels = (request, response) => {
-  // Récupère l'id de la fiche
-  const id_fiche = request.params.id;
 
-  // Construction de la requête pour récupérer les flux
-  const getFicheByIdFluxMensuelsQuery =
-    'SELECT * FROM fiche.fiche_technique WHERE id=$1 ';
-  dbConn.pool.query(
-    getFicheByIdFluxMensuelsQuery,
-    [id_fiche],
-    (error, results) => {
-      if (error) {
-        throw error;
-      }
-      response.status(200).send(results.rows);
-    }
-  );
-};
 
 module.exports = {
   getFiches,
@@ -257,5 +238,4 @@ module.exports = {
   getFicheById,
   putFicheById,
   deleteFicheById,
-  getFicheByIdFluxMensuels,
 };

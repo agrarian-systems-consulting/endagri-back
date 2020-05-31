@@ -7,9 +7,5 @@ router.post('/fiche', ficheController.postFiche);
 router.get('/fiche/:id', ficheController.getFicheById);
 router.put('/fiche/:id', ficheController.putFicheById);
 router.delete('/fiche/:id', ficheController.deleteFicheById);
-router.get(
-  '/fiche/:id/flux_mensuels',
-  ficheController.getFicheByIdFluxMensuels
-);
 
 module.exports = router;
