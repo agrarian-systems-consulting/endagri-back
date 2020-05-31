@@ -163,6 +163,7 @@ const postFiche = (request, response) => {
 
 // RECUPERE LE CONTENU D'UNE FICHE
 // @Asc v1 Créer vue postgre
+// @Asc v1 Vérifier qu'à chaque niveau on revient bien l'id (activité, dépense, vente)
 // @Asc @Enda v1 ou v2 Créer le test associé
 const getFicheById = (request, response) => {
   // Récupère l'id de la fiche technique depuis l'URL
@@ -187,21 +188,21 @@ const getFicheById = (request, response) => {
 };
 
 // MODIFIER UNE FICHE
-// @Asc v1 Choisir ce que l'on fait ici.
-// @Asc @Enda v1 ou v2 Créer le test associé
+// @Asc v1 Créer le test associé
+// @Asc v1 ou v2 Update modified
 const putFicheById = (request, response) => {
   const id_fiche = request.params.id;
-  const { libelle_fiche } = request.body;
+  const { libelle_fiche, ini_debut, ini_fin, commentaire } = request.body;
   const putFicheByIdQuery =
-    'UPDATE fiche.fiche_technique SET libelle=$1 WHERE id=$2 RETURNING *';
+    'UPDATE fiche.fiche_technique SET libelle=$1, ini_debut=$2, ini_fin=$3, commentaire=$4 WHERE id=$5 RETURNING *';
   dbConn.pool.query(
     putFicheByIdQuery,
-    [libelle_fiche, id_fiche],
+    [libelle_fiche, ini_debut, ini_fin, commentaire, id_fiche],
     (error, results) => {
       if (error) {
         throw error;
       }
-      response.status(200).send(`Update`);
+      response.sendStatus(200);
     }
   );
 };
