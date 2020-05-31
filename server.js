@@ -2,9 +2,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const ficheRoutes = require('./app/routes/ficheRoutes');
+const activiteRoutes = require('./app/routes/activiteRoutes');
 const productionRoutes = require('./app/routes/productionRoutes');
 const marcheRoutes = require('./app/routes/marcheRoutes');
-const analyseRoutes = require('./app/routes/analysesRoutes');
+const analyseRoutes = require('./app/routes/analyseRoutes');
 
 // Crée le serveur Express
 const app = express();
@@ -22,6 +23,7 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 // Endpoints
 app.use(ficheRoutes);
+app.use(activiteRoutes);
 app.use(productionRoutes);
 app.use(marcheRoutes);
 app.use(analyseRoutes);
