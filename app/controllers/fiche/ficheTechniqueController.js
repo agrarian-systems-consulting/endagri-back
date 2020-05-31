@@ -72,22 +72,38 @@ const postFiche = (request, response) => {
 
       // Récupère l'id de la nouvelle fiche technique
       const id_fiche_technique = results.rows[0].id;
-      console.log(
-        `Création de la fiche technique ${id_fiche_technique} : ${libelle_fiche}`
-      );
+
+      // console.log(
+      //   `Création de la fiche technique ${id_fiche_technique} : ${libelle_fiche}`
+      // );
 
       // Ajoute les ventes
       if (ventes) {
         ventes.map(
-          ({ id_marche, libelle_vente, quantite, mois_relatif, mois }) => {
+          ({
+            id_marche,
+            rendement_min,
+            rendement,
+            rendement_max,
+            mois_relatif,
+            mois,
+          }) => {
             // Construction de la requête pour créer une vente
             const postVenteQuery =
-              'INSERT INTO fiche.vente(id, id_marche, libelle, quantite, mois_relatif, mois) VALUES (DEFAULT, $1, $2, $3, $4, $5) RETURNING id';
+              'INSERT INTO fiche.vente(id, id_fiche_technique, id_marche, rendement_min, rendement, rendement_max, mois_relatif, mois) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7) RETURNING id';
 
             // Envoi de la requête
             dbConn.pool.query(
-              postActiviteQuery,
-              [id_fiche_technique, libelle_vente, quantite, mois_relatif, mois],
+              postVenteQuery,
+              [
+                id_fiche_technique,
+                id_marche,
+                rendement_min,
+                rendement,
+                rendement_max,
+                mois_relatif,
+                mois,
+              ],
               (error, results) => {
                 if (error) {
                   throw error;
@@ -96,7 +112,7 @@ const postFiche = (request, response) => {
                 // Récupère l'id de la nouvelle vente
                 const id_vente = results.rows[0].id;
 
-                console.log(`Ajout de la vente ${id_vente} : ${libelle_vente}`);
+                // console.log(`Ajout de la vente ${id_vente}`);
               }
             );
           }
@@ -121,12 +137,9 @@ const postFiche = (request, response) => {
               // Récupère l'id de la nouvelle activité
               const id_activite = results.rows[0].id;
 
-              console.log(
-                `Ajout de l'activité ${id_activite} : ${libelle_activite}`
-              );
-
-              // TODO : Récupérer l'id de l'activité pour attacher les dépenses
-              // const id_activite = results.body.id Là je ne sais pas trop à quoi ressemble results
+              // console.log(
+              //   `Ajout de l'activité ${id_activite} : ${libelle_activite}`
+              // );
 
               // Ajoute les dépenses
               if (depenses) {

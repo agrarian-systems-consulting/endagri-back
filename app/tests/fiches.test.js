@@ -58,6 +58,44 @@ test('Doit créer une fiche technique sans activités ni ventes', (done) => {
     });
 });
 
+test('Doit créer une fiche technique avec des ventes', (done) => {
+  request(app)
+    .post('/fiche')
+    .send({
+      libelle_fiche: 'Bananes en agriculture biologique',
+      id_utilisateur: 85,
+      id_production: 17,
+      ini_debut: null,
+      ini_fin: null,
+      ventes: [
+        {
+          id_marche: 24,
+          rendement_min: 400,
+          rendement: 500,
+          rendement_max: 600,
+          mois_relatif: 5,
+        },
+        {
+          id_marche: 24,
+          rendement_min: 250,
+          rendement: 360,
+          rendement_max: 470,
+          mois_relatif: 6,
+        },
+      ],
+    })
+    .set('Accept', 'application/json')
+    .expect('Content-Type', /json/)
+    .expect(201)
+    .end(function (err, res) {
+      if (err) return done(err);
+      // console.log('res.body =', res.body);
+      expect(res.body.id).toBeDefined();
+
+      done();
+    });
+});
+
 // test("Doit récupérer le contenu d'une fiche technique", () => {
 //   request(app)
 //     .get('/fiche/24')
