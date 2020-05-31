@@ -214,7 +214,8 @@ const deleteFicheById = (request, response) => {
     if (error) {
       throw error;
     }
-    response.status(200).send(`Delete`);
+    console.log(results.rows);
+    response.sendStatus(204);
   });
 };
 

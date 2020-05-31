@@ -135,3 +135,13 @@ test('Doit créer une fiche technique avec des ventes, des activités et des dé
       done();
     });
 });
+
+test('Doit supprimer une fiche technique', (done) => {
+  request(app)
+    .delete('/fiche/106')
+    .expect(204)
+    .end(function (err, res) {
+      if (err) return done(err);
+      done();
+    });
+});
