@@ -3,8 +3,10 @@ const bodyParser = require('body-parser');
 
 const ficheRoutes = require('./app/routes/ficheRoutes');
 const activiteRoutes = require('./app/routes/activiteRoutes');
+const venteRoutes = require('./app/routes/venteRoutes');
 const productionRoutes = require('./app/routes/productionRoutes');
 const marcheRoutes = require('./app/routes/marcheRoutes');
+const fluxTempRoutes = require('./app/routes/fluxTempRoutes');
 const analyseRoutes = require('./app/routes/analyseRoutes');
 
 // Crée le serveur Express
@@ -24,8 +26,10 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 // Endpoints
 app.use(ficheRoutes);
 app.use(activiteRoutes);
+app.use(venteRoutes);
 app.use(productionRoutes);
 app.use(marcheRoutes);
+app.use(fluxTempRoutes);
 app.use(analyseRoutes);
 
 // L'application est lancée depuis le fichier index.js pour permettre à Jest de faire fonctionner les tests

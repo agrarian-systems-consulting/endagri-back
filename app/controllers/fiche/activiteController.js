@@ -12,7 +12,7 @@ const postActivite = (request, response) => {
 
   // Construction de la requête pour créer la fiche technique
   const postActiviteQuery =
-    'INSERT INTO fiche.activite(id, id_fiche_technique, libelle, mois, mois_relatif) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING *';
+  `INSERT INTO fiche.activite(id, id_fiche_technique, libelle, mois, mois_relatif) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING *`;
 
   // Envoi de la requête
   dbConn.pool.query(
@@ -31,7 +31,7 @@ const postActivite = (request, response) => {
         depenses.map(({ libelle_depense, montant }) => {
           // Construction de la requête pour créer une dépense
           const postDepenseQuery =
-            'INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING id';
+          `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING id`;
 
           // Envoi de la requête
           dbConn.pool.query(
@@ -63,7 +63,7 @@ const putActivite = (request, response) => {
   const { libelle_activite, mois_relatif, mois } = request.body;
 
   const putActiviteQuery =
-    'UPDATE fiche.activite SET libelle=$1, mois_relatif=$2, mois=$3, WHERE id=$4 RETURNING *';
+  `UPDATE fiche.activite SET libelle=$1, mois_relatif=$2, mois=$3, WHERE id=$4 RETURNING *`;
   dbConn.pool.query(
     putFicheByIdQuery,
     [libelle_activite, mois_relatif, mois, id_activite],
@@ -86,7 +86,7 @@ const deleteActivite = (request, response) => {
   const id_activite = request.params.id;
 
   const deleteActiviteQuery =
-    'DELETE FROM fiche.activite WHERE id=$1 RETURNING *';
+  `DELETE FROM fiche.activite WHERE id=$1 RETURNING *`;
   dbConn.pool.query(deleteActiviteQuery, [id_activite], (error, results) => {
     if (error) {
       throw error;
