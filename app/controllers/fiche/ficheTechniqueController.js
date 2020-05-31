@@ -2,11 +2,11 @@ const dbConn = require('../../db/pool');
 
 // RECUPERE LA LISTE DES FICHES
 // TODO :
-// @Asc : Renvoyer le nom de la production en plus de l'id_production
-// @Asc : Eventuellement optimiser l'écriture de la fonction avec ou sans le paramètre optionnel id_utilisateur
-// @Asc : Ajouter attribut created si easy (Généré par postgre automatiquement lors du post ?)
-// @Asc : Ajouter attribut modified si easy (Géré par postgre lors de chaque put ?)
-// @ENDA : Renvoyer le fullname de l'utilisateur quand la table User sera implémentée
+// @Asc v1 Renvoyer le nom de la production en plus de l'id_production
+// @Asc v1 Eventuellement optimiser l'écriture de la fonction avec ou sans le paramètre optionnel id_utilisateur
+// @Asc v1 ou v2 Ajouter attribut created si easy (Généré par postgre automatiquement lors du post ?)
+// @Asc v1 ou v2 Ajouter attribut modified si easy (Géré par postgre lors de chaque put ?)
+// @ENDA v2 Renvoyer le fullname de l'utilisateur quand la table User sera implémentée
 const getFiches = (request, response) => {
   // Récupère le paramètre optionnel id_utilisateur pour filtrer les fiches techniques
   const id_utilisateur = request.query.id_utilisateur; // J'ai essayé const id_utilisateur = request.query.id_utilisateur || true pour ne pas avoir à créer la condition ci-après mais ne marche pas
@@ -43,8 +43,8 @@ const getFiches = (request, response) => {
 };
 
 // CREER UNE NOUVELLE FICHE
-// @Asc Utiliser les transactions ?
-// @Enda Gérer id_utilisateur avec la table User
+// @Asc v2 : Utiliser les transactions
+// @Enda v2 : Gérer id_utilisateur avec la table User
 const postFiche = (request, response) => {
   // Destructure les données contenus dans la requête
   const {
@@ -72,10 +72,6 @@ const postFiche = (request, response) => {
 
       // Récupère l'id de la nouvelle fiche technique
       const id_fiche_technique = results.rows[0].id;
-
-      // console.log(
-      //   `Création de la fiche technique ${id_fiche_technique} : ${libelle_fiche}`
-      // );
 
       // Ajoute les ventes
       if (ventes) {
@@ -108,11 +104,6 @@ const postFiche = (request, response) => {
                 if (error) {
                   throw error;
                 }
-
-                // Récupère l'id de la nouvelle vente
-                const id_vente = results.rows[0].id;
-
-                // console.log(`Ajout de la vente ${id_vente}`);
               }
             );
           }
@@ -137,10 +128,6 @@ const postFiche = (request, response) => {
               // Récupère l'id de la nouvelle activité
               const id_activite = results.rows[0].id;
 
-              // console.log(
-              //   `Ajout de l'activité ${id_activite} : ${libelle_activite}`
-              // );
-
               // Ajoute les dépenses
               if (depenses) {
                 depenses.map(({ libelle_depense, montant }) => {
@@ -156,12 +143,6 @@ const postFiche = (request, response) => {
                       if (error) {
                         throw error;
                       }
-                      // Récupère l'id de la nouvelle dépense
-                      const id_depense = results.rows[0].id;
-
-                      // console.log(
-                      //   `Ajout de la dépense ${id_depense} : ${libelle_depense}`
-                      // );
                     }
                   );
                 });
