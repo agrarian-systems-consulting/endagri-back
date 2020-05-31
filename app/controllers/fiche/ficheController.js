@@ -219,7 +219,7 @@ const deleteFicheById = (request, response) => {
     }
     // console.log(results.rows);
     if (results.rows[0] !== undefined) {
-      console.log('Deleted : ' + JSON.stringify(results.rows[0], true, 2));
+      // console.log('Deleted : ' + JSON.stringify(results.rows[0], true, 2));
       response.sendStatus(204);
     } else {
       response.sendStatus(404);

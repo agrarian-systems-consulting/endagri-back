@@ -162,7 +162,7 @@ test('Doit créer une fiche technique avec des ventes, des activités et des dé
 });
 
 //TODO :
-//@ Tester les suppressions en cascade
+//@Asc Tester les suppressions en cascade
 test('Doit supprimer une fiche technique', (done) => {
   request(app)
     .delete('/fiche/999')
