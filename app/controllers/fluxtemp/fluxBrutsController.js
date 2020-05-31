@@ -13,12 +13,12 @@ const getFluxBrutsById = (request, response) => {
    )
    SELECT libelle_production,ini_debut,ini_fin,type_production,JSON_AGG(JSON_BUILD_OBJECT('libelle_depense',libelle_depense,'mois',mois,'mois relatif',mois_relatif,'montant',montant)) depenses
    FROM subquery GROUP BY libelle_production,ini_debut,ini_fin,type_production`;
-  dbConn.pool.query(getFluxBrutsByIdQuery,[id_fiche] (error, results) => {
+  dbConn.pool.query(getFluxBrutsByIdQuery, [id_fiche], (error, results) => {
     if (error) {
       throw error
     }
     response.status(200).send(results.rows)
-  })
+  });
 }
 
 module.exports = {
