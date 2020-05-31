@@ -206,7 +206,7 @@ const putFicheById = (request, response) => {
 
 // SUPPRIME UNE FICHE
 // TODO :
-// - Asc : Faire les delete en cascade sur activités, ventes et dépenses (si ce n'est pas déjà le cas dans postgre)
+// @Asc v1 Faire les delete en cascade sur activités, ventes et dépenses (si ce n'est pas déjà le cas dans postgre)
 const deleteFicheById = (request, response) => {
   const id_fiche = request.params.id;
   const deleteFicheByIdQuery =
@@ -215,10 +215,13 @@ const deleteFicheById = (request, response) => {
     if (error) {
       throw error;
     }
-    if (results.rows.id !== null) {
-      response.status(204).send(results.rows);
+    // console.log(results.rows);
+    if (results.rows[0] !== undefined) {
+      response
+        .status(204)
+        .send(`Deleted fiche ${results.rows[0].id} : ${results.rows}`);
     } else {
-      response.status(404).send('Not found');
+      response.sendStatus(404);
     }
   });
 };
