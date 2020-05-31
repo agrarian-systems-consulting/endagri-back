@@ -4,8 +4,8 @@ const dbConn = require('../../db/pool');
 // TODO :
 // @Asc v1 Renvoyer le nom de la production en plus de l'id_production
 // @Asc v1 Eventuellement optimiser l'écriture de la fonction avec ou sans le paramètre optionnel id_utilisateur
-// @Asc v1 ou v2 Ajouter attribut created si easy (Généré par postgre automatiquement lors du post ?)
-// @Asc v1 ou v2 Ajouter attribut modified si easy (Géré par postgre lors de chaque put ?)
+// @Asc v1 ou v2 Ajouter attribut created ADD COLUMN created SET DEFAULT now()
+// @Asc v1 ou v2 Ajouter attribut modified ADD COLUMN modified SET DEFAULT now() avec mise à jour lors d'un PUT
 // @ENDA v2 Renvoyer le fullname de l'utilisateur quand la table User sera implémentée
 const getFiches = (request, response) => {
   // Récupère le paramètre optionnel id_utilisateur pour filtrer les fiches techniques
@@ -162,7 +162,8 @@ const postFiche = (request, response) => {
 };
 
 // RECUPERE LE CONTENU D'UNE FICHE
-// TODO : Créer Vue
+// @Asc v1 Créer vue postgre
+// @Asc @Enda v1 ou v2 Créer le test associé
 const getFicheById = (request, response) => {
   // Récupère l'id de la fiche technique depuis l'URL
   const id_fiche = request.params.id;
@@ -186,12 +187,13 @@ const getFicheById = (request, response) => {
 };
 
 // MODIFIER UNE FICHE
-// A DISCUTER de vive voix peut-être
+// @Asc v1 Choisir ce que l'on fait ici.
+// @Asc @Enda v1 ou v2 Créer le test associé
 const putFicheById = (request, response) => {
   const id_fiche = request.params.id;
   const { libelle_fiche } = request.body;
   const putFicheByIdQuery =
-    'UPDATE fiche.fiche_technique SET libelle=$1 WHERE id=$2';
+    'UPDATE fiche.fiche_technique SET libelle=$1 WHERE id=$2 RETURNING *';
   dbConn.pool.query(
     putFicheByIdQuery,
     [libelle_fiche, id_fiche],
@@ -205,8 +207,8 @@ const putFicheById = (request, response) => {
 };
 
 // SUPPRIME UNE FICHE
-// TODO :
-// @Asc v1 Faire les delete en cascade sur activités, ventes et dépenses (si ce n'est pas déjà le cas dans postgre)
+// @Asc v1 Faire les DELETE en cascade sur activités, ventes et dépenses
+// @Asc @Enda v1 ou v2 Utiliser les transactions
 const deleteFicheById = (request, response) => {
   const id_fiche = request.params.id;
   const deleteFicheByIdQuery =
@@ -217,9 +219,8 @@ const deleteFicheById = (request, response) => {
     }
     // console.log(results.rows);
     if (results.rows[0] !== undefined) {
-      response
-        .status(204)
-        .send(`Deleted fiche ${results.rows[0].id} : ${results.rows}`);
+      console.log('Deleted : ' + JSON.stringify(results.rows[0], true, 2));
+      response.sendStatus(204);
     } else {
       response.sendStatus(404);
     }
@@ -227,8 +228,8 @@ const deleteFicheById = (request, response) => {
 };
 
 // RECUPERE UNE SYNTHESE DES FLUX FINANCIERS PAR MOIS
-// TODO :
-// - Asc : Créer vue
+// @Asc v1 Créer vue
+// @Asc @Enda v1 ou v2 Créer le test associé
 const getFicheByIdFluxMensuels = (request, response) => {
   // Récupère l'id de la fiche
   const id_fiche = request.params.id;
@@ -248,26 +249,6 @@ const getFicheByIdFluxMensuels = (request, response) => {
   );
 };
 
-// RECUPERE UNE SYNTHESE DES FLUX FINANCIERS PAR CATEGORIE AVEC CHACUNE DES TRANSACTIONS PAR CATEGORIE
-// TODO :
-// - Réflechir à la pertinence d'avoir les flux détaillés
-// - Asc : Créer vue
-const getFicheByIdFluxCategorie = (request, response) => {
-  const id_fiche = request.params.id;
-  const getFicheByIdFluxCategorieQuery =
-    'SELECT * FROM fiche.fiche_technique WHERE id=$1';
-  dbConn.pool.query(
-    getFicheByIdFluxCategorieQuery,
-    [id_fiche],
-    (error, results) => {
-      if (error) {
-        throw error;
-      }
-      response.status(200).send(results.rows);
-    }
-  );
-};
-
 module.exports = {
   getFiches,
   postFiche,
@@ -275,5 +256,4 @@ module.exports = {
   putFicheById,
   deleteFicheById,
   getFicheByIdFluxMensuels,
-  getFicheByIdFluxCategorie,
 };

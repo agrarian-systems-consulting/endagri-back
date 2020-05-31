@@ -1,6 +1,17 @@
 const request = require('supertest');
 const assert = require('assert');
 const app = require('../../server');
+const dbConn = require('../db/pool');
+
+// Créé une fiche à supprimer dans un test
+beforeAll((done) => {
+  const postFicheQuery =
+    'INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id';
+
+  dbConn.pool
+    .query(postFicheQuery, [999, 65, 'Carottes en sol argileux', 65, 2, 6])
+    .then(() => done());
+});
 
 test('Doit retourner toutes les fiches techniques', (done) => {
   request(app)
@@ -33,6 +44,20 @@ test("Doit retourner toutes les fiches techniques d'un seul auteur", (done) => {
         res.body.length,
         'Il y au moins 3 fiches techniques dans la base de données pour cet utilisateur'
       ).toBe(3);
+      done();
+    });
+});
+
+test("Doit retourner le contenu d'une fiche technique", (done) => {
+  request(app)
+    .get('/fiche/1')
+    .set('Accept', 'application/json')
+    .expect('Content-Type', /json/)
+    .expect(200)
+    .end(function (err, res) {
+      // console.log('response.body =', res.body);
+      if (err) return done(err);
+
       done();
     });
 });
@@ -140,7 +165,7 @@ test('Doit créer une fiche technique avec des ventes, des activités et des dé
 //@ Tester les suppressions en cascade
 test('Doit supprimer une fiche technique', (done) => {
   request(app)
-    .delete('/fiche/106')
+    .delete('/fiche/999')
     .expect(204)
     .end(function (err, res) {
       if (err) return done(err);
