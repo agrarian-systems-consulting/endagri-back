@@ -209,13 +209,17 @@ const putFicheById = (request, response) => {
 // - Asc : Faire les delete en cascade sur activités, ventes et dépenses (si ce n'est pas déjà le cas dans postgre)
 const deleteFicheById = (request, response) => {
   const id_fiche = request.params.id;
-  const deleteFicheByIdQuery = 'DELETE FROM fiche.fiche_technique WHERE id=$1';
+  const deleteFicheByIdQuery =
+    'DELETE FROM fiche.fiche_technique WHERE id=$1 RETURNING *';
   dbConn.pool.query(deleteFicheByIdQuery, [id_fiche], (error, results) => {
     if (error) {
       throw error;
     }
-    console.log(results.rows);
-    response.sendStatus(204);
+    if (results.rows.id !== null) {
+      response.status(204).send(results.rows);
+    } else {
+      response.status(404).send('Not found');
+    }
   });
 };
 
@@ -228,7 +232,7 @@ const getFicheByIdFluxMensuels = (request, response) => {
 
   // Construction de la requête pour récupérer les flux
   const getFicheByIdFluxMensuelsQuery =
-    'SELECT * FROM fiche.fiche_technique WHERE id=$1';
+    'SELECT * FROM fiche.fiche_technique WHERE id=$1 ';
   dbConn.pool.query(
     getFicheByIdFluxMensuelsQuery,
     [id_fiche],
