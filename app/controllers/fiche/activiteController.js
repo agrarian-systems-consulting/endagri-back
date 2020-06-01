@@ -21,14 +21,19 @@ const postActivite = (request, response) => {
         throw error;
       }
 
+      // console.log('POST activite 1 : ' + JSON.stringify(results.rows, true, 2));
+
       // Récupère l'id de l'activité qui vient d'être créée
       const id_activite = results.rows[0].id;
 
+      console.log('id_activite = ' + id_activite);
+
       // Ajoute les dépenses
+      // console.log('depenses = ' + JSON.stringify(depenses, true, 2));
       if (depenses) {
         depenses.map(({ libelle_depense, montant }) => {
           // Construction de la requête pour créer une dépense
-          const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING id`;
+          const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING *`;
 
           // Envoi de la requête
           dbConn.pool.query(
@@ -38,15 +43,34 @@ const postActivite = (request, response) => {
               if (error) {
                 throw error;
               }
+
+              // console.log(
+              //   'POST activite 2 : ' + JSON.stringify(results.rows, true, 2)
+              // );
             }
           );
         });
       }
-      // TODO : Eventuellement renvoyer l'activité et les dépenses créées
-      response
-        .set('Content-Type', 'application/json')
-        .status(201)
-        .json({ id: id_activite });
+      // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
+      const getActiviteAvecDepensesQuery = `SELECT a.*, json_agg(d.*) depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
+
+      // Envoi de la requête
+      dbConn.pool.query(
+        getActiviteAvecDepensesQuery,
+        [id_activite],
+        (error, results) => {
+          if (error) {
+            throw error;
+          }
+
+          // console.log(
+          //   'POST activite 3 : ' + JSON.stringify(results.rows, true, 2)
+          // );
+
+          // Envoi de la réponse
+          response.status(201).send(results.rows[0]);
+        }
+      );
     }
   );
 };
@@ -76,6 +100,8 @@ const putActivite = (request, response) => {
         throw error;
       }
 
+      // console.log('putActivite 1' + JSON.stringify(results.rows[0], true, 2));
+
       // Mettre à jour les dépenses
       if (depenses) {
         // Boucle sur chacune des dépenses
@@ -83,7 +109,7 @@ const putActivite = (request, response) => {
           // Si c'est une nouvelle dépense, la créer, sinon modifier l'existante
           if (id === undefined) {
             // Construction de la requête pour créer une dépense
-            const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING id`;
+            const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING *`;
 
             // Envoi de la requête
             dbConn.pool.query(
@@ -93,13 +119,12 @@ const putActivite = (request, response) => {
                 if (error) {
                   throw error;
                 }
-
-                // console.log(results.rows[0]);
+                // console.log('putActivite 2' + JSON.stringify(results.rows[0], true, 2));
               }
             );
           } else {
             // Construction de la requête pour modifier une dépense existante
-            const putDepenseQuery = `UPDATE fiche.depense(id_activite, libelle, montant) VALUES ($1, $2, $3) WHERE id=$4 RETURNING id`;
+            const putDepenseQuery = `UPDATE fiche.depense SET id_activite=$1, libelle=$2, montant=$3 WHERE id=$4 RETURNING *`;
             // Envoi de la requête
             dbConn.pool.query(
               putDepenseQuery,
@@ -109,7 +134,9 @@ const putActivite = (request, response) => {
                   throw error;
                 }
 
-                // console.log(results.rows[0]);
+                // console.log(
+                //   'putActivite 3' + JSON.stringify(results.rows[0], true, 2)
+                // );
               }
             );
           }
@@ -118,8 +145,26 @@ const putActivite = (request, response) => {
         });
       }
 
-      // console.log(results.rows[0]);
-      response.status(200).send(results.rows[0]);
+      // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
+      const getActiviteAvecDepensesQuery = `SELECT a.*, json_agg(d.*) depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
+
+      // Envoi de la requête
+      dbConn.pool.query(
+        getActiviteAvecDepensesQuery,
+        [id_activite],
+        (error, results) => {
+          if (error) {
+            throw error;
+          }
+
+          // console.log(
+          //   'putActivite 4' + JSON.stringify(results.rows[0], true, 2)
+          // );
+
+          // Envoi de la réponse
+          response.status(200).send(results.rows[0]);
+        }
+      );
     }
   );
 };

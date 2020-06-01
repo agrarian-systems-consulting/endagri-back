@@ -3,11 +3,19 @@ const assert = require('assert');
 const app = require('../../server');
 const dbConn = require('../db/pool');
 
+// Paramètres pour la mise en place d'une fiche technique, des activités et des dépenses nécessaires pour les tests
+const id_fiche_technique = 45678;
+const id_activite = 34567;
+const depenses = [
+  { id: 2468020, libelle_depense: 'Dépense de test 5', montant: 246 },
+  { id: 4680240, libelle_depense: 'Dépense de test 6', montant: 468 },
+];
+
 test('Doit créer une activité sans dépenses associées dans une fiche existante', (done) => {
   request(app)
-    .post('/fiche/8888/activite')
+    .post(`/fiche/${id_fiche_technique}/activite`)
     .send({
-      libelle_activite: 'Activité de test',
+      libelle_activite: 'Activité de test 1',
       mois_relatif: 1,
       mois: null,
     })
@@ -15,20 +23,23 @@ test('Doit créer une activité sans dépenses associées dans une fiche existan
     .end(function (err, res) {
       if (err) return done(err);
       expect(res.body.id).toBeDefined();
+      expect(res.body.libelle).toBe('Activité de test 1');
+      expect(res.body.mois_relatif).toBe(1);
+      expect(res.body.mois).toBe(null);
       done();
     });
 });
 
 test('Doit créer une activité avec des dépenses associées dans une fiche existante', (done) => {
   request(app)
-    .post('/fiche/8888/activite')
+    .post(`/fiche/${id_fiche_technique}/activite`)
     .send({
-      libelle_activite: 'Deuxième activité de test',
-      mois_relatif: 1,
-      mois: null,
+      libelle_activite: 'Activité de test 2',
+      mois_relatif: null,
+      mois: 2,
       depenses: [
         {
-          libelle_depense: 'Dépense de test 1',
+          libelle_depense: 'Dépense de test 2',
           montant: 470,
         },
         {
@@ -39,17 +50,23 @@ test('Doit créer une activité avec des dépenses associées dans une fiche exi
     })
     .expect(201)
     .end(function (err, res) {
+      console.log(res.body);
       if (err) return done(err);
       expect(res.body.id).toBeDefined();
+      expect(res.body.libelle).toBe('Activité de test 2');
+      expect(res.body.mois_relatif).toBe(null);
+      expect(res.body.mois).toBe(2);
+      expect(res.body.depenses).toBeDefined();
+      expect(res.body.depenses.length).toBe(2);
       done();
     });
 });
 
 test("Doit modifier une activite sans dépenses d'une fiche technique", (done) => {
   request(app)
-    .put('/fiche/8888/activite/7777')
+    .put(`/fiche/${id_fiche_technique}/activite/${id_activite}`)
     .send({
-      libelle_activite: "Un titre d'activité modifié par un test",
+      libelle_activite: "Un titre d'activité modifié par le test 3",
       mois_relatif: 2,
       mois: null,
     })
@@ -57,46 +74,46 @@ test("Doit modifier une activite sans dépenses d'une fiche technique", (done) =
     .end(function (err, res) {
       if (err) return done(err);
       expect(res.body.id).toBeDefined();
-      expect(res.body.libelle).toBe("Un titre d'activité modifié par un test");
+      expect(res.body.libelle).toBe(
+        "Un titre d'activité modifié par le test 3"
+      );
       done();
     });
 });
 
-test("Doit modifier une activite avec des dépenses associées d'une fiche technique", (done) => {
+test("Doit modifier une activite et des dépenses existantes associées d'une fiche technique", (done) => {
   request(app)
-    .put('/fiche/8888/activite/7777')
+    .put(`/fiche/${id_fiche_technique}/activite/${id_activite}`)
     .send({
-      libelle_activite: "Un titre d'activité modifié par un second test",
+      libelle_activite: "Un titre d'activité modifié par le test 4",
       mois_relatif: 6,
       mois: null,
       depenses: [
-        {
-          libelle_depense: 'Dépense de test 3',
-          montant: 321,
-        },
-        {
-          libelle_depense: 'Dépense de test 4',
-          montant: 99,
-        },
+        { id: 2468020, libelle_depense: 'Dépense de test 4:1', montant: 246 },
+        { id: 4680240, libelle_depense: 'Dépense de test 4:2', montant: 468 },
       ],
     })
     .expect(200)
     .end(function (err, res) {
+      // console.log(res.body);
       if (err) return done(err);
       expect(res.body.id).toBeDefined();
       expect(res.body.libelle).toBe(
-        "Un titre d'activité modifié par un second test"
+        "Un titre d'activité modifié par le test 4"
       );
-
-      // TODO : Tester ici l'existance des dépenses en faisant une requête à la base de données
+      expect(res.body.depenses).toBeDefined();
+      expect(
+        res.body.depenses.length,
+        "Il est probable que certaines dépenses n'aient pas été supprimées correctement (celles que l'utilisateur a supprimé lors de sa modification de l'activité)"
+      ).toBe(2);
 
       done();
     });
 });
 
-test("Doit supprimer une activité d'une fiche techniques", (done) => {
+test("Doit supprimer une activité d'une fiche technique", (done) => {
   request(app)
-    .delete('/fiche/8888/activite/7777')
+    .delete(`/fiche/${id_fiche_technique}/activite/${id_activite}`)
     .expect(204)
     .end(function (err, res) {
       if (err) return done(err);
@@ -105,22 +122,45 @@ test("Doit supprimer une activité d'une fiche techniques", (done) => {
 });
 
 beforeAll((done) => {
-  // Créé une fiche et une activité attachée pour le test
+  // Création de la requête pour créer une fiche pour le test
   const postFicheQuery =
-    'INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id';
+    'INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *';
 
+  // Envoi de la requête
   dbConn.pool.query(
     postFicheQuery,
-    [8888, 65, 'Fiche de test', 65, 2, 6],
+    [id_fiche_technique, 65, 'Fiche de test', 65, 2, 6],
     (err, res) => {
       if (err) return done(err);
+
+      // Création de la requête pour créer une activité pour le test
       const postActiviteQuery =
-        'INSERT INTO fiche.activite(id, id_fiche_technique, mois_relatif, mois, libelle) VALUES ($1, $2, $3, $4, $5) RETURNING id';
+        'INSERT INTO fiche.activite(id, id_fiche_technique, mois_relatif, mois, libelle) VALUES ($1, $2, $3, $4, $5) RETURNING *';
+
+      // Envoi de la requête
       dbConn.pool.query(
         postActiviteQuery,
-        [7777, 8888, 4, 5, 'Activite de test'],
+        [id_activite, id_fiche_technique, 4, 5, 'Activite de test 7'],
         (err, res) => {
           if (err) return done(err);
+          // console.log(results);
+
+          // Ajoute les dépenses
+          depenses.map(({ id, libelle_depense, montant }) => {
+            // Construction de la requête pour créer une dépense
+            const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES ( $1, $2, $3, $4) RETURNING *`;
+
+            // Envoi de la requête
+            dbConn.pool.query(
+              postDepenseQuery,
+              [id, id_activite, libelle_depense, montant],
+              (err, res) => {
+                if (err) return done(err);
+
+                // console.log(res);
+              }
+            );
+          });
 
           done();
         }
@@ -131,21 +171,38 @@ beforeAll((done) => {
 
 afterAll((done) => {
   // Supprime la fiche technique créée pour le test
-  const deleteFicheByIdQuery = 'DELETE FROM fiche.fiche_technique WHERE id=$1';
-  dbConn.pool.query(deleteFicheByIdQuery, [8888], (error, results) => {
-    if (error) {
-      throw error;
+  const deleteFicheByIdQuery =
+    'DELETE FROM fiche.fiche_technique WHERE id=$1 RETURNING *';
+  dbConn.pool.query(
+    deleteFicheByIdQuery,
+    [id_fiche_technique],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      // Supprime les activités créées par le test
+      const deleteActiviteQuery =
+        'DELETE FROM fiche.activite WHERE id=$1 RETURNING *';
+      dbConn.pool.query(
+        deleteActiviteQuery,
+        [id_activite],
+        (error, results) => {
+          if (error) {
+            throw error;
+          }
+          //Supprimer les dépenses créées par le test
+          depenses.map(({ id }) => {
+            const deleteDepensesQuery =
+              'DELETE FROM fiche.depense WHERE id=$1 RETURNING *';
+            dbConn.pool.query(deleteDepensesQuery, [id], (error, results) => {
+              if (error) {
+                throw error;
+              }
+              done();
+            });
+          });
+        }
+      );
     }
-    done();
-  });
-
-  // Supprime les activités créées par le test
-  const deleteActiviteQuery =
-    'DELETE FROM fiche.activite WHERE id_fiche_technique=$1';
-  dbConn.pool.query(deleteActiviteQuery, [8888], (error, results) => {
-    if (error) {
-      throw error;
-    }
-    done();
-  });
+  );
 });
