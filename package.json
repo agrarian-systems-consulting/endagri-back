@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "jest --detectOpenHandles"
+    "test": "jest --detectOpenHandles",
+    "make-badges": "node_modules/.bin/jest-badges-readme"
   },
   "keywords": [],
   "author": "",
