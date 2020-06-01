@@ -21,6 +21,7 @@
     "pg": "^8.2.1"
   },
   "devDependencies": {
+    "@olavoparno/jest-badges-readme": "^1.4.1",
     "jest": "^26.0.1",
     "jest-expect-message": "^1.0.2",
     "nodemon": "^2.0.4",
@@ -34,6 +35,12 @@
     "setupFilesAfterEnv": [
       "jest-expect-message"
     ],
+    "coverageReporters": [
+      "json-summary",
+      "text",
+      "lcov"
+    ],
+    "collectCoverage": true,
     "coveragePathIgnorePatterns": [
       "/node_modules/"
     ]

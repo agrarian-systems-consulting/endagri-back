@@ -1,11 +1,10 @@
 const dbConn = require('../../db/pool');
 
 // CREER UNE NOUVELLE ACTIVITE
-// @Asc v1 : Créer le test associé
 // @Enda v2 : Gérer id_utilisateur avec la table User
 const postActivite = (request, response) => {
   // Récupère l'id de la fiche technique depuis les params
-  const id_fiche_technique = request.params.id;
+  const id_fiche_technique = request.params.id_fiche_technique;
 
   // Destructure les données contenus dans la requête
   const { libelle_activite, mois, mois_relatif, depenses } = request.body;
@@ -43,11 +42,13 @@ const postActivite = (request, response) => {
           );
         });
       }
+      // TODO : Eventuellement renvoyer l'activité et les dépenses créées
+      response
+        .set('Content-Type', 'application/json')
+        .status(201)
+        .json({ id: id_activite });
     }
   );
-
-  // TODO : Eventuellement renvoyer l'activité et les dépenses créées
-  response.sendStatus(200);
 };
 
 // MODIFIER UNE ACTIVITE

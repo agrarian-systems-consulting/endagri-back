@@ -13,6 +13,48 @@ test("Doit supprimer une activité d'une fiche techniques", (done) => {
     });
 });
 
+test('Doit créer une activité sans dépenses associées dans une fiche existante', (done) => {
+  request(app)
+    .post('/fiche/8888/activite')
+    .send({
+      libelle_activite: 'Activité de test',
+      mois_relatif: 1,
+      mois: null,
+    })
+    .expect(201)
+    .end(function (err, res) {
+      if (err) return done(err);
+
+      done();
+    });
+});
+
+test('Doit créer une activité avec des dépenses associées dans une fiche existante', (done) => {
+  request(app)
+    .post('/fiche/8888/activite')
+    .send({
+      libelle_activite: 'Deuxième activité de test',
+      mois_relatif: 1,
+      mois: null,
+      depenses: [
+        {
+          libelle_depense: 'Dépense de test 1',
+          montant: 470,
+        },
+        {
+          libelle_depense: 'Dépense de test 2',
+          montant: 75,
+        },
+      ],
+    })
+    .expect(201)
+    .end(function (err, res) {
+      if (err) return done(err);
+
+      done();
+    });
+});
+
 beforeAll((done) => {
   // Créé une fiche et une activité attachée pour le test
   const postFicheQuery =
@@ -42,6 +84,16 @@ afterAll((done) => {
   // Supprime la fiche technique créée pour le test
   const deleteFicheByIdQuery = 'DELETE FROM fiche.fiche_technique WHERE id=$1';
   dbConn.pool.query(deleteFicheByIdQuery, [8888], (error, results) => {
+    if (error) {
+      throw error;
+    }
+    done();
+  });
+
+  // Supprime les activités créées par le test
+  const deleteActiviteQuery =
+    'DELETE FROM fiche.activite WHERE id_fiche_technique=$1';
+  dbConn.pool.query(deleteActiviteQuery, [8888], (error, results) => {
     if (error) {
       throw error;
     }
