@@ -57,14 +57,17 @@ const postActivite = (request, response) => {
 // @Asc v1 ou v2 Gérer comme il faut le Not Found
 const putActivite = (request, response) => {
   // Récupère l'id de l'activité et de la fiche technique depuis les params de l'URL
-  const id_fiche_technique = request.params.id; // Sera utile pour tester le droit d'accès de l'utilisateur
-  const id_activite = request.params.id;
+  const id_fiche_technique = request.params.id_fiche_technique; // Sera utile pour tester le droit d'accès de l'utilisateur
+  const id_activite = request.params.id_activite;
 
   const { libelle_activite, mois_relatif, mois } = request.body;
 
-  const putActiviteQuery = `UPDATE fiche.activite SET libelle=$1, mois_relatif=$2, mois=$3, WHERE id=$4 RETURNING *`;
+  // Contruction de la requête pour mettre à jour l'activité
+  const putActiviteQuery = `UPDATE fiche.activite SET libelle=$1, mois_relatif=$2, mois=$3 WHERE id=$4 RETURNING *`;
+
+  // Envoi de la requête
   dbConn.pool.query(
-    putFicheByIdQuery,
+    putActiviteQuery,
     [libelle_activite, mois_relatif, mois, id_activite],
     (error, results) => {
       if (error) {
@@ -72,6 +75,7 @@ const putActivite = (request, response) => {
       }
 
       //TODO : Gérer les dépenses ici. S'assurer qu'un update supprimer bien les dépenses qui ont été retirées dans l'activité.
+
       // console.log(results.rows[0]);
       response.status(200).send(results.rows[0]);
     }
