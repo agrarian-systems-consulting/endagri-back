@@ -1,6 +1,8 @@
 const dbConn = require('../../db/pool');
 
 // CREER UNE NOUVELLE ACTIVITE
+// @Asc v1 PROBLEME : JE crois que les requêtes de création de dépenses non pas encore retourné de résultats quand on envoie la réponse. Ce qui fait que la réponse contient une activité avec depenses =[null] dans tous les cas
+// npm run test pour voir le problème, ainsi que plusieurs console.log déjà placé pour traquer le bug.
 // @Enda v2 : Gérer id_utilisateur avec la table User
 const postActivite = (request, response) => {
   // Récupère l'id de la fiche technique depuis les params
@@ -76,6 +78,8 @@ const postActivite = (request, response) => {
 };
 
 // MODIFIER UNE ACTIVITE
+// @Asc v1 PROBLEME : JE crois que les requêtes de création de dépenses non pas encore retourné de résultats quand on envoie la réponse. Ce qui fait que la réponse contient une activité avec depenses =[null] dans tous les cas
+// npm run test pour voir le problème, ainsi que plusieurs console.log déjà placé pour traquer le bug.
 // @Asc v1 Gérer le cas ou l'application cliente supprime des dépenses existantes.
 // @Asc @Enda v1 ou v2 Gérer comme il faut le Not Found
 // @Enda @Enda v1 ou v2 Il faudrait ajouter ajouter également les dépenses associées dans la response
