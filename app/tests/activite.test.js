@@ -62,6 +62,38 @@ test("Doit modifier une activite sans dépenses d'une fiche technique", (done) =
     });
 });
 
+test("Doit modifier une activite avec des dépenses associées d'une fiche technique", (done) => {
+  request(app)
+    .put('/fiche/8888/activite/7777')
+    .send({
+      libelle_activite: "Un titre d'activité modifié par un second test",
+      mois_relatif: 6,
+      mois: null,
+      depenses: [
+        {
+          libelle_depense: 'Dépense de test 3',
+          montant: 321,
+        },
+        {
+          libelle_depense: 'Dépense de test 4',
+          montant: 99,
+        },
+      ],
+    })
+    .expect(200)
+    .end(function (err, res) {
+      if (err) return done(err);
+      expect(res.body.id).toBeDefined();
+      expect(res.body.libelle).toBe(
+        "Un titre d'activité modifié par un second test"
+      );
+
+      // TODO : Tester ici l'existance des dépenses en faisant une requête à la base de données
+
+      done();
+    });
+});
+
 test("Doit supprimer une activité d'une fiche techniques", (done) => {
   request(app)
     .delete('/fiche/8888/activite/7777')
