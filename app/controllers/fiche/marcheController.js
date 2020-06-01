@@ -17,7 +17,7 @@ const getMarches = (request, response) => {
 };
 
 // A DISCUTER
-// Que faut-il discuter ?
+// Je me dis qu'il vaut mieux qu'il faut renvoyer le mérché complet avec les prix.
 const postMarche = (request, response) => {
   const { id_produit, type_marche } = request.body;
 

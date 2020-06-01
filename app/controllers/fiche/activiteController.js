@@ -11,8 +11,7 @@ const postActivite = (request, response) => {
   const { libelle_activite, mois, mois_relatif, depenses } = request.body;
 
   // Construction de la requête pour créer la fiche technique
-  const postActiviteQuery =
-  `INSERT INTO fiche.activite(id, id_fiche_technique, libelle, mois, mois_relatif) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING *`;
+  const postActiviteQuery = `INSERT INTO fiche.activite(id, id_fiche_technique, libelle, mois, mois_relatif) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING *`;
 
   // Envoi de la requête
   dbConn.pool.query(
@@ -30,8 +29,7 @@ const postActivite = (request, response) => {
       if (depenses) {
         depenses.map(({ libelle_depense, montant }) => {
           // Construction de la requête pour créer une dépense
-          const postDepenseQuery =
-          `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING id`;
+          const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING id`;
 
           // Envoi de la requête
           dbConn.pool.query(
@@ -54,6 +52,7 @@ const postActivite = (request, response) => {
 
 // MODIFIER UNE ACTIVITE
 // @Asc v1 Faut-il inclure les dépenses ici également ? Ou créer des routes PUT depenses et DELETE depense à part ?
+// Si on les inclut, il faut s'assurer qu'un PU ne créé pas des dépenses orphelines dans la db
 // @Asc v1 ou v2 Gérer comme il faut le Not Found
 const putActivite = (request, response) => {
   // Récupère l'id de l'activité et de la fiche technique depuis les params de l'URL
@@ -62,8 +61,7 @@ const putActivite = (request, response) => {
 
   const { libelle_activite, mois_relatif, mois } = request.body;
 
-  const putActiviteQuery =
-  `UPDATE fiche.activite SET libelle=$1, mois_relatif=$2, mois=$3, WHERE id=$4 RETURNING *`;
+  const putActiviteQuery = `UPDATE fiche.activite SET libelle=$1, mois_relatif=$2, mois=$3, WHERE id=$4 RETURNING *`;
   dbConn.pool.query(
     putFicheByIdQuery,
     [libelle_activite, mois_relatif, mois, id_activite],
@@ -71,6 +69,8 @@ const putActivite = (request, response) => {
       if (error) {
         throw error;
       }
+
+      //TODO : Gérer les dépenses ici. S'assurer qu'un update supprimer bien les dépenses qui ont été retirées dans l'activité.
       // console.log(results.rows[0]);
       response.status(200).send(results.rows[0]);
     }
@@ -85,8 +85,7 @@ const deleteActivite = (request, response) => {
   const id_fiche_technique = request.params.id; // Sera utile pour tester le droit d'accès de l'utilisateur
   const id_activite = request.params.id;
 
-  const deleteActiviteQuery =
-  `DELETE FROM fiche.activite WHERE id=$1 RETURNING *`;
+  const deleteActiviteQuery = `DELETE FROM fiche.activite WHERE id=$1 RETURNING *`;
   dbConn.pool.query(deleteActiviteQuery, [id_activite], (error, results) => {
     if (error) {
       throw error;

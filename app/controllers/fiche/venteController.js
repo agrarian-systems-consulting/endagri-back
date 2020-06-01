@@ -5,22 +5,35 @@ const postVente = (request, response) => {
   const id_fiche_technique = request.params.id;
 
   // Destructure les données contenus dans la requête
-  const { id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max } = request.body;
+  const {
+    id_marche,
+    mois,
+    mois_relatif,
+    rendement_min,
+    rendement,
+    rendement_max,
+  } = request.body;
 
   // Construction de la requête pour créer la fiche technique
-  const postVenteQuery =
-  `INSERT INTO fiche.vente(id, id_fiche_technique, id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max) 
+  const postVenteQuery = `INSERT INTO fiche.vente(id, id_fiche_technique, id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max) 
   VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7)`;
 
   // Envoi de la requête
   dbConn.pool.query(
     postVenteQuery,
-    [id_fiche_technique, id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max],
+    [
+      id_fiche_technique,
+      id_marche,
+      mois,
+      mois_relatif,
+      rendement_min,
+      rendement,
+      rendement_max,
+    ],
     (error, results) => {
       if (error) {
         throw error;
       }
-
     }
   );
 
@@ -33,13 +46,27 @@ const putVente = (request, response) => {
   const id_fiche_technique = request.params.id; // Sera utile pour tester le droit d'accès de l'utilisateur
   const id_vente = request.params.id;
 
-  const { id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max } = request.body;
+  const {
+    id_marche,
+    mois,
+    mois_relatif,
+    rendement_min,
+    rendement,
+    rendement_max,
+  } = request.body;
 
-  const putVenteQuery =
-  `UPDATE fiche.vente SET id_marche=$1, mois=$2, mois_relatif=$3, rendement_min=$4, rendement=$5, rendement_max=$6 WHERE id=$7 RETURNING *`; //id_fiche_technique?
+  const putVenteQuery = `UPDATE fiche.vente SET id_marche=$1, mois=$2, mois_relatif=$3, rendement_min=$4, rendement=$5, rendement_max=$6 WHERE id=$7 RETURNING *`; //id_fiche_technique?
   dbConn.pool.query(
     putVenteQuery,
-    [id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max, id_vente],
+    [
+      id_marche,
+      mois,
+      mois_relatif,
+      rendement_min,
+      rendement,
+      rendement_max,
+      id_vente,
+    ],
     (error, results) => {
       if (error) {
         throw error;
@@ -51,15 +78,13 @@ const putVente = (request, response) => {
 };
 
 // SUPPRIME UNE VENTE SWAGGER A MODIFIER
-// @Asc v1 Faire les DELETE en cascade sur dépenses
 // @Asc @Enda v1 ou v2 Utiliser les transactions
 const deleteVente = (request, response) => {
   // Récupère l'id de la vente et de la fiche technique depuis les params de l'URL
   const id_fiche_technique = request.params.id; // Sera utile pour tester le droit d'accès de l'utilisateur
   const id_vente = request.params.id;
 
-  const deleteVenteQuery =
-    'DELETE FROM fiche.vente WHERE id=$1 RETURNING *';
+  const deleteVenteQuery = 'DELETE FROM fiche.vente WHERE id=$1 RETURNING *';
   dbConn.pool.query(deleteVenteQuery, [id_vente], (error, results) => {
     if (error) {
       throw error;

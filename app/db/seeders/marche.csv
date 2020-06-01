@@ -1,0 +1,5 @@
+﻿id;id_produit;type_marche;localisation;commentaire;prix_janvier;prix_fevrier;prix_mars;prix_avril;prix_mai;prix_juin;prix_juillet;prix_aout;prix_septembre;prix_octobre;prix_novembre;prix_decembre
+1;24;Vente usine;Mjez;;;;;;;;170;170;;;;
+2;22;Vente au centre urbain;Mjez;;;;;;;1000;1100;1300;;;;
+3;33;Vente au champs;Mjez;;;;;;;;;;;800;900;
+4;50;Vente usine;Beja;Vente de lait à la coopérative;0,9;0,9;0,9;0,9;0,9;0,9;0,9;0,9;0,9;0,9;0,9;0,9

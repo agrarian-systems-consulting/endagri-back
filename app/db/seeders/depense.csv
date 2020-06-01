@@ -1,0 +1,117 @@
+﻿id;id_activite;libelle;montant
+1;1;Tracteur;120
+2;2;Tracteur;60
+3;3;Tracteur;30
+4;4;Main d'œuvre;45
+5;4;Fumier;100
+6;5;Main d'œuvre;45
+7;5;Engrais;156
+8;6;Main d'œuvre;45
+9;6;Engrais;62
+10;7;Main d'œuvre;300
+11;7;Semences et Plants;1125
+12;8;Main d'œuvre;300
+13;9;Engrais;124
+14;10;Engrais;50
+15;11;Main d'œuvre;100
+16;11;Traitement phytosanitaire;540
+17;12;Engrais;50
+18;13;Engrais;85
+19;14;Engrais;63
+20;15;Engrais;40
+21;16;Main d'œuvre;100
+22;16;Traitement phytosanitaire;750
+23;17;Engrais;125
+24;18;Engrais;25
+25;19;Main d'œuvre;100
+26;19;Traitement phytosanitaire;480
+27;20;Main d'œuvre;45
+28;20;Main d'œuvre;210
+29;22;Main d'œuvre;750
+30;23;Divers;96
+31;24;Tracteur;120
+32;25;Tracteur;60
+33;26;Tracteur;30
+34;27;Main d'œuvre;30
+35;28;Main d'œuvre;30
+36;29;Main d'œuvre;30
+37;30;Main d'œuvre;150
+38;31;Main d'œuvre;300
+39;34;Main d'œuvre;30
+40;35;Tracteur;40
+41;37;Main d'œuvre;30
+42;40;Main d'œuvre;300
+43;41;Main d'œuvre;375
+44;42;Tracteur;60
+45;27;Fumier;125
+46;28;Engrais;78
+47;29;Engrais;93
+48;30;Semences et Plants;10500
+49;32;Engrais;85
+50;33;Engrais;50
+51;34;Traitement phytosanitaire;250
+52;36;Engrais;50
+53;37;Traitement phytosanitaire;500
+54;38;Engrais;100
+55;39;Engrais;250
+56;44;Tracteur;35
+57;46;Main d'œuvre;20
+58;47;Main d'œuvre;40
+59;48;Main d'œuvre;35
+60;51;Tracteur;15
+61;52;Main d'œuvre;30
+62;45;Main d'œuvre;360
+63;46;Engrais;65
+64;47;Engrais;70
+65;49;Engrais;180
+66;50;Engrais;54
+67;51;Engrais;440
+68;54;Tracteur;35
+69;55;Tracteur;35
+70;56;Main d'œuvre;180
+71;57;Main d'œuvre;20
+72;58;Main d'œuvre;20
+73;59;Main d'œuvre;15
+74;57;Engrais;32
+75;58;Engrais;25
+76;75;Paille;60
+77;75;Fourrages verts;60
+78;64;Paille;60
+79;64;Fourrages verts;60
+80;65;Paille;60
+81;65;Fourrages verts;60
+82;66;Paille;60
+83;66;Fourrages verts;60
+84;67;Paille;60
+85;67;Fourrages verts;60
+86;68;Paille;60
+87;68;Fourrages verts;60
+88;69;Paille;60
+89;69;Foin;30
+90;69;Fourrages verts;30
+91;70;Paille;60
+92;70;Foin;30
+93;70;Fourrages verts;30
+94;71;Paille;60
+95;71;Foin;30
+96;71;Fourrages verts;30
+97;72;Paille;60
+98;72;Foin;60
+99;73;Paille;60
+100;73;Foin;60
+101;74;Paille;60
+102;74;Foin;60
+103;76;Concentrés (Boost avant mise-bas 10kg/vache/jour);270
+104;77;Concentrés (Boost avant mise-bas 10kg/vache/jour);270
+105;78;Concentrés (Pic de lactation 8kg/vache/jour);216
+106;79;Concentrés (Pic de lactation 8kg/vache/jour);216
+107;80;Concentrés (Pic de lactation 8kg/vache/jour);216
+108;81;Concentrés (Pic de lactation 8kg/vache/jour);216
+109;82;Concentrés (Pic de lactation 8kg/vache/jour);216
+110;83;Concentrés (Pic de lactation 8kg/vache/jour);216
+111;84;Concentrés (Fin de lactation 6kg/vache/jour);162
+112;85;Concentrés (Fin de lactation 6kg/vache/jour);162
+113;86;Concentrés (Fin de lactation 6kg/vache/jour);162
+114;87;Concentrés (Fin de lactation 6kg/vache/jour);162
+115;88;Concentrés (Tarissement 4kg/vache/jour);108
+116;89;Concentrés (Tarissement 4kg/vache/jour);108
