@@ -199,7 +199,6 @@ const putFicheById = (request, response) => {
     putFicheByIdQuery,
     [libelle_fiche, ini_debut, ini_fin, commentaire, id_fiche],
     (error, results) => {
-
       if (error) {
         throw error;
       }
@@ -210,7 +209,7 @@ const putFicheById = (request, response) => {
 };
 
 // SUPPRIME UNE FICHE
-// @Asc v1 Faire les DELETE en cascade sur activités, ventes et dépenses
+// @Asc v1 Implémenter les DELETE en cascade sur activités, ventes et dépenses dans postgre
 // @Asc @Enda v1 ou v2 Utiliser les transactions
 const deleteFicheById = (request, response) => {
   const id_fiche = request.params.id;
@@ -229,8 +228,6 @@ const deleteFicheById = (request, response) => {
     }
   });
 };
-
-
 
 module.exports = {
   getFiches,

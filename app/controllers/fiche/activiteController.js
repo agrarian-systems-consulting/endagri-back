@@ -78,12 +78,14 @@ const putActivite = (request, response) => {
 };
 
 // SUPPRIME UNE ACTIVITE
-// @Asc v1 Faire les DELETE en cascade sur dépenses
+// @Asc v1 Implémenter les DELETE en cascade sur dépenses dans postgre
 // @Asc @Enda v1 ou v2 Utiliser les transactions
 const deleteActivite = (request, response) => {
-  // Récupère l'id de l'activité et de la fiche technique depuis les params de l'URL
-  const id_fiche_technique = request.params.id; // Sera utile pour tester le droit d'accès de l'utilisateur
-  const id_activite = request.params.id;
+  // Récupère l'id de la fiche technique depuis les params de l'URL
+  const id_fiche_technique = request.params.id; // A utiliser plus tard pour vérifier les droits de l'utilisateur
+
+  // Récupère l'id de l'activité
+  const id_activite = request.params.id_activite;
 
   const deleteActiviteQuery = `DELETE FROM fiche.activite WHERE id=$1 RETURNING *`;
   dbConn.pool.query(deleteActiviteQuery, [id_activite], (error, results) => {
