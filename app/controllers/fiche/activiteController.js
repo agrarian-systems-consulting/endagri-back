@@ -29,7 +29,7 @@ const postActivite = (request, response) => {
       console.log('id_activite = ' + id_activite);
 
       // Ajoute les dépenses
-      AsyncAjouterDepenses = () => {
+      AsyncPutDepenses = () => {
         // La création d'une Promise permet d'attendre que les dépenses soit ajoutées avant de récupérer l'activité avec ses dépenses associées
         // console.log('depenses = ' + JSON.stringify(depenses, true, 2));
 
@@ -62,7 +62,7 @@ const postActivite = (request, response) => {
       };
 
       // Permet d'attendre que les dépenses soit ajoutées avant de récupérer l'activité avec ses dépenses associées
-      AsyncAjouterDepenses().then(() => {
+      AsyncPutDepenses().then(() => {
         // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
         const getActiviteAvecDepensesQuery = `SELECT a.*, json_agg(d.*) depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
 
@@ -87,12 +87,8 @@ const postActivite = (request, response) => {
 };
 
 // MODIFIER UNE ACTIVITE
-// @Asc v1 PROBLEME : JE crois que les requêtes de création de dépenses non pas encore retourné de résultats quand on envoie la réponse. Ce qui fait que la réponse contient une activité avec depenses =[null] dans tous les cas
-// npm run test pour voir le problème, ainsi que plusieurs console.log déjà placé pour traquer le bug.
-// @Asc v1 Gérer le cas ou l'application cliente supprime des dépenses existantes.
-// @Asc @Enda v1 ou v2 Gérer comme il faut le Not Found
-// @Enda @Enda v1 ou v2 Il faudrait ajouter ajouter également les dépenses associées dans la response
-
+// @Asc v1 Important : Gérer le cas ou l'application cliente supprime des dépenses existantes.
+// @Asc @Enda v2 Renvoyer un 404 Not Found si la dépense ou l'activité n'existe pas
 const putActivite = (request, response) => {
   // Récupère l'id de l'activité et de la fiche technique depuis les params de l'URL
   const id_fiche_technique = request.params.id_fiche_technique; // Sera utile pour tester le droit d'accès de l'utilisateur
@@ -116,68 +112,85 @@ const putActivite = (request, response) => {
       // console.log('putActivite 1' + JSON.stringify(results.rows[0], true, 2));
 
       // Mettre à jour les dépenses
-      if (depenses) {
-        // Boucle sur chacune des dépenses
-        depenses.map(({ id, libelle_depense, montant }) => {
-          // Si c'est une nouvelle dépense, la créer, sinon modifier l'existante
-          if (id === undefined) {
-            // Construction de la requête pour créer une dépense
-            const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING *`;
-
-            // Envoi de la requête
-            dbConn.pool.query(
-              postDepenseQuery,
-              [id_activite, libelle_depense, montant],
-              (error, results) => {
-                if (error) {
-                  throw error;
-                }
-                // console.log('putActivite 2' + JSON.stringify(results.rows[0], true, 2));
-              }
-            );
-          } else {
-            // Construction de la requête pour modifier une dépense existante
-            const putDepenseQuery = `UPDATE fiche.depense SET id_activite=$1, libelle=$2, montant=$3 WHERE id=$4 RETURNING *`;
-            // Envoi de la requête
-            dbConn.pool.query(
-              putDepenseQuery,
-              [id_activite, libelle_depense, montant, id],
-              (error, results) => {
-                if (error) {
-                  throw error;
-                }
-
-                // console.log(
-                //   'putActivite 3' + JSON.stringify(results.rows[0], true, 2)
-                // );
-              }
-            );
-          }
-
+      AsyncUpdateDepenses = () => {
+        return new Promise((successCallback, failureCallback) => {
           //TODO : Il faudrait supprimer les dépenses qui ont été supprimés par l'application cliente.
-        });
-      }
 
-      // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
-      const getActiviteAvecDepensesQuery = `SELECT a.*, json_agg(d.*) depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
+          if (depenses) {
+            // Boucle sur chacune des dépenses
+            depenses.map(({ id, libelle_depense, montant }) => {
+              // Si c'est une nouvelle dépense, la créer, sinon modifier l'existante
+              if (id === undefined) {
+                // Construction de la requête pour créer une dépense
+                const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING *`;
 
-      // Envoi de la requête
-      dbConn.pool.query(
-        getActiviteAvecDepensesQuery,
-        [id_activite],
-        (error, results) => {
-          if (error) {
-            throw error;
+                // Envoi de la requête
+                dbConn.pool.query(
+                  postDepenseQuery,
+                  [id_activite, libelle_depense, montant],
+                  (error, results) => {
+                    if (error) {
+                      failureCallback(
+                        'Problème lors de la création des dépenses'
+                      );
+
+                      throw error;
+                    }
+                    // console.log('putActivite 2' + JSON.stringify(results.rows[0], true, 2));
+                  }
+                );
+              } else {
+                // Construction de la requête pour modifier une dépense existante
+                const putDepenseQuery = `UPDATE fiche.depense SET id_activite=$1, libelle=$2, montant=$3 WHERE id=$4 RETURNING *`;
+                // Envoi de la requête
+                dbConn.pool.query(
+                  putDepenseQuery,
+                  [id_activite, libelle_depense, montant, id],
+                  (error, results) => {
+                    if (error) {
+                      failureCallback(
+                        'Problème lors de la mise à jour des dépenses'
+                      );
+
+                      throw error;
+                    }
+
+                    // console.log(
+                    //   'putActivite 3' + JSON.stringify(results.rows[0], true, 2)
+                    // );
+                  }
+                );
+              }
+            });
+          } else {
+            successCallback('Pas de dépenses associées');
           }
+        });
+      };
 
-          // console.log(
-          //   'putActivite 4' + JSON.stringify(results.rows[0], true, 2)
-          // );
+      // Permet d'attendre que les dépenses soit créées, modifiées ou supprimées avant de récupérer l'activité et ses dépenses associées
+      AsyncUpdateDepenses().then(() => {
+        // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
+        const getActiviteAvecDepensesQuery = `SELECT a.*, json_agg(d.*) depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
 
-          // Envoi de la réponse
-          response.status(200).send(results.rows[0]);
-        }
-      );
+        // Envoi de la requête
+        dbConn.pool.query(
+          getActiviteAvecDepensesQuery,
+          [id_activite],
+          (error, results) => {
+            if (error) {
+              throw error;
+            }
+
+            // console.log(
+            //   'putActivite 4' + JSON.stringify(results.rows[0], true, 2)
+            // );
+
+            // Envoi de la réponse
+            response.status(200).send(results.rows[0]);
+          }
+        );
+      });
     }
   );
 };
