@@ -1,12 +1,12 @@
 DROP DATABASE IF EXISTS endagri;
 
-CREATE DATABASE endagri OWNER adminendagri;
+CREATE DATABASE endagri OWNER 'adminendagri';
 
 ------------------------------------------------------------------
 
 -- Schéma Fiche
 
-CREATE SCHEMA IF NOT EXISTS fiche AUTHORIZATION adminendagri;
+CREATE SCHEMA IF NOT EXISTS fiche AUTHORIZATION 'adminendagri';
 
 -- Table: fiche.fiche_technique
 
@@ -26,7 +26,7 @@ CREATE TABLE fiche.fiche_technique -- Table des fiches techniques
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE fiche.fiche_technique OWNER TO adminendagri;
+ALTER TABLE fiche.fiche_technique OWNER TO 'adminendagri';
 
 CREATE INDEX fiche_technique_id_idx ON fiche.fiche_technique(id);
 
@@ -47,7 +47,7 @@ CREATE TABLE fiche.activite -- Table des Activités
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE fiche.activite OWNER TO adminendagri;
+ALTER TABLE fiche.activite OWNER TO 'adminendagri';
 
 CREATE INDEX activite_id_idx ON fiche.activite(id);
 
@@ -66,7 +66,7 @@ CREATE TABLE fiche.depense -- Table des Dépenses
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE fiche.depense OWNER TO adminendagri;
+ALTER TABLE fiche.depense OWNER TO 'adminendagri';
 
 CREATE INDEX depense_id_idx ON fiche.depense(id);
 
@@ -89,7 +89,7 @@ CREATE TABLE fiche.vente -- Table des Ventes
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE fiche.vente OWNER TO adminendagri;
+ALTER TABLE fiche.vente OWNER TO 'adminendagri';
 
 CREATE INDEX vente_id_idx ON fiche.vente(id);
 
@@ -108,7 +108,7 @@ CREATE TABLE fiche.produit -- Table des produits
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE fiche.produit OWNER TO adminendagri;
+ALTER TABLE fiche.produit OWNER TO 'adminendagri';
 
 CREATE INDEX produit_id_idx ON fiche.produit(id);
 
@@ -126,7 +126,7 @@ CREATE TABLE fiche.production -- Table des productions
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE fiche.production OWNER TO adminendagri;
+ALTER TABLE fiche.production OWNER TO 'adminendagri';
 
 CREATE INDEX production_id_idx ON fiche.production(id);
 
@@ -158,7 +158,7 @@ CREATE TABLE fiche.marche -- Table des marches
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE fiche.marche OWNER TO adminendagri;
+ALTER TABLE fiche.marche OWNER TO 'adminendagri';
 
 CREATE INDEX marche_id_idx ON fiche.marche(id);
 
@@ -166,7 +166,7 @@ CREATE INDEX marche_id_idx ON fiche.marche(id);
 
 -- Schéma analyse_fiche
 
-CREATE SCHEMA IF NOT EXISTS analyse_fiche AUTHORIZATION adminendagri;
+CREATE SCHEMA IF NOT EXISTS analyse_fiche AUTHORIZATION 'adminendagri';
 
 -- Table: analyse_fiche.fiche_technique_libre
 
@@ -189,7 +189,7 @@ CREATE TABLE analyse_fiche.fiche_technique_libre -- Table des fiche_technique_li
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE analyse_fiche.fiche_technique_libre OWNER TO adminendagri;
+ALTER TABLE analyse_fiche.fiche_technique_libre OWNER TO 'adminendagri';
 
 CREATE INDEX fiche_technique_libre_id_idx ON analyse_fiche.fiche_technique_libre(id);
 
@@ -209,7 +209,7 @@ CREATE TABLE analyse_fiche.depense_exploitation -- Table des depense_exploitatio
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE analyse_fiche.depense_exploitation OWNER TO adminendagri;
+ALTER TABLE analyse_fiche.depense_exploitation OWNER TO 'adminendagri';
 
 CREATE INDEX depense_exploitation_id_idx ON analyse_fiche.depense_exploitation(id);
 
@@ -230,7 +230,7 @@ CREATE TABLE analyse_fiche.intraconsommation -- Table des intraconsommations
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE analyse_fiche.intraconsommation OWNER TO adminendagri;
+ALTER TABLE analyse_fiche.intraconsommation OWNER TO 'adminendagri';
 
 CREATE INDEX intraconsommation_id_idx ON analyse_fiche.intraconsommation(id);
 
@@ -249,7 +249,7 @@ CREATE TABLE analyse_fiche.client -- Table des clients
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE analyse_fiche.client OWNER TO adminendagri;
+ALTER TABLE analyse_fiche.client OWNER TO 'adminendagri';
 
 CREATE INDEX client_id_idx ON analyse_fiche.client(id);
 
@@ -268,7 +268,7 @@ CREATE TABLE analyse_fiche.analyse_tresorie -- Table des analyse_tresories
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE analyse_fiche.analyse_tresorie OWNER TO adminendagri;
+ALTER TABLE analyse_fiche.analyse_tresorie OWNER TO 'adminendagri';
 
 CREATE INDEX analyse_tresorie_id_idx ON analyse_fiche.analyse_tresorie(id);
 
