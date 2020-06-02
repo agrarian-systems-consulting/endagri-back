@@ -140,18 +140,18 @@ CREATE TABLE fiche.marche -- Table des marches
   id_produit bigint NOT NULL, --
   type_marche character varying(255), -- 
   localisation character varying(500), -- 
-  prix_janvier numeric(15,6), --  
-  prix_fevrier numeric(15,6), --  
-  prix_mars numeric(15,6), --  
-  prix_avril numeric(15,6), --  
-  prix_mai numeric(15,6), --  
-  prix_juin numeric(15,6), --  
-  prix_juillet numeric(15,6), --  
-  prix_aout numeric(15,6), --  
-  prix_septembre numeric(15,6), --  
-  prix_octobre numeric(15,6), --  
-  prix_novembre numeric(15,6), --  
-  prix_decembre numeric(15,6), --  
+  prix_january numeric(15,6), --  
+  prix_february numeric(15,6), --  
+  prix_march numeric(15,6), --  
+  prix_abril numeric(15,6), --  
+  prix_may numeric(15,6), --  
+  prix_june numeric(15,6), --  
+  prix_july numeric(15,6), --  
+  prix_august numeric(15,6), --  
+  prix_september numeric(15,6), --  
+  prix_october numeric(15,6), --  
+  prix_november numeric(15,6), --  
+  prix_december numeric(15,6), --  
   commentaire character varying DEFAULT NULL, --  
   CONSTRAINT marche_pkey PRIMARY KEY (id)
 )
