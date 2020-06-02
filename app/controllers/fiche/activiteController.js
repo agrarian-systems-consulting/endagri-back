@@ -1,8 +1,6 @@
 const dbConn = require('../../db/pool');
 
 // CREER UNE NOUVELLE ACTIVITE
-// @Asc v1 PROBLEME : JE crois que les requêtes de création de dépenses non pas encore retourné de résultats quand on envoie la réponse. Ce qui fait que la réponse contient une activité avec depenses =[null] dans tous les cas
-// npm run test pour voir le problème, ainsi que plusieurs console.log déjà placé pour traquer le bug.
 // @Enda v2 : Gérer id_utilisateur avec la table User
 const postActivite = (request, response) => {
   // Récupère l'id de la fiche technique depuis les params
@@ -31,48 +29,59 @@ const postActivite = (request, response) => {
       console.log('id_activite = ' + id_activite);
 
       // Ajoute les dépenses
-      // console.log('depenses = ' + JSON.stringify(depenses, true, 2));
-      if (depenses) {
-        depenses.map(({ libelle_depense, montant }) => {
-          // Construction de la requête pour créer une dépense
-          const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING *`;
+      AsyncAjouterDepenses = () => {
+        // La création d'une Promise permet d'attendre que les dépenses soit ajoutées avant de récupérer l'activité avec ses dépenses associées
+        // console.log('depenses = ' + JSON.stringify(depenses, true, 2));
 
-          // Envoi de la requête
-          dbConn.pool.query(
-            postDepenseQuery,
-            [id_activite, libelle_depense, montant],
-            (error, results) => {
-              if (error) {
-                throw error;
-              }
+        return new Promise((successCallback, failureCallback) => {
+          if (depenses) {
+            depenses.map(({ libelle_depense, montant }) => {
+              // Construction de la requête pour créer une dépense
+              const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING *`;
 
-              // console.log(
-              //   'POST activite 2 : ' + JSON.stringify(results.rows, true, 2)
-              // );
-            }
-          );
-        });
-      }
-      // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
-      const getActiviteAvecDepensesQuery = `SELECT a.*, json_agg(d.*) depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
+              // Envoi de la requête
+              dbConn.pool.query(
+                postDepenseQuery,
+                [id_activite, libelle_depense, montant],
+                (error, results) => {
+                  // console.log('POST activite 2 : ' + JSON.stringify(results.rows, true, 2));
+                  if (error) {
+                    failureCallback('Problème lors de l’ajout des dépenses');
 
-      // Envoi de la requête
-      dbConn.pool.query(
-        getActiviteAvecDepensesQuery,
-        [id_activite],
-        (error, results) => {
-          if (error) {
-            throw error;
+                    throw error;
+                  }
+
+                  successCallback('Dépenses ajoutées');
+                }
+              );
+            });
+          } else {
+            successCallback('Pas de dépenses associées');
           }
+        });
+      };
 
-          // console.log(
-          //   'POST activite 3 : ' + JSON.stringify(results.rows, true, 2)
-          // );
+      // Permet d'attendre que les dépenses soit ajoutées avant de récupérer l'activité avec ses dépenses associées
+      AsyncAjouterDepenses().then(() => {
+        // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
+        const getActiviteAvecDepensesQuery = `SELECT a.*, json_agg(d.*) depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
 
-          // Envoi de la réponse
-          response.status(201).send(results.rows[0]);
-        }
-      );
+        // Envoi de la requête
+        dbConn.pool.query(
+          getActiviteAvecDepensesQuery,
+          [id_activite],
+          (error, results) => {
+            if (error) {
+              throw error;
+            }
+
+            // console.log('POST activite 3 : ' + JSON.stringify(results.rows, true, 2));
+
+            // Envoi de la réponse
+            response.status(201).send(results.rows[0]);
+          }
+        );
+      });
     }
   );
 };
