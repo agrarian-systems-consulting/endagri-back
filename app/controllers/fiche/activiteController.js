@@ -175,7 +175,6 @@ const putActivite = (request, response) => {
 
 // SUPPRIME UNE ACTIVITE
 // @Asc v1 Implémenter les DELETE en cascade sur dépenses dans postgre
-// @Asc @Enda v1 ou v2 Utiliser les transactions
 const deleteActivite = (request, response) => {
   // Récupère l'id de la fiche technique depuis les params de l'URL
   const id_fiche_technique = request.params.id; // A utiliser plus tard pour vérifier les droits de l'utilisateur

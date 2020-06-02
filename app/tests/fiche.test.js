@@ -26,6 +26,10 @@ test('Doit retourner toutes les fiches techniques', (done) => {
         res.body.length,
         'Il y au moins 4 fiches techniques dans la base de données'
       ).toBeGreaterThan(3);
+      expect(
+        res.body[0].libelle_production,
+        'Le nom de la production doit être récupéré avec le contenu de la fiche technique grâce au JOIN dans le SQL'
+      ).toBeDefined();
       done();
     });
 });

@@ -2,7 +2,6 @@ const dbConn = require('../../db/pool');
 
 // RECUPERE LA LISTE DES FICHES
 // TODO :
-// @Asc v1 Renvoyer le libelle de la production en plus de l'id_production
 // @Asc v1 Eventuellement optimiser l'écriture de la fonction avec ou sans le paramètre optionnel id_utilisateur
 // @Asc v1 ou v2 Ajouter attribut created ADD COLUMN created SET DEFAULT now()
 // @Asc v1 ou v2 Ajouter attribut modified ADD COLUMN modified SET DEFAULT now() avec mise à jour lors d'un PUT
@@ -14,7 +13,7 @@ const getFiches = (request, response) => {
   if (id_utilisateur !== undefined) {
     // Construction de la requête pour récupérer la liste des fiches techniques associées à l'id_utilisateur
     const getFichesQuery =
-      'SELECT id,id_production,id_utilisateur,libelle FROM fiche.fiche_technique WHERE id_utilisateur=$1 ORDER BY id ASC';
+      'SELECT f.id, f.id_production, f.id_utilisateur, f.libelle, p.libelle as libelle_production FROM fiche.fiche_technique f LEFT JOIN fiche.production p ON f.id_production = p.id  WHERE f.id_utilisateur=$1 ORDER BY f.id ASC';
 
     // Envoi de la requête
     dbConn.pool.query(getFichesQuery, [id_utilisateur], (error, results) => {
@@ -28,7 +27,7 @@ const getFiches = (request, response) => {
   } else {
     // Construction de la requête pour récupérer la liste des fiches techniques associées à l'id_utilisateur
     const getFichesQuery =
-      'SELECT id,id_production,id_utilisateur,libelle FROM fiche.fiche_technique ORDER BY id ASC';
+      'SELECT f.id, f.id_production, f.id_utilisateur, f.libelle, p.libelle as libelle_production FROM fiche.fiche_technique f LEFT JOIN fiche.production p ON f.id_production = p.id ORDER BY f.id ASC';
 
     // Envoi de la requête
     dbConn.pool.query(getFichesQuery, (error, results) => {
