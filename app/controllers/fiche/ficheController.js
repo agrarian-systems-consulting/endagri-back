@@ -1,10 +1,8 @@
 const dbConn = require('../../db/pool');
 
 // RECUPERE LA LISTE DES FICHES
-// TODO :
-// @Asc v1 Eventuellement optimiser l'écriture de la fonction avec ou sans le paramètre optionnel id_utilisateur
-// @Asc v1 ou v2 Ajouter attribut created ADD COLUMN created SET DEFAULT now()
-// @Asc v1 ou v2 Ajouter attribut modified ADD COLUMN modified SET DEFAULT now() avec mise à jour lors d'un PUT
+// @Asc  v1 Ajouter attribut created ADD COLUMN created SET DEFAULT now() et trier par ORDER BY DESC de cette date de création
+// @Asc @ENDA v2 Optimiser l'écriture de la fonction avec/sans le paramètre optionnel id_utilisateur plutôt qu'un if (avec quelquechose du genre CASE $1 != undefined WHERE f.id_utilisateur=$1 THEN true END dans la requête ?)
 // @ENDA v2 Renvoyer le fullname de l'utilisateur quand la table User sera implémentée
 const getFiches = (request, response) => {
   // Récupère le paramètre optionnel id_utilisateur pour filtrer les fiches techniques
@@ -42,8 +40,9 @@ const getFiches = (request, response) => {
 };
 
 // CREER UNE NOUVELLE FICHE
-// @Asc v2 : Utiliser les transactions ?
-// @Enda v2 : Gérer id_utilisateur avec la table User
+// @Asc v1 Faire en sorte que la response ne soit renvoyée que lorsque les query pour créer les ventes et activités sont resolved (à voir si on garde dépenses et activités dans ce endpoint quand même)
+// @Asc v1 Supprimer id_utilisateur si pose problème tant que la table User n'existe pas
+// @Enda v2 Gérer id_utilisateur avec la table User
 const postFiche = (request, response) => {
   // Destructure les données contenus dans la requête
   const {
@@ -162,7 +161,7 @@ const postFiche = (request, response) => {
 
 // RECUPERE LE CONTENU D'UNE FICHE
 // @Asc v1 Créer vue postgre
-// @Asc v1 Vérifier qu'à chaque niveau on revient bien l'id (activité, dépense, vente)
+// @Asc v1 Renvoyer l'id à chaque niveau (activité, dépense, vente)
 // @Asc @Enda v1 Créer le test associé
 const getFicheById = (request, response) => {
   // Récupère l'id de la fiche technique depuis l'URL
@@ -187,8 +186,7 @@ const getFicheById = (request, response) => {
 };
 
 // MODIFIER UNE FICHE
-// @Asc v1 ou v2 Update modified
-// @Asc v1 ou v2 Gérer comme il faut le Not Found
+// @Asc @enda v2 Renvoyer une réponse 404 si la fiche n'existe pas
 const putFicheById = (request, response) => {
   const id_fiche = request.params.id;
   const { libelle_fiche, ini_debut, ini_fin, commentaire } = request.body;
@@ -202,27 +200,38 @@ const putFicheById = (request, response) => {
         throw error;
       }
       // console.log(results.rows[0]);
-      response.status(200).send(results.rows[0]);
+
+      if (results.rows[0].id !== undefined) {
+        // console.log('Deleted : ' + JSON.stringify(results.rows[0], true, 2));
+        response.status(200).send(results.rows[0]);
+      } else {
+        response.sendStatus(404);
+      }
     }
   );
 };
 
 // SUPPRIME UNE FICHE
 // @Asc v1 Implémenter les DELETE en cascade sur activités, ventes et dépenses dans postgre
-// @Asc @Enda v1 ou v2 Utiliser les transactions
 const deleteFicheById = (request, response) => {
+  //Récupère l'id de la fiche depuis les params de l'URL
   const id_fiche = request.params.id;
+
+  // Construction de la requête pour supprimer une fiche technique
   const deleteFicheByIdQuery =
     'DELETE FROM fiche.fiche_technique WHERE id=$1 RETURNING *';
+
+  // Envoi de la requête
   dbConn.pool.query(deleteFicheByIdQuery, [id_fiche], (error, results) => {
+    // console.log('deleteFicheById results = ' + JSON.stringify(results.rows[0], true, 2));
     if (error) {
       throw error;
     }
-    // console.log(results.rows);
-    if (results.rows[0] !== undefined) {
-      // console.log('Deleted : ' + JSON.stringify(results.rows[0], true, 2));
-      response.sendStatus(204);
+    if (results.rows[0].id !== undefined) {
+      // Si la fiche a bien été supprimée, renvoie une réponse 204 avec le contenu de la fiche supprimée
+      response.status(204).send(results.rows[0]);
     } else {
+      // Si la fiche n'existe pas, renvoie un 404 Not Found
       response.sendStatus(404);
     }
   });
