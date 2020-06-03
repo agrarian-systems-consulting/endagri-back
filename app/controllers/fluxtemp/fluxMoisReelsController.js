@@ -25,6 +25,37 @@ const getFluxMoisReelsById = (request, response) => {
   });
 }
 
+//Temp
+const getVente = (request, response) => {
+  // Récupère l'id de la vente et de la fiche technique depuis les params de l'URL
+  //const id_fiche_technique = request.params.id; // Sera utile pour tester le droit d'accès de l'utilisateur
+  const id_vente = request.params.id;
+
+  const getVenteQuery = `SELECT 
+  v.id, v.id_fiche_technique, 
+  v.id_marche, v.mois_relatif, v.rendement, 
+  '2020-03-02'::timestamp + interval '1 month' * v.mois_relatif::integer as mois_reel,
+  CONCAT('prix_',to_char('2020-03-02'::timestamp + interval '1 month' * v.mois_relatif::integer,'month')) col_prix_marche,
+  CONCAT((SELECT p.libelle FROM fiche.produit p WHERE id=m.id_produit ), 
+      ' ', m.type_marche, ' ', m.localisation) libelle_marche
+  FROM fiche.vente v JOIN fiche.marche m ON v.id_marche = m.id WHERE v.id=$1`;
+  dbConn.pool.query(getVenteQuery, [id_vente], (error, results) => {
+    if (error) {
+      throw error;
+    }
+    //const prix_marche = results.rows[0].col_prix_marche;
+    const prix_marche = results.rows[0].col_prix_marche;
+    const getTestPrix = `SELECT ${prix_marche} FROM fiche.marche WHERE id=$1`;
+    dbConn.pool.query(getTestPrix, [id_vente], (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).send(results.rows);
+    });
+  });
+};
+
 module.exports = {
   getFluxMoisReelsById,
+  getVente
 }
