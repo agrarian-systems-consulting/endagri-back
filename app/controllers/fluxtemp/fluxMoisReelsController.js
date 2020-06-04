@@ -10,7 +10,11 @@ const getFluxMoisReelsById = (request, response) => {
   const date_ini = new Date('2020-06-04');
 
   const getFluxBrutsByIdQuery = `WITH subquery AS(
-    SELECT act.mois_relatif,act.mois,act.id_fiche_technique,$2::timestamp + interval '1 month' * act.mois_relatif::integer as mois_reel,
+    SELECT act.mois_relatif,act.mois,act.id_fiche_technique,
+    CASE
+      WHEN act.mois IS NOT NULL THEN $2::timestamp + interval '1 month' * act.mois::integer
+      ELSE $2::timestamp + interval '1 month' * act.mois_relatif::integer
+    END as mois_reel,
 	d.libelle libelle_depense,d.montant,
 	f.libelle libelle_production,f.ini_debut,f.ini_fin,
    (SELECT type_production FROM fiche.production WHERE id=f.id_production) type_production, $2::timestamp as date_ini
@@ -26,7 +30,10 @@ const getFluxMoisReelsById = (request, response) => {
     const depense = results.rows;
 
     const getVenteFicheQuery = `SELECT 
-    CONCAT('prix_',to_char($2::timestamp + interval '1 month' * v.mois_relatif::integer,'month')) col_prix_marche
+    CASE
+      WHEN v.mois IS NOT NULL THEN CONCAT('prix_',TO_CHAR($2::timestamp + interval '1 month' * v.mois::integer,'month'))
+      ELSE CONCAT('prix_',TO_CHAR($2::timestamp + interval '1 month' * v.mois_relatif::integer,'month'))
+    END as col_prix_marche
     FROM fiche.vente v JOIN fiche.marche m ON v.id_marche = m.id WHERE v.id_fiche_technique=$1`;
     dbConn.pool.query(getVenteFicheQuery, [id_fiche,date_ini], (error, results) => {
       if (error) {
@@ -35,7 +42,11 @@ const getFluxMoisReelsById = (request, response) => {
       const prix_marche = results.rows[0].col_prix_marche;
       const getVentePrixByFiche = `SELECT JSON_AGG(JSON_BUILD_OBJECT('prix_marche',m.${prix_marche},
       'id_marche',v.id_marche,'mois_relatif',v.mois_relatif,'rendement',v.rendement, 
-      'mois_reel',$2::timestamp + interval '1 month' * v.mois_relatif::integer,
+      'mois_reel',
+      CASE
+      WHEN v.mois IS NOT NULL THEN $2::timestamp + interval '1 month' * v.mois::integer
+      ELSE $2::timestamp + interval '1 month' * v.mois_relatif::integer
+      END,
       'libelle_marche',CONCAT((SELECT p.libelle FROM fiche.produit p WHERE id=m.id_produit ), 
           ' ', m.type_marche, ' ', m.localisation))) ventes
       FROM fiche.vente v JOIN fiche.marche m ON v.id_marche = m.id
