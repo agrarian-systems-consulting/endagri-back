@@ -11,8 +11,8 @@ const getFluxBrutsById = (request, response) => {
    FROM fiche.activite act LEFT JOIN fiche.depense d ON act.id=d.id_activite 
      JOIN fiche.fiche_technique f ON act.id_fiche_technique=f.id WHERE f.id=$1
    )
-   SELECT libelle_production,ini_debut,ini_fin,type_production,JSON_AGG(JSON_BUILD_OBJECT('libelle_depense',libelle_depense,'mois',mois,'mois relatif',mois_relatif,'montant',montant)) depenses
-   FROM subquery GROUP BY libelle_production,ini_debut,ini_fin,type_production`;
+   SELECT id_fiche_technique,libelle_production,ini_debut,ini_fin,type_production,JSON_AGG(JSON_BUILD_OBJECT('libelle_depense',libelle_depense,'mois',mois,'mois_relatif',mois_relatif,'montant_depense',montant)) depenses
+   FROM subquery GROUP BY id_fiche_technique,libelle_production,ini_debut,ini_fin,type_production`;
   dbConn.pool.query(getFluxBrutsByIdQuery, [id_fiche], (error, results) => {
     if (error) {
       throw error

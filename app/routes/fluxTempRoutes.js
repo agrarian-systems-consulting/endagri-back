@@ -5,6 +5,7 @@ const fluxMoisReelsController = require('../controllers/fluxtemp/fluxMoisReelsCo
 
 router.get('/fiche/:id/fluxbruts', fluxBrutsController.getFluxBrutsById);
 router.get('/fiche/:id/flux_mois_reels', fluxMoisReelsController.getFluxMoisReelsById);
-router.get('/vente/:id', fluxMoisReelsController.getVente);
+router.get('/ventefiche/:id', fluxMoisReelsController.getVenteByIdFiche);
+router.get('/vente/:id', fluxMoisReelsController.getVenteById);
 
 module.exports = router;
