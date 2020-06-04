@@ -13,7 +13,7 @@ const getFluxMoisReelsByIdByMois = (request, response) => {
   CASE
     WHEN act.mois IS NOT NULL THEN $2::timestamp + interval '1 month' * act.mois::integer
     ELSE $2::timestamp + interval '1 month' * act.mois_relatif::integer
-  END as mois_reel,SUM(d.montant) total_depense
+  END as mois_reel,SUM(d.montant) total_depense,'...' as total_vente,'...' as solde
  FROM fiche.activite act LEFT JOIN fiche.depense d ON act.id=d.id_activite 
    JOIN fiche.fiche_technique f ON act.id_fiche_technique=f.id WHERE f.id=$1 GROUP BY mois_reel,act.id_fiche_technique ORDER BY mois_reel`;
   dbConn.pool.query(getDepenseMoisReelsByIdQuery, [id_fiche,date_ini], (error, results) => {
@@ -47,7 +47,10 @@ const getFluxMoisReelsByIdByMois = (request, response) => {
           throw error
         }
         const venteMois = results.rows;
-        let resultjson = _.merge(_.keyBy(depenseMois, 'mois_reel'), _.keyBy(venteMois, 'mois_reel')); 
+        let resultjson = _.values(_.merge(_.keyBy(depenseMois, 'mois_reel'), _.keyBy(venteMois, 'mois_reel')));         
+        const solde = resultjson.map(key=>{
+          key['solde'] = (key['total_vente']-key['total_depense']);
+        });
         response.status(200).send(resultjson);
       });
     });
