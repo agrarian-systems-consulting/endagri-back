@@ -1,10 +1,9 @@
 const dbConn = require('../../db/pool')
+const _ = require('lodash');
 
 // Modif Swagger
 // ajouter param date_ini (Format à définir : 2020-06-03 par exemple) dans le GET?
 const getFluxMoisReelsById = (request, response) => {
-
-  const arr = [];
 
   const id_fiche = request.params.id;
   //const date_ini = request.params.date_ini;
@@ -25,7 +24,6 @@ const getFluxMoisReelsById = (request, response) => {
       throw error
     }
     const depense = results.rows;
-    arr.push(depense);
 
     const getVenteFicheQuery = `SELECT 
     CONCAT('prix_',to_char($2::timestamp + interval '1 month' * v.mois_relatif::integer,'month')) col_prix_marche
@@ -34,7 +32,6 @@ const getFluxMoisReelsById = (request, response) => {
       if (error) {
         throw error;
       }
-      //const prix_marche = results.rows[0].col_prix_marche;
       const prix_marche = results.rows[0].col_prix_marche;
       const getVentePrixByFiche = `SELECT JSON_AGG(JSON_BUILD_OBJECT('prix_marche',m.${prix_marche},
       'id_marche',v.id_marche,'mois_relatif',v.mois_relatif,'rendement',v.rendement, 
@@ -48,8 +45,8 @@ const getFluxMoisReelsById = (request, response) => {
           throw error;
         }
         const vente = results.rows;
-        arr.push(vente);
-        response.status(200).send(arr);
+        let resultjson = _.merge(depense,vente);
+        response.status(200).send(resultjson);
       });
     });
     
