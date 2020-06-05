@@ -25,7 +25,8 @@ const getFiches = (request, response) => {
   } else {
     // Construction de la requête pour récupérer la liste des fiches techniques associées à l'id_utilisateur
     const getFichesQuery =
-      'SELECT f.id, f.id_production, f.id_utilisateur, f.libelle, p.libelle as libelle_production FROM fiche.fiche_technique f LEFT JOIN fiche.production p ON f.id_production = p.id ORDER BY f.id ASC';
+    `SELECT f.id, f.id_production, f.id_utilisateur, f.libelle, p.libelle as libelle_production FROM fiche.fiche_technique f 
+    JOIN fiche.production p ON f.id_production = p.id ORDER BY f.id ASC`;
 
     // Envoi de la requête
     dbConn.pool.query(getFichesQuery, (error, results) => {
@@ -57,7 +58,7 @@ const postFiche = (request, response) => {
 
   // Construction de la requête pour créer la fiche technique
   const postFicheQuery =
-    'INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin) VALUES (DEFAULT, $1, $2, $3, $4, $5) RETURNING id';
+  `INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin) VALUES (DEFAULT, $1, $2, $3, $4, $5) RETURNING id`;
 
   // Envoi de la requête
   dbConn.pool.query(
@@ -84,7 +85,8 @@ const postFiche = (request, response) => {
           }) => {
             // Construction de la requête pour créer une vente
             const postVenteQuery =
-              'INSERT INTO fiche.vente(id, id_fiche_technique, id_marche, rendement_min, rendement, rendement_max, mois_relatif, mois) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7) RETURNING id';
+            `INSERT INTO fiche.vente(id, id_fiche_technique, id_marche, rendement_min, rendement, rendement_max, mois_relatif, mois) 
+            VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7) RETURNING id`;
 
             // Envoi de la requête
             dbConn.pool.query(
@@ -113,7 +115,7 @@ const postFiche = (request, response) => {
         activites.map(({ libelle_activite, mois_relatif, mois, depenses }) => {
           // Construction de la requête pour créer une activité
           const postActiviteQuery =
-            'INSERT INTO fiche.activite(id, id_fiche_technique, libelle, mois_relatif, mois) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING id';
+          `INSERT INTO fiche.activite(id, id_fiche_technique, libelle, mois_relatif, mois) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING id`;
 
           // Envoi de la requête
           dbConn.pool.query(
@@ -131,7 +133,7 @@ const postFiche = (request, response) => {
                 depenses.map(({ libelle_depense, montant }) => {
                   // Construction de la requête pour créer une dépense
                   const postDepenseQuery =
-                    'INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING id';
+                  `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING id`;
 
                   // Envoi de la requête
                   dbConn.pool.query(
@@ -191,7 +193,7 @@ const putFicheById = (request, response) => {
   const id_fiche = request.params.id;
   const { libelle_fiche, ini_debut, ini_fin, commentaire } = request.body;
   const putFicheByIdQuery =
-    'UPDATE fiche.fiche_technique SET libelle=$1, ini_debut=$2, ini_fin=$3, commentaire=$4 WHERE id=$5 RETURNING *';
+  `UPDATE fiche.fiche_technique SET libelle=$1, ini_debut=$2, ini_fin=$3, commentaire=$4 WHERE id=$5 RETURNING *`;
   dbConn.pool.query(
     putFicheByIdQuery,
     [libelle_fiche, ini_debut, ini_fin, commentaire, id_fiche],
@@ -219,7 +221,7 @@ const deleteFicheById = (request, response) => {
 
   // Construction de la requête pour supprimer une fiche technique
   const deleteFicheByIdQuery =
-    'DELETE FROM fiche.fiche_technique WHERE id=$1 RETURNING *';
+  `DELETE FROM fiche.fiche_technique WHERE id=$1 RETURNING *`;
 
   // Envoi de la requête
   dbConn.pool.query(deleteFicheByIdQuery, [id_fiche], (error, results) => {
