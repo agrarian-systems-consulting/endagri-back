@@ -9,7 +9,7 @@ const getFluxMoisReelsByIdByMois = (request, response) => {
   //const date_ini = request.params.date_ini;
   const date_ini = new Date('2020-06-04');
 
-  const getInfoFiche = `SELECT f.id,f.libelle libelle_fiche,f.ini_debut,'...' date_ini,p.libelle libelle_production FROM fiche.fiche_technique f JOIN fiche.production p ON
+  const getInfoFiche = `SELECT f.id,f.libelle libelle_fiche,f.ini_debut,'...' date_ini,p.libelle type_production FROM fiche.fiche_technique f JOIN fiche.production p ON
   f.id_production=p.id WHERE f.id=$1`;
   dbConn.pool.query(getInfoFiche, [id_fiche], (error, results) => {
     if (error) {
@@ -22,7 +22,7 @@ const getFluxMoisReelsByIdByMois = (request, response) => {
     CASE
       WHEN act.mois IS NOT NULL THEN $2::timestamp + interval '1 month' * act.mois::integer
       ELSE $2::timestamp + interval '1 month' * act.mois_relatif::integer
-    END as mois_reel,SUM(d.montant) total_depense,'...' as total_vente,'...' as solde, '...' as solde_cumule,
+    END as mois_reel,SUM(d.montant) total_depenses,'...' as total_ventes,'...' as solde, '...' as solde_cumule,
     JSON_AGG(JSON_BUILD_OBJECT('libelle_depense',d.libelle,'montant_depense',d.montant)) depenses
    FROM fiche.activite act JOIN fiche.depense d ON act.id=d.id_activite 
      JOIN fiche.fiche_technique f ON act.id_fiche_technique=f.id WHERE f.id=$1 GROUP BY mois_reel,act.id_fiche_technique ORDER BY mois_reel`;
@@ -44,7 +44,7 @@ const getFluxMoisReelsByIdByMois = (request, response) => {
         }
         const prix_marche = results.rows[0].col_prix_marche;
   
-        const getVenteMoisReelsByIdQuery = `SELECT SUM(m.${prix_marche}*v.rendement) total_vente,
+        const getVenteMoisReelsByIdQuery = `SELECT SUM(m.${prix_marche}*v.rendement) total_ventes,
         CASE
         WHEN v.mois IS NOT NULL THEN $2::timestamp + interval '1 month' * v.mois::integer
         ELSE $2::timestamp + interval '1 month' * v.mois_relatif::integer
@@ -61,7 +61,7 @@ const getFluxMoisReelsByIdByMois = (request, response) => {
           const venteMois = results.rows;
           let ventedepense = _.values(_.merge(_.keyBy(depenseMois, 'mois_reel'), _.keyBy(venteMois, 'mois_reel')));         
           const solde = ventedepense.map(key=>{
-            key['solde'] = (key['total_vente']-key['total_depense']);
+            key['solde'] = (key['total_ventes']-key['total_depenses']);
           });
           let resultjson = _.extend({},infoFiche,{'flux':[ventedepense]});
           response.status(200).send(resultjson);
