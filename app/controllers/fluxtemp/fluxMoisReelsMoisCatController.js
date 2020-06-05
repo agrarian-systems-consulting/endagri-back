@@ -18,14 +18,21 @@ const getFluxMoisReelsByIdByMois = (request, response) => {
     results.rows[0].date_ini = date_ini;
     const infoFiche = results.rows;
 
-    const getDepenseMoisReelsByIdQuery = `SELECT 
-    CASE
-      WHEN act.mois IS NOT NULL THEN $2::timestamp + interval '1 month' * act.mois::integer
-      ELSE $2::timestamp + interval '1 month' * act.mois_relatif::integer
-    END as mois_reel,SUM(d.montant) total_depense,'...' as total_vente,'...' as solde, '...' as solde_cumule,
-    JSON_AGG(JSON_BUILD_OBJECT('libelle_depense',d.libelle,'montant_depense',d.montant)) depenses
-   FROM fiche.activite act JOIN fiche.depense d ON act.id=d.id_activite 
-     JOIN fiche.fiche_technique f ON act.id_fiche_technique=f.id WHERE f.id=$1 GROUP BY mois_reel,act.id_fiche_technique ORDER BY mois_reel`;
+    const getDepenseMoisReelsByIdQuery = `WITH subquery AS(
+      SELECT
+      CASE
+        WHEN act.mois IS NOT NULL THEN $2::timestamp + interval '1 month' * act.mois::integer
+        ELSE $2::timestamp + interval '1 month' * act.mois_relatif::integer
+      END as mois_reel,
+      SUM(d.montant) total_depenses_categorie,
+      d.libelle libelle_depense
+      FROM fiche.activite act JOIN fiche.depense d ON act.id=d.id_activite 
+      JOIN fiche.fiche_technique f ON act.id_fiche_technique=f.id WHERE id_fiche_technique=$1
+      GROUP BY libelle_depense,mois_reel ORDER BY mois_reel )
+      SELECT mois_reel,SUM(total_depenses_categorie) total_depense,'...' as total_vente,'...' as solde, '...' as solde_cumule,
+      JSON_AGG(JSON_BUILD_OBJECT('libelle_categorie',libelle_depense,'total_depenses_categorie',total_depenses_categorie)) categories_depenses FROM subquery
+      GROUP BY mois_reel ORDER BY mois_reel
+    `;
     dbConn.pool.query(getDepenseMoisReelsByIdQuery, [id_fiche,date_ini], (error, results) => {
       if (error) {
         throw error
@@ -43,17 +50,22 @@ const getFluxMoisReelsByIdByMois = (request, response) => {
           throw error;
         }
         const prix_marche = results.rows[0].col_prix_marche;
-  
-        const getVenteMoisReelsByIdQuery = `SELECT SUM(m.${prix_marche}*v.rendement) total_vente,
-        CASE
-        WHEN v.mois IS NOT NULL THEN $2::timestamp + interval '1 month' * v.mois::integer
-        ELSE $2::timestamp + interval '1 month' * v.mois_relatif::integer
-        END mois_reel,
-        JSON_AGG(JSON_BUILD_OBJECT('id_marche',v.id_marche,'libelle_marche',CONCAT((SELECT p.libelle FROM fiche.produit p WHERE id=m.id_produit ), 
-        ' ', m.type_marche, ' ', m.localisation),'rendement',v.rendement,'prix_mois',m.prix_june,
-               'montant_vente',(m.prix_june*v.rendement))) ventes
-        FROM fiche.vente v JOIN fiche.marche m ON v.id_marche = m.id
-        WHERE v.id_fiche_technique=$1 GROUP BY mois_reel ORDER BY mois_reel`;
+
+        const getVenteMoisReelsByIdQuery = `WITH subquery AS(
+          SELECT 
+          CASE
+            WHEN v.mois IS NOT NULL THEN $2::timestamp + interval '1 month' * v.mois::integer
+            ELSE $2::timestamp + interval '1 month' * v.mois_relatif::integer
+          END mois_reel,
+          SUM(m.${prix_marche}*v.rendement) total_ventes_categorie,
+          CONCAT((SELECT p.libelle FROM fiche.produit p WHERE id=m.id_produit ),' ', m.type_marche, ' ', m.localisation) libelle_marche
+          FROM fiche.vente v JOIN fiche.marche m ON v.id_marche = m.id
+          WHERE v.id_fiche_technique=$1 GROUP BY libelle_marche,mois_reel ORDER BY mois_reel
+        )
+        SELECT mois_reel,SUM(total_ventes_categorie) total_vente,
+        JSON_AGG(JSON_BUILD_OBJECT('libelle_categorie',libelle_marche,'total_ventes_categorie',total_ventes_categorie)) categories_ventes FROM subquery
+        GROUP BY mois_reel ORDER BY mois_reel`;
+
         dbConn.pool.query(getVenteMoisReelsByIdQuery, [id_fiche,date_ini], (error, results) => {
           if (error) {
             throw error
