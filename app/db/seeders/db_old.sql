@@ -172,131 +172,105 @@ CREATE SCHEMA IF NOT EXISTS analyse_fiche AUTHORIZATION adminendagri;
 
 -- DROP TABLE analyse_fiche.fiche_technique_libre;
 
-CREATE TABLE analyse_fiche.fiche_technique_libre
+CREATE TABLE analyse_fiche.fiche_technique_libre -- Table des fiche_technique_libres
 (
-    id SERIAL NOT NULL,
-    id_fiche_technique bigint NOT NULL,
-    id_analyse bigint NOT NULL,
-    date_ini timestamp without time zone,
-    coeff_surface_ou_nombre_animaux numeric(10,2),
-    coeff_main_oeuvre_familiale numeric(10,1),
-    CONSTRAINT fiche_technique_libre_pkey PRIMARY KEY (id)
+  id serial unique NOT NULL, -- Identifiant unique
+  id_fiche_technique bigint NOT NULL, --
+  id_parcelle bigint NOT NULL, --
+  id_analyse_tresorie bigint NOT NULL, -- 
+  rendement_culture numeric(15,6), -- 
+  part_familiale numeric(15,6), -- 
+  autoconsommation numeric(15,6), -- 
+  nombre_meres_reproductrices integer, -- 
+  nombre_animaux_engraisses integer, -- 
+  mois_debut timestamp without time zone, --  
+  CONSTRAINT fiche_technique_libre_pkey PRIMARY KEY (id)
 )
 WITH (
-    OIDS = FALSE
-)
-TABLESPACE pg_default;
-
+  OIDS=FALSE
+);
 ALTER TABLE analyse_fiche.fiche_technique_libre OWNER TO adminendagri;
 
 CREATE INDEX fiche_technique_libre_id_idx ON analyse_fiche.fiche_technique_libre(id);
 
--- Table: analyse_fiche.coeff_vente
+-- Table: analyse_fiche.depense_exploitation
 
--- DROP TABLE analyse_fiche.coeff_vente;
+-- DROP TABLE analyse_fiche.depense_exploitation;
 
-CREATE TABLE analyse_fiche.coeff_vente
+CREATE TABLE analyse_fiche.depense_exploitation -- Table des depense_exploitations
 (
-    id SERIAL NOT NULL,
-    id_fiche_technique_libre bigint NOT NULL,
-    libelle_categorie character varying,
-    coeff_autoconsommation numeric(10,1),
-	  coeff_intraconsommation numeric(10,1),
-	  coeff_rendement numeric(10,1),
-    CONSTRAINT coeff_vente_pkey PRIMARY KEY (id)
+  id serial unique NOT NULL, -- Identifiant unique
+  id_analyse_tresorie bigint NOT NULL, --
+  libelle character varying(500), -- 
+  montant numeric(15,6), -- 
+  mois timestamp without time zone, --  
+  CONSTRAINT depense_exploitation_pkey PRIMARY KEY (id)
 )
 WITH (
-    OIDS = FALSE
-)
-TABLESPACE pg_default;
+  OIDS=FALSE
+);
+ALTER TABLE analyse_fiche.depense_exploitation OWNER TO adminendagri;
 
-ALTER TABLE analyse_fiche.coeff_vente
-    OWNER to adminendagri;
+CREATE INDEX depense_exploitation_id_idx ON analyse_fiche.depense_exploitation(id);
 
-CREATE INDEX coeff_vente_id_idx
-    ON analyse_fiche.coeff_vente USING btree
-    (id)
-    TABLESPACE pg_default;
+-- Table: analyse_fiche.intraconsommation
 
--- Table: analyse_fiche.coeff_depense
+-- DROP TABLE analyse_fiche.intraconsommation;
 
--- DROP TABLE analyse_fiche.coeff_depense;
-
-CREATE TABLE analyse_fiche.coeff_depense
+CREATE TABLE analyse_fiche.intraconsommation -- Table des intraconsommations
 (
-    id SERIAL NOT NULL,
-    id_fiche_technique_libre bigint NOT NULL,
-    libelle_categorie character varying,
-	coeff_intraconsommation numeric(10,1),
-    CONSTRAINT coeff_depense_pkey PRIMARY KEY (id)
+  id serial unique NOT NULL, -- Identifiant unique
+  id_fiche_technique_libre bigint NOT NULL, --
+  id_vente bigint NOT NULL, --
+  id_depense bigint NOT NULL, --
+  libelle character varying(500), -- 
+  part numeric(15,6), -- 
+  CONSTRAINT intraconsommation_pkey PRIMARY KEY (id)
 )
 WITH (
-    OIDS = FALSE
-)
-TABLESPACE pg_default;
+  OIDS=FALSE
+);
+ALTER TABLE analyse_fiche.intraconsommation OWNER TO adminendagri;
 
-ALTER TABLE analyse_fiche.coeff_depense
-    OWNER to adminendagri;
+CREATE INDEX intraconsommation_id_idx ON analyse_fiche.intraconsommation(id);
 
-CREATE INDEX coeff_depense_id_idx
-    ON analyse_fiche.coeff_depense USING btree
-    (id)
-    TABLESPACE pg_default;
+-- Table: analyse_fiche.client
 
--- Table: analyse_fiche.analyse
+-- DROP TABLE analyse_fiche.client;
 
--- DROP TABLE analyse_fiche.analyse;
-
-CREATE TABLE analyse_fiche.analyse
+CREATE TABLE analyse_fiche.client -- Table des clients
 (
-    id SERIAL NOT NULL,
-	created timestamp without time zone,
-	modified timestamp without time zone,
-    nom_utilisateur character varying(255),
-    nom_client character varying(255),
-    montant_tresorerie_initiale integer,
-	date_debut_analyse timestamp without time zone,
-	date_fin_analyse timestamp without time zone,
-    CONSTRAINT analyse_pkey PRIMARY KEY (id)
+  id serial unique NOT NULL, -- Identifiant unique
+  id_utilisateur bigint NOT NULL, --
+  nom character varying(255), -- 
+  prenom character varying(255), -- 
+  CONSTRAINT client_pkey PRIMARY KEY (id)
 )
 WITH (
-    OIDS = FALSE
-)
-TABLESPACE pg_default;
+  OIDS=FALSE
+);
+ALTER TABLE analyse_fiche.client OWNER TO adminendagri;
 
-ALTER TABLE analyse_fiche.analyse
-    OWNER to adminendagri;
+CREATE INDEX client_id_idx ON analyse_fiche.client(id);
 
-CREATE INDEX analyse_id_idx
-    ON analyse_fiche.analyse USING btree
-    (id)
-    TABLESPACE pg_default;
+-- Table: analyse_fiche.analyse_tresorie
 
--- Table: analyse_fiche.depense_libre
+-- DROP TABLE analyse_fiche.analyse_tresorie;
 
--- DROP TABLE analyse_fiche.depense_libre;
-
-CREATE TABLE analyse_fiche.depense_libre
+CREATE TABLE analyse_fiche.analyse_tresorie -- Table des analyse_tresories
 (
-    id SERIAL NOT NULL,
-	id_analyse bigint,
-    libelle character varying,
-	mois_reel timestamp without time zone,
-    montant integer,
-    CONSTRAINT depense_libre_pkey PRIMARY KEY (id)
+  id serial unique NOT NULL, -- Identifiant unique
+  id_client bigint NOT NULL, --
+  id_utilisateur bigint NOT NULL, --
+  date_creation timestamp without time zone, --  
+  CONSTRAINT analyse_tresorie_pkey PRIMARY KEY (id)
 )
 WITH (
-    OIDS = FALSE
-)
-TABLESPACE pg_default;
+  OIDS=FALSE
+);
+ALTER TABLE analyse_fiche.analyse_tresorie OWNER TO adminendagri;
 
-ALTER TABLE analyse_fiche.depense_libre
-    OWNER to adminendagri;
-
-CREATE INDEX depense_libre_id_idx
-    ON analyse_fiche.depense_libre USING btree
-    (id)
-    TABLESPACE pg_default;
+CREATE INDEX analyse_tresorie_id_idx ON analyse_fiche.analyse_tresorie(id);
 
 ----------------------------------------------------------
 
