@@ -9,12 +9,13 @@ const getFluxMoisReelsByIdByMois = (request, response) => {
   //const date_ini = request.params.date_ini;
   const date_ini = new Date('2020-06-04');
 
-  const getInfoFiche = `SELECT f.id,f.libelle libelle_fiche,f.ini_debut,p.libelle libelle_production FROM fiche.fiche_technique f JOIN fiche.production p ON
+  const getInfoFiche = `SELECT f.id,f.libelle libelle_fiche,f.ini_debut,'...' date_ini,p.libelle libelle_production FROM fiche.fiche_technique f JOIN fiche.production p ON
   f.id_production=p.id WHERE f.id=$1`;
   dbConn.pool.query(getInfoFiche, [id_fiche], (error, results) => {
     if (error) {
       throw error
     }
+    results.rows[0].date_ini = date_ini;
     const infoFiche = results.rows;
 
     const getDepenseMoisReelsByIdQuery = `SELECT 
