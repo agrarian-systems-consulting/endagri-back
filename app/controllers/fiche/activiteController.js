@@ -73,9 +73,7 @@ const postActivite = (request, response) => {
 
   const ajouterDepenses = async (id_activite) => {
     return Promise.all(
-      depenses.map((depense, id_activite) =>
-        asyncPromiseDepense(depense, id_activite)
-      )
+      depenses.map((depense) => asyncPromiseDepense(depense, id_activite))
     );
   };
 
@@ -83,7 +81,7 @@ const postActivite = (request, response) => {
     console.log('id_activite', id_activite);
     return new Promise((resolve, reject) => {
       // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
-      const getActiviteAvecDepensesQuery = `SELECT a.*, json_agg(d.*) depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
+      const getActiviteAvecDepensesQuery = `SELECT * FROM fiche.depense WHERE id_activite=$1`;
 
       // Envoi de la requête
       dbConn.pool.query(
@@ -107,10 +105,13 @@ const postActivite = (request, response) => {
   };
 
   const doWork = async () => {
+    console.log('1');
     const id_activite = await promiseAjoutActivite();
+    console.log('2');
     await ajouterDepenses(id_activite);
+    console.log('3');
     const responseBody = await getActiviteAvecDepenses(id_activite);
-
+    console.log('4');
     return responseBody;
   };
 
