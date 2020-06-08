@@ -1,7 +1,7 @@
-const request = require('supertest');
-const assert = require('assert');
-const app = require('../../server');
-const dbConn = require('../db/pool');
+import request from 'supertest';
+import assert from 'assert';
+import app from '../../server';
+import dbConn from '../db/pool';
 
 // Paramètres pour la mise en place d'une fiche technique, des activités et des dépenses nécessaires pour les tests
 const id_fiche_technique = 45678;

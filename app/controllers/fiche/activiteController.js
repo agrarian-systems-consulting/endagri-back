@@ -1,91 +1,124 @@
-const dbConn = require('../../db/pool');
+import dbConn from '../../db/pool';
+import chalk from 'chalk';
 
 // CREER UNE NOUVELLE ACTIVITE
-// @Enda v2 : Gérer id_utilisateur avec la table User
+// Pour la v2 :
+// - Gérer id_utilisateur avec la table User
 const postActivite = (request, response) => {
   // Récupère l'id de la fiche technique depuis les params
   const id_fiche_technique = request.params.id_fiche_technique;
 
-  // Destructure les données contenus dans la requête
+  // Destructure les données contenues dans la requête
   const { libelle_activite, mois, mois_relatif, depenses } = request.body;
 
-  // Construction de la requête pour créer la fiche technique
-  const postActiviteQuery = `INSERT INTO fiche.activite(id, id_fiche_technique, libelle, mois, mois_relatif) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING *`;
+  // Construction d'une Promise pour l'ajout d'une activité
+  const promiseAjoutActivite = () => {
+    return new Promise((resolve, reject) => {
+      // Construction de la requête pour créer la fiche technique
+      const postActiviteQuery = `INSERT INTO fiche.activite(id, id_fiche_technique, libelle, mois, mois_relatif) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING *`;
 
-  // Envoi de la requête
-  dbConn.pool.query(
-    postActiviteQuery,
-    [id_fiche_technique, libelle_activite, mois, mois_relatif],
-    (error, results) => {
-      if (error) {
-        throw error;
-      }
-
-      // console.log('POST activite 1 : ' + JSON.stringify(results.rows, true, 2));
-
-      // Récupère l'id de l'activité qui vient d'être créée
-      const id_activite = results.rows[0].id;
-
-      console.log('id_activite = ' + id_activite);
-
-      // Ajoute les dépenses
-      AsyncPostDepenses = () => {
-        // La création d'une Promise permet d'attendre que les dépenses soit ajoutées avant de récupérer l'activité avec ses dépenses associées
-        // console.log('depenses = ' + JSON.stringify(depenses, true, 2));
-
-        return new Promise((successCallback, failureCallback) => {
-          if (depenses) {
-            depenses.map(({ libelle_depense, montant }) => {
-              // Construction de la requête pour créer une dépense
-              const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING *`;
-
-              // Envoi de la requête
-              dbConn.pool.query(
-                postDepenseQuery,
-                [id_activite, libelle_depense, montant],
-                (error, results) => {
-                  // console.log('POST activite 2 : ' + JSON.stringify(results.rows, true, 2));
-                  if (error) {
-                    failureCallback('Problème lors de l’ajout des dépenses');
-
-                    throw error;
-                  }
-
-                  successCallback('Dépenses ajoutées');
-                }
-              );
-            });
-          } else {
-            successCallback('Pas de dépenses associées');
+      // Envoi de la requête asynchrone
+      dbConn.pool.query(
+        postActiviteQuery,
+        [id_fiche_technique, libelle_activite, mois, mois_relatif],
+        (error, results) => {
+          if (error) {
+            // La requête a échoué
+            console.log(chalk.bgRed.bold(error));
+            return reject(error);
           }
-        });
-      };
 
-      // Permet d'attendre que les dépenses soit ajoutées avant de récupérer l'activité avec ses dépenses associées
-      AsyncPostDepenses()
-        .then(() => {
-          // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
-          const getActiviteAvecDepensesQuery = `SELECT a.*, json_agg(d.*) depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
-
-          // Envoi de la requête
-          dbConn.pool.query(
-            getActiviteAvecDepensesQuery,
-            [id_activite],
-            (error, results) => {
-              if (error) {
-                throw error;
-              }
-
-              // console.log('POST activite 3 : ' + JSON.stringify(results.rows, true, 2));
-
-              // Envoi de la réponse
-              response.status(201).send(results.rows[0]);
-            }
+          // Décommenter la ligne ci-dessous pour débuguer :
+          console.log(
+            'POST activite 1 : ' + JSON.stringify(results.rows, true, 2)
           );
-        })
-        .catch(response.sendStatus(500));
-    }
-  );
+
+          // Récupère l'id de l'activité qui vient d'être créée
+          const id_activite = results.rows[0].id;
+
+          // La requête est considérée fullfilled
+          resolve(id_activite);
+        }
+      );
+    });
+  };
+
+  const promiseDepense = (depense, id_activite) => {
+    const { libelle_depense, montant } = depense;
+    //a function that returns a promise
+    return new Promise((resolve, reject) => {
+      // Construction de la requête pour créer une dépense
+      const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING *`;
+
+      // Envoi de la requête
+      dbConn.pool.query(
+        postDepenseQuery,
+        [id_activite, libelle_depense, montant],
+        (error, results) => {
+          console.log(
+            'POST activite 2 : ' + JSON.stringify(results.rows, true, 2)
+          );
+          if (error) {
+            reject(error);
+          }
+          resolve('Dépense ajoutée', results.rows[0]);
+        }
+      );
+    });
+  };
+
+  const asyncPromiseDepense = async (depense, id_activite) => {
+    return promiseDepense(depense, id_activite);
+  };
+
+  const ajouterDepenses = async (id_activite) => {
+    return Promise.all(
+      depenses.map((depense, id_activite) =>
+        asyncPromiseDepense(depense, id_activite)
+      )
+    );
+  };
+
+  const getActiviteAvecDepenses = (id_activite) => {
+    console.log('id_activite', id_activite);
+    return new Promise((resolve, reject) => {
+      // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
+      const getActiviteAvecDepensesQuery = `SELECT a.*, json_agg(d.*) depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
+
+      // Envoi de la requête
+      dbConn.pool.query(
+        getActiviteAvecDepensesQuery,
+        [id_activite],
+        (error, results) => {
+          if (error) {
+            console.log(error);
+            throw error;
+          }
+
+          console.log(
+            'POST activite 3 : ' + JSON.stringify(results.rows, true, 2)
+          );
+
+          // Envoi de la réponse
+          resolve(results.rows[0]);
+        }
+      );
+    });
+  };
+
+  const doWork = async () => {
+    const id_activite = await promiseAjoutActivite();
+    await ajouterDepenses(id_activite);
+    const responseBody = await getActiviteAvecDepenses(id_activite);
+
+    return responseBody;
+  };
+
+  doWork()
+    .then((result) => {
+      response.status(200).json(result);
+    })
+    .catch((e) => console.log('e', e));
 };
 
 // MODIFIER UNE ACTIVITE

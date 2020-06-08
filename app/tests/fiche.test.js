@@ -1,7 +1,7 @@
-const request = require('supertest');
-const assert = require('assert');
-const app = require('../../server');
-const dbConn = require('../db/pool');
+import request from 'supertest';
+import assert from 'assert';
+import app from '../../server';
+import dbConn from '../db/pool';
 
 // Créé une fiche à supprimer dans un test
 beforeAll((done) => {
