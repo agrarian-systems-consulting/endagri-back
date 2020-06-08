@@ -81,7 +81,7 @@ const postActivite = (request, response) => {
     console.log('id_activite', id_activite);
     return new Promise((resolve, reject) => {
       // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
-      const getActiviteAvecDepensesQuery = `SELECT * FROM fiche.depense WHERE id_activite=$1`;
+      const getActiviteAvecDepensesQuery = `SELECT a.*, json_agg(json_build_object('id', d.id,'libelle', d.libelle,'montant', d.montant)) depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
 
       // Envoi de la requête
       dbConn.pool.query(
