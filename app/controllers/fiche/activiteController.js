@@ -76,7 +76,9 @@ const postActivite = (request, response) => {
   const getActiviteAvecDepenses = (id_activite) => {
     return new Promise((resolve, reject) => {
       // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
-      const getActiviteAvecDepensesQuery = `SELECT a.*, json_agg(json_build_object('id', d.id,'id_activite', d.id_activite,'libelle', d.libelle,'montant', d.montant)) depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
+      const getActiviteAvecDepensesQuery = `SELECT a.*, 
+      array_remove(array_agg(d.*),null) depenses 
+      FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
 
       // Envoi de la requête
       dbConn.pool.query(
@@ -132,7 +134,8 @@ const putActivite = (request, response) => {
   const getActiviteAvecDepenses = (id_activite) => {
     return new Promise((resolve, reject) => {
       // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
-      const getActiviteAvecDepensesQuery = `SELECT a.*, json_agg(json_build_object('id', d.id,'id_activite', d.id_activite,'libelle', d.libelle,'montant', d.montant)) depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
+      const getActiviteAvecDepensesQuery = `SELECT a.*, array_remove(json_agg(json_build_object('id', d.id,'id_activite', d.id_activite,'libelle', d.libelle,'montant', d.montant)) 
+      depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
 
       // Envoi de la requête asynchrone
       dbConn.pool.query(
