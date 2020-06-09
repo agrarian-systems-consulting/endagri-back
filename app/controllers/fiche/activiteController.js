@@ -202,8 +202,38 @@ const putActivite = (request, response) => {
     return promiseInsertDepense(depense, id_activite);
   };
 
+  // Création d'une fonction qui retourne une Promise pour la modification d'une dépense
+  const promiseUpdateDepense = (depense, id_activite) => {
+    // Desctructure les données contenues dans la dépense
+    const { libelle_depense, montant, id } = depense;
+
+    return new Promise((resolve, reject) => {
+      // Construction de la requête pour créer la dépense
+      const postDepenseQuery = `UPDATE fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) WHERE id = $4 RETURNING *`;
+
+      // Envoi de la requête asynchrone
+      dbConn.pool.query(
+        postDepenseQuery,
+        [id_activite, libelle_depense, montant, id],
+        (error, results) => {
+          if (error) {
+            // Si la requête échoue
+            reject(error);
+          }
+
+          // Si l'ajout de la dépense réussi
+          resolve('Dépense ajoutée', results.rows[0]);
+        }
+      );
+    });
+  };
+
+  const asyncPromiseUpdateDepense = async (depense, id_activite) => {
+    return promiseUpdateDepense(depense, id_activite);
+  };
+
   // Permet d'attendre que TOUTES les dépenses ait été ajoutée
-  const modifierDepenses = async (id_activite) => {
+  const modifierDepenses = async (id_activite, anciennes_depenses) => {
     return Promise.all(
       // TODO INSERT, UPDATE or DELETE ici
       depenses.map((depense) => asyncPromiseInsertDepense(depense, id_activite))
@@ -212,13 +242,14 @@ const putActivite = (request, response) => {
 
   // Fonction pour enchaîner les requêtes asynchrones
   const doModifierActiviteEtDepenses = async (id_activite) => {
+    // Récupérer l'activité avec ses dépenses associées dans la base de données avant la modification
+    const activite = await getActiviteAvecDepenses(id_activite);
+    const anciennes_depenses = activite.depenses;
+
     // Modifie les informations principales de l'activité
     await promiseModifieActivite(id_activite);
 
-    // S'il y a des dépenses, les ajouter en tenant compte de l'id_activite qui vient d'être créée
-    if (depenses != undefined) {
-      await modifierDepenses(id_activite);
-    }
+    await modifierDepenses(id_activite, anciennes_depenses);
 
     // Récupérer l'activité avec ses dépenses associées dans la base de données
     const responseBody = await getActiviteAvecDepenses(id_activite);
