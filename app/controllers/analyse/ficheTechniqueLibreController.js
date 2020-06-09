@@ -156,12 +156,12 @@ const postFicheTechniqueLibre = (request, response) => {
     }
 
     // Récupérer...
-    const responseBody = await getAnalyse(id_analyse);
+    const responseBody = await getAnalyse(id_fiche_technique_libre);
     return responseBody;
   };
 
   // Appel de la fonction asynchrone principale
-  doAjouterActiviteEtDepenses()
+  doAjouterFicheTechniqueLibreEtCoeffVentesEtCoeffDepenses()
     .then((result) => {
       // Si les requêtes ont fonctionné, renvoyée un HTTP 201 avec le détail de l'activité et des dépenses
       response.status(201).json(result);
