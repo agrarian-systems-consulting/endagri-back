@@ -56,27 +56,22 @@ test('Doit créer une activité avec des dépenses associées dans une fiche exi
   expect(res.body.depenses.length).toBe(2);
 });
 
-test("Doit modifier une activite sans dépenses d'une fiche technique", (done) => {
-  request(app)
+test("Doit modifier une activite sans dépenses d'une fiche technique", async () => {
+  const res = await request(app)
     .put(`/fiche/${id_fiche_technique}/activite/${id_activite}`)
     .send({
       libelle_activite: "Un titre d'activité modifié par le test 3",
       mois_relatif: 2,
       mois: null,
     })
-    .expect(200)
-    .end(function (err, res) {
-      if (err) return done(err);
-      expect(res.body.id).toBeDefined();
-      expect(res.body.libelle).toBe(
-        "Un titre d'activité modifié par le test 3"
-      );
-      done();
-    });
+    .expect(200);
+
+  expect(res.body.id).toBeDefined();
+  expect(res.body.libelle).toBe("Un titre d'activité modifié par le test 3");
 });
 
-test("Doit modifier une activite et des dépenses existantes associées d'une fiche technique", (done) => {
-  request(app)
+test("Doit modifier une activite et des dépenses existantes associées d'une fiche technique", async () => {
+  const res = await request(app)
     .put(`/fiche/${id_fiche_technique}/activite/${id_activite}`)
     .send({
       libelle_activite: "Un titre d'activité modifié par le test 4",
@@ -87,22 +82,12 @@ test("Doit modifier une activite et des dépenses existantes associées d'une fi
         { id: 4680240, libelle_depense: 'Dépense de test 4:2', montant: 468 },
       ],
     })
-    .expect(200)
-    .end(function (err, res) {
-      // console.log(res.body);
-      if (err) return done(err);
-      expect(res.body.id).toBeDefined();
-      expect(res.body.libelle).toBe(
-        "Un titre d'activité modifié par le test 4"
-      );
-      expect(res.body.depenses).toBeDefined();
-      expect(
-        res.body.depenses.length,
-        "Il est probable que certaines dépenses n'aient pas été supprimées correctement (celles que l'utilisateur a supprimé lors de sa modification de l'activité)"
-      ).toBe(2);
+    .expect(200);
 
-      done();
-    });
+  expect(res.body.id).toBeDefined();
+  expect(res.body.libelle).toBe("Un titre d'activité modifié par le test 4");
+  expect(res.body.depenses).toBeDefined();
+  expect(res.body.depenses.length).toBe(2);
 });
 
 test("Doit supprimer une activité d'une fiche technique", (done) => {
