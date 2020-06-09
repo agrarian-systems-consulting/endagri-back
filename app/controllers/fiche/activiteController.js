@@ -1,5 +1,6 @@
 import dbConn from '../../db/pool';
 import chalk from 'chalk';
+import regeneratorRuntime from 'regenerator-runtime';
 
 // CREER UNE NOUVELLE ACTIVITE
 // Pour la v2 :
@@ -23,44 +24,42 @@ const postActivite = (request, response) => {
         [id_fiche_technique, libelle_activite, mois, mois_relatif],
         (error, results) => {
           if (error) {
-            // La requête a échoué
-            console.log(chalk.bgRed.bold(error));
+            // Si la requête échoue, reject la Promise
             return reject(error);
           }
-
-          // Décommenter la ligne ci-dessous pour débuguer :
-          console.log(
-            'POST activite 1 : ' + JSON.stringify(results.rows, true, 2)
-          );
 
           // Récupère l'id de l'activité qui vient d'être créée
           const id_activite = results.rows[0].id;
 
-          // La requête est considérée fullfilled
+          // La requête est considérée fullfilled et renvoie l'identifiant de l'activité créée
           resolve(id_activite);
         }
       );
     });
   };
 
+  // Tester la présence de dépenses associées à l'activité
+
+  // Création d'une fonction qui retourne une Promise
   const promiseDepense = (depense, id_activite) => {
+    // Desctructure les données contenues dans une dépense
     const { libelle_depense, montant } = depense;
-    //a function that returns a promise
+
     return new Promise((resolve, reject) => {
       // Construction de la requête pour créer une dépense
       const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING *`;
 
-      // Envoi de la requête
+      // Envoi de la requête asynchrone
       dbConn.pool.query(
         postDepenseQuery,
         [id_activite, libelle_depense, montant],
         (error, results) => {
-          console.log(
-            'POST activite 2 : ' + JSON.stringify(results.rows, true, 2)
-          );
           if (error) {
+            // Si la requête échoue
             reject(error);
           }
+
+          // Si l'ajout de la dépense réussie
           resolve('Dépense ajoutée', results.rows[0]);
         }
       );
@@ -78,7 +77,6 @@ const postActivite = (request, response) => {
   };
 
   const getActiviteAvecDepenses = (id_activite) => {
-    console.log('id_activite', id_activite);
     return new Promise((resolve, reject) => {
       // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
       const getActiviteAvecDepensesQuery = `SELECT a.*, json_agg(json_build_object('id', d.id,'libelle', d.libelle,'montant', d.montant)) depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
@@ -93,10 +91,6 @@ const postActivite = (request, response) => {
             throw error;
           }
 
-          console.log(
-            'POST activite 3 : ' + JSON.stringify(results.rows, true, 2)
-          );
-
           // Envoi de la réponse
           resolve(results.rows[0]);
         }
@@ -104,22 +98,28 @@ const postActivite = (request, response) => {
     });
   };
 
-  const doWork = async () => {
-    console.log('1');
+  // Fonction pour enchaîner les requêtes asynchrones
+  const doAjouterActiviteEtDepenses = async () => {
+    // Ajouter l'activité
     const id_activite = await promiseAjoutActivite();
-    console.log('2');
-    await ajouterDepenses(id_activite);
-    console.log('3');
+
+    // S'il y a des dépenses, les ajouter en tenant compte de l'id_activite qui vient d'être créée
+    if (depenses != undefined) {
+      await ajouterDepenses(id_activite);
+    }
+
+    // Récupérer l'activité avec ses dépenses associées dans la base de données
     const responseBody = await getActiviteAvecDepenses(id_activite);
-    console.log('4');
     return responseBody;
   };
 
-  doWork()
+  // Appel de la fonction asynchrone principale
+  doAjouterActiviteEtDepenses()
     .then((result) => {
-      response.status(200).json(result);
+      // Si les requêtes ont fonctionné, renvoyée un HTTP 201 avec le détail de l'activité et des dépenses
+      response.status(201).json(result);
     })
-    .catch((e) => console.log('e', e));
+    .catch((e) => console.log(chalk.red.bold(e)));
 };
 
 // MODIFIER UNE ACTIVITE

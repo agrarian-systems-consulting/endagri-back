@@ -4,30 +4,28 @@ import app from '../../server';
 import dbConn from '../db/pool';
 
 // Paramètres pour la mise en place d'une fiche technique, des activités et des dépenses nécessaires pour les tests
-const id_fiche_technique = 45678;
-const id_activite = 34567;
+const id_fiche_technique = '456789';
+const id_activite = '345678';
 const depenses = [
   { id: 2468020, libelle_depense: 'Dépense de test 5', montant: 246 },
   { id: 4680240, libelle_depense: 'Dépense de test 6', montant: 468 },
 ];
 
-test('Doit créer une activité sans dépenses associées dans une fiche existante', (done) => {
-  request(app)
+test('Doit créer une activité sans dépenses associées dans une fiche existante', async () => {
+  const res = await request(app)
     .post(`/fiche/${id_fiche_technique}/activite`)
     .send({
       libelle_activite: 'Activité de test 1',
       mois_relatif: 1,
       mois: null,
     })
-    .expect(201)
-    .end(function (err, res) {
-      if (err) return done(err);
-      expect(res.body.id).toBeDefined();
-      expect(res.body.libelle).toBe('Activité de test 1');
-      expect(res.body.mois_relatif).toBe(1);
-      expect(res.body.mois).toBe(null);
-      done();
-    });
+    .expect(201);
+
+  expect(res.body).toBeDefined();
+  expect(res.body.id_fiche_technique).toBe(id_fiche_technique);
+  expect(res.body.libelle).toBe('Activité de test 1');
+  expect(res.body.mois_relatif).toBe(1);
+  expect(res.body.mois).toBe(null);
 });
 
 test('Doit créer une activité avec des dépenses associées dans une fiche existante', (done) => {
@@ -50,7 +48,6 @@ test('Doit créer une activité avec des dépenses associées dans une fiche exi
     })
     .expect(201)
     .end(function (err, res) {
-      console.log(res.body);
       if (err) return done(err);
       expect(res.body.id).toBeDefined();
       expect(res.body.libelle).toBe('Activité de test 2');
