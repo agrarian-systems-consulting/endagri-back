@@ -82,7 +82,7 @@ test("Doit modifier une activite et des dépenses existantes associées d'une fi
         { id: 4680240, libelle_depense: 'Dépense de test 4:2', montant: 468 },
       ],
     })
-    .expect(200);
+    .expect(201);
 
   expect(res.body.id).toBeDefined();
   expect(res.body.libelle).toBe("Un titre d'activité modifié par le test 4");
