@@ -21,15 +21,15 @@ test('Doit créer une activité sans dépenses associées dans une fiche existan
     })
     .expect(201);
 
-  expect(res.body).toBeDefined();
+  expect(res.body.id).toBeDefined();
   expect(res.body.id_fiche_technique).toBe(id_fiche_technique);
   expect(res.body.libelle).toBe('Activité de test 1');
   expect(res.body.mois_relatif).toBe(1);
   expect(res.body.mois).toBe(null);
 });
 
-test('Doit créer une activité avec des dépenses associées dans une fiche existante', (done) => {
-  request(app)
+test('Doit créer une activité avec des dépenses associées dans une fiche existante', async () => {
+  const res = await request(app)
     .post(`/fiche/${id_fiche_technique}/activite`)
     .send({
       libelle_activite: 'Activité de test 2',
@@ -46,17 +46,14 @@ test('Doit créer une activité avec des dépenses associées dans une fiche exi
         },
       ],
     })
-    .expect(201)
-    .end(function (err, res) {
-      if (err) return done(err);
-      expect(res.body.id).toBeDefined();
-      expect(res.body.libelle).toBe('Activité de test 2');
-      expect(res.body.mois_relatif).toBe(null);
-      expect(res.body.mois).toBe(2);
-      expect(res.body.depenses).toBeDefined();
-      expect(res.body.depenses.length).toBe(2);
-      done();
-    });
+    .expect(201);
+
+  expect(res.body.id).toBeDefined();
+  expect(res.body.libelle).toBe('Activité de test 2');
+  expect(res.body.mois_relatif).toBe(null);
+  expect(res.body.mois).toBe(2);
+  expect(res.body.depenses).toBeDefined();
+  expect(res.body.depenses.length).toBe(2);
 });
 
 test("Doit modifier une activite sans dépenses d'une fiche technique", (done) => {
