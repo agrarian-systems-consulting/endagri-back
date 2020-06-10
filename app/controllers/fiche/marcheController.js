@@ -1,6 +1,7 @@
 import dbConn from '../../db/pool';
 
 // ---- LISTER LES MARCHES ----- //
+// Ajouter le param optionnel dans Swagger
 const getMarches = (request, response) => {
   // Récupère le paramètre optionnel id_utilisateur pour filtrer les fiches techniques
   const id_production = request.query.id_production;
