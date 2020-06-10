@@ -92,35 +92,84 @@ const postMarche = (request, response) => {
   );
 };
 
-// RECUPERER LES VALEURS D'UN MARCHE
-// CREER VUE
+// ------ LIRE LES VALEURS D'UN MARCHE ----- //
 const getMarcheById = (request, response) => {
   // Récupère l'identifiant du marché recherché
   const id_marche = request.params.id;
-  const getMarcheByIdQuery = `SELECT id,id_produit,type_marche,localisation,prix_janvier,prix_fevrier,prix_mars,prix_avril,prix_mai,prix_juin
-  prix_juillet,prix_aout,prix_septembre,prix_octobre,prix_novembre,prix_decembre FROM fiche.marche WHERE id=$1`;
-  dbConn.pool.query(getMarcheByIdQuery, [id_marche], (error, results) => {
-    if (error) {
-      throw error;
+
+  dbConn.pool.query(
+    `SELECT * FROM fiche.marche WHERE id=$1`,
+    [id_marche],
+    (err, res) => {
+      if (err) {
+        throw err;
+      }
+      response.status(200).send(res.rows[0]);
     }
-    response.status(200).send(results.rows);
-  });
+  );
 };
 
-// A DISCUTER
+// ----- MODIFIER UN MARCHE ----- //
 const putMarcheById = (request, response) => {
   const id_marche = request.params.id;
-  const { id_produit, type_marche } = request.body;
-  const putMarcheByIdQuery =
-    'UPDATE fiche.marche SET id_produit=$1, type_marche=$2 WHERE id=$3';
+  const {
+    localisation,
+    type_marche,
+    prix_january,
+    prix_february,
+    prix_march,
+    prix_april,
+    prix_may,
+    prix_june,
+    prix_july,
+    prix_august,
+    prix_september,
+    prix_october,
+    prix_november,
+    prix_december,
+    commentaire,
+  } = request.body;
+  const putMarcheByIdQuery = `UPDATE fiche.marche SET localisation = $2,
+    type_marche = $3,
+    prix_january = $4,
+    prix_february = $5,
+    prix_march = $6,
+    prix_april = $7,
+    prix_may = $8,
+    prix_june = $9,
+    prix_july = $10,
+    prix_august = $11,
+    prix_september = $12,
+    prix_october = $13,
+    prix_november = $14,
+    prix_december = $15,
+    commentaire = $16 
+    WHERE id=$1 RETURNING *`;
   dbConn.pool.query(
     putMarcheByIdQuery,
-    [id_produit, type_marche, id_marche],
-    (error, results) => {
-      if (error) {
-        throw error;
+    [
+      id_marche,
+      localisation,
+      type_marche,
+      prix_january,
+      prix_february,
+      prix_march,
+      prix_april,
+      prix_may,
+      prix_june,
+      prix_july,
+      prix_august,
+      prix_september,
+      prix_october,
+      prix_november,
+      prix_december,
+      commentaire,
+    ],
+    (err, res) => {
+      if (err) {
+        throw err;
       }
-      response.status(200).send(`Update`);
+      response.status(200).send(res.rows[0]);
     }
   );
 };
