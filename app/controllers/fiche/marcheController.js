@@ -104,7 +104,7 @@ const deleteMarcheById = (request, response) => {
   });
 };
 
-module.exports = {
+export {
   getMarches,
   postMarche,
   getMarcheById,

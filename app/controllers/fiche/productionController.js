@@ -80,7 +80,7 @@ const deleteProductionById = (request, response) => {
   );
 };
 
-module.exports = {
+export {
   getProductions,
   postProduction,
   getProductionById,

@@ -99,8 +99,4 @@ const deleteVente = (request, response) => {
   });
 };
 
-module.exports = {
-  postVente,
-  putVente,
-  deleteVente,
-};
+export { postVente, putVente, deleteVente };
