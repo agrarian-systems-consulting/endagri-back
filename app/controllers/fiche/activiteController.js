@@ -214,8 +214,8 @@ const putActivite = (request, response) => {
 
   // Appel de la fonction asynchrone principale et renvoie la réponse
   doModifierActiviteEtDepenses(id_activite, depenses)
-    .then((result) => {
-      response.status(201).json(result);
+    .then((responseBody) => {
+      response.status(201).json(responseBody);
     })
     .catch((e) => {
       console.log(chalk.red.bold(e));
