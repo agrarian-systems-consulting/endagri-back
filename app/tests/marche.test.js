@@ -1,8 +1,6 @@
 import request from 'supertest';
-import assert from 'assert';
 import app from '../../server';
 import dbConn from '../db/pool';
-import chalk from 'chalk';
 import regeneratorRuntime from 'regenerator-runtime';
 
 const id_production = 18;

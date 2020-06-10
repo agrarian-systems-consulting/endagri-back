@@ -1,6 +1,5 @@
 import dbConn from '../../db/pool';
 
-// Encore des tests à créer
 // Transformer postFiche avec des Promises
 
 // ----- RECUPERE LA LISTE DES FICHES ----- //

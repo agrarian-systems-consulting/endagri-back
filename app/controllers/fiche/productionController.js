@@ -1,15 +1,16 @@
 import dbConn from '../../db/pool';
 
-// CREER VUE
+// ---- LISTER TOUTES LES PRODUCTIONS ---- //
 const getProductions = (request, response) => {
-  const getProductionsQuery =
-    'SELECT id,libelle,type_production FROM fiche.production ORDER BY id ASC';
-  dbConn.pool.query(getProductionsQuery, (error, results) => {
-    if (error) {
-      throw error;
+  dbConn.pool.query(
+    'SELECT id,libelle,type_production FROM fiche.production ORDER BY id ASC',
+    (err, res) => {
+      if (err) {
+        throw err;
+      }
+      response.status(200).send(res.rows);
     }
-    response.status(200).send(results.rows);
-  });
+  );
 };
 
 // A DISCUTER
