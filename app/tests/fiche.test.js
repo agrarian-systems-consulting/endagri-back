@@ -143,6 +143,10 @@ test('Doit supprimer une fiche technique', async () => {
   const res = request(app).delete(`/fiche/${id_fiche_technique}`).expect(204);
 });
 
+test("Doit refuser la suppression d'une fiche technique inexistante", async () => {
+  const res = request(app).delete(`/fiche/98345098343346`).expect(404);
+});
+
 // Créé une fiche à supprimer dans un test
 beforeAll((done) => {
   const postFicheQuery =

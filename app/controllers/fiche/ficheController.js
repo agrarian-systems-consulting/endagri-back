@@ -184,7 +184,6 @@ const getFicheById = (request, response) => {
 };
 
 // ------ MODIFIER UNE FICHE ------ //
-// Créer un test
 const putFicheById = (request, response) => {
   const id_fiche = request.params.id;
   const { libelle_fiche, ini_debut, ini_fin, commentaire } = request.body;
@@ -197,6 +196,7 @@ const putFicheById = (request, response) => {
         throw err;
       }
       if (res.rows[0].id !== undefined) {
+        // Ici on pourrait retourner la totalité de la fiche si besoin en reprenant la requête de GET fiche/{id}
         response.status(200).send(res.rows[0]);
       } else {
         response.sendStatus(404);
@@ -206,19 +206,18 @@ const putFicheById = (request, response) => {
 };
 
 // ----- SUPPRIMER UNE FICHE ----- //
-// Créer un test
 const deleteFicheById = (request, response) => {
   const id_fiche = request.params.id;
 
   dbConn.pool.query(
     `DELETE FROM fiche.fiche_technique WHERE id=$1 RETURNING *`,
     [id_fiche],
-    (error, results) => {
-      if (error) {
-        throw error;
+    (err, res) => {
+      if (err) {
+        throw err;
       }
-      if (results.rows[0].id !== undefined) {
-        response.status(204).send(results.rows[0]);
+      if (res.rows[0].id !== undefined) {
+        response.status(204).send(res.rows[0]);
       } else {
         response.sendStatus(404);
       }
