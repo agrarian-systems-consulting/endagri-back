@@ -3,6 +3,7 @@ import assert from 'assert';
 import app from '../../server';
 import dbConn from '../db/pool';
 import chalk from 'chalk';
+import _ from 'lodash';
 import regeneratorRuntime from 'regenerator-runtime';
 
 // Paramètres pour la mise en place d'une fiche technique, des activités et des dépenses nécessaires pour les tests
@@ -46,6 +47,26 @@ test('Doit créer une activité avec des dépenses associées dans une fiche exi
           libelle_depense: 'Dépense de test 2',
           montant: 75,
         },
+        {
+          libelle_depense: 'Dépense de test 2',
+          montant: 75,
+        },
+        {
+          libelle_depense: 'Dépense de test 2',
+          montant: 75,
+        },
+        {
+          libelle_depense: 'Dépense de test 2',
+          montant: 75,
+        },
+        {
+          libelle_depense: 'Dépense de test 2',
+          montant: 75,
+        },
+        {
+          libelle_depense: 'Dépense de test 2',
+          montant: 75,
+        },
       ],
     })
     .expect(201);
@@ -55,8 +76,7 @@ test('Doit créer une activité avec des dépenses associées dans une fiche exi
   expect(res.body.mois_relatif).toBe(null);
   expect(res.body.mois).toBe(2);
   expect(res.body.depenses).toBeDefined();
-  console.log(chalk.inverse(res.body.depenses));
-  expect(res.body.depenses.length).toBe(2);
+  expect(res.body.depenses.length).toBe(7);
 });
 
 test("Doit modifier une activite sans dépenses d'une fiche technique", async () => {
@@ -85,11 +105,12 @@ test("Doit modifier une activite et des dépenses existantes associées d'une fi
         { id: 4680240, libelle_depense: 'Dépense de test 4:2', montant: 468 },
       ],
     })
-    .expect(201);
+    .expect(200);
 
   expect(res.body.id).toBeDefined();
   expect(res.body.libelle).toBe("Un titre d'activité modifié par le test 4");
   expect(res.body.depenses).toBeDefined();
+  console.log(chalk.inverse(JSON.stringify(res.body.depenses, 2, true)));
   expect(res.body.depenses.length).toBe(2);
 });
 
