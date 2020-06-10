@@ -139,6 +139,18 @@ test("Doit modifier les informations principales d'une fiche technique", async (
   expect(res.body.commentaire).toBe('Un commentaire sur une fiche modifiée');
 });
 
+test("Doit refuser la modification d'une fiche technique inexistante", async () => {
+  const res = await request(app)
+    .put(`/fiche/983409834`)
+    .send({
+      libelle_fiche: 'Un titre modifié',
+      ini_debut: 1,
+      ini_fin: 3,
+      commentaire: 'Un commentaire sur une fiche modifiée',
+    })
+    .expect(404);
+});
+
 test('Doit supprimer une fiche technique', async () => {
   const res = request(app).delete(`/fiche/${id_fiche_technique}`).expect(204);
 });

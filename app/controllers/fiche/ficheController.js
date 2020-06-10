@@ -195,7 +195,7 @@ const putFicheById = (request, response) => {
       if (err) {
         throw err;
       }
-      if (res.rows[0].id !== undefined) {
+      if (res.rows[0] !== undefined) {
         // Ici on pourrait retourner la totalité de la fiche si besoin en reprenant la requête de GET fiche/{id}
         response.status(200).send(res.rows[0]);
       } else {
