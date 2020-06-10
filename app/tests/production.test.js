@@ -3,3 +3,20 @@ import app from '../../server';
 import dbConn from '../db/pool';
 import chalk from 'chalk';
 import regeneratorRuntime from 'regenerator-runtime';
+
+test('Doit récupérer la liste de toutes les productions', async () => {
+  const res = await request(app).get(`/productions`).expect(200);
+  expect(res.body[0].id).toBe(1);
+  expect(res.body[0].libelle).toBe('Ail');
+  expect(res.body[0].type_production).toBe('Culture annuelle');
+});
+
+test("Doit récupérer la liste de toutes les productions d'un seul type de production", async () => {
+  const res = await request(app)
+    .get(`/productions?type_production=Culture%20annuelle`)
+    .expect(200);
+
+  res.body.forEach(({ type_production }) => {
+    expect(type_production).toBe('Culture annuelle');
+  });
+});

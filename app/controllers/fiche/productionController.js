@@ -1,16 +1,32 @@
 import dbConn from '../../db/pool';
 
 // ---- LISTER TOUTES LES PRODUCTIONS ---- //
+// Ajouter le param optionnel
 const getProductions = (request, response) => {
-  dbConn.pool.query(
-    'SELECT id,libelle,type_production FROM fiche.production ORDER BY id ASC',
-    (err, res) => {
-      if (err) {
-        throw err;
+  const { type_production } = request.query;
+
+  if (type_production !== undefined) {
+    dbConn.pool.query(
+      'SELECT id,libelle,type_production FROM fiche.production WHERE type_production = $1 ORDER BY id ASC',
+      [type_production],
+      (err, res) => {
+        if (err) {
+          throw err;
+        }
+        response.status(200).send(res.rows);
       }
-      response.status(200).send(res.rows);
-    }
-  );
+    );
+  } else {
+    dbConn.pool.query(
+      'SELECT id,libelle,type_production FROM fiche.production ORDER BY id ASC',
+      (err, res) => {
+        if (err) {
+          throw err;
+        }
+        response.status(200).send(res.rows);
+      }
+    );
+  }
 };
 
 // A DISCUTER
