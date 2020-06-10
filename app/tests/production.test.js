@@ -20,3 +20,23 @@ test("Doit récupérer la liste de toutes les productions d'un seul type de prod
     expect(type_production).toBe('Culture annuelle');
   });
 });
+
+test('Doit créer une nouvelle production', async () => {
+  const res = await request(app)
+    .post(`/production`)
+    .send({
+      libelle_production: 'Un essai de production',
+      type_production: 'Culture annuelle',
+      produits: [
+        {
+          libelle_produit: 'Paille de chose',
+          unite: 'tonne de matière sèche',
+        },
+        {
+          libelle_produit: 'Grains de chose',
+          unite: 'quintal',
+        },
+      ],
+    })
+    .expect(200);
+});
