@@ -3,7 +3,7 @@ import dbConn from '../../db/pool';
 // Transformer postFiche avec des Promises
 
 // ----- RECUPERE LA LISTE DES FICHES ----- //
-// Ajouter un param optionnel selon la catégorie de production
+// On pourrait ajouter un param optionnel selon la catégorie de production
 const getFiches = (request, response) => {
   // Récupère le paramètre optionnel id_utilisateur pour filtrer les fiches techniques
   const id_utilisateur = request.query.id_utilisateur;

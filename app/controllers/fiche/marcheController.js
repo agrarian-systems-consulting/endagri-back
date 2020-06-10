@@ -1,5 +1,4 @@
 import dbConn from '../../db/pool';
-import chalk from 'chalk';
 
 // Problème mineur sur les GET, ils renvoient des prix sous la forme de stings
 
