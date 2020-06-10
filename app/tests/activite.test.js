@@ -2,13 +2,15 @@ import request from 'supertest';
 import assert from 'assert';
 import app from '../../server';
 import dbConn from '../db/pool';
+import chalk from 'chalk';
+import regeneratorRuntime from 'regenerator-runtime';
 
 // Paramètres pour la mise en place d'une fiche technique, des activités et des dépenses nécessaires pour les tests
-const id_fiche_technique = '456789';
-const id_activite = '345678';
+const id_fiche_technique = '136789';
+const id_activite = '145678';
 const depenses = [
-  { id: 2468020, libelle_depense: 'Dépense de test 5', montant: 246 },
-  { id: 4680240, libelle_depense: 'Dépense de test 6', montant: 468 },
+  { id: 3468020, libelle_depense: 'Dépense de test 5', montant: 246 },
+  { id: 7680240, libelle_depense: 'Dépense de test 6', montant: 468 },
 ];
 
 test('Doit créer une activité sans dépenses associées dans une fiche existante', async () => {
@@ -53,6 +55,7 @@ test('Doit créer une activité avec des dépenses associées dans une fiche exi
   expect(res.body.mois_relatif).toBe(null);
   expect(res.body.mois).toBe(2);
   expect(res.body.depenses).toBeDefined();
+  console.log(chalk.inverse(res.body.depenses));
   expect(res.body.depenses.length).toBe(2);
 });
 

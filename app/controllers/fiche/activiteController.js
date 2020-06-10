@@ -1,8 +1,7 @@
 import dbConn from '../../db/pool';
 import chalk from 'chalk';
-import regeneratorRuntime from 'regenerator-runtime';
 
-// ---- CREER UNE NOUVELLE ACTIVITE ----
+// ---- CREER UNE NOUVELLE ACTIVITE ---- //
 const postActivite = (request, response) => {
   // Récupère l'id de la fiche technique depuis les params
   const id_fiche_technique = request.params.id_fiche_technique;
@@ -66,7 +65,7 @@ const postActivite = (request, response) => {
     return promiseDepense(depense, id_activite);
   };
 
-  // Permet d'attendre que TOUTES les dépenses ait été ajoutée
+  // Permet d'attendre que TOUTES les dépenses ait été ajoutées
   const ajouterDepenses = async (id_activite) => {
     return Promise.all(
       depenses.map((depense) => asyncPromiseDepense(depense, id_activite))
@@ -76,8 +75,7 @@ const postActivite = (request, response) => {
   const getActiviteAvecDepenses = (id_activite) => {
     return new Promise((resolve, reject) => {
       // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
-      const getActiviteAvecDepensesQuery = `SELECT a.*, 
-      array_remove(array_agg(d.*),null) depenses 
+      const getActiviteAvecDepensesQuery = `SELECT a.*, json_agg(json_build_object('id', d.id,'libelle', d.libelle,'montant', d.montant)) depenses 
       FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
 
       // Envoi de la requête
@@ -86,8 +84,7 @@ const postActivite = (request, response) => {
         [id_activite],
         (error, results) => {
           if (error) {
-            console.log(error);
-            throw error;
+            reject(error);
           }
 
           // Envoi de la réponse
@@ -121,53 +118,38 @@ const postActivite = (request, response) => {
     .catch((e) => console.log(chalk.red.bold(e)));
 };
 
-// ---- MODIFIER UNE ACTIVITE ----
-// v1 : Gérer le cas ou l'application cliente supprime des dépenses existantes.
+// ------ MODIFIER UNE ACTIVITE ------ //
 const putActivite = (request, response) => {
-  // Récupère l'id de l'activité et de la fiche technique depuis les params de l'URL
   const id_fiche_technique = request.params.id_fiche_technique;
   const id_activite = request.params.id_activite;
-  // Desctructure les données présentes dans request.body
   const { libelle_activite, mois_relatif, mois, depenses } = request.body;
 
   // Construction d'une Promise pour la modification d'une activité
-  const promiseModifieActivite = () => {
+  const updateActivite = (id_activite) => {
     return new Promise((resolve, reject) => {
-      // Contruction de la requête pour mettre à jour l'activité
-      const putActiviteQuery = `UPDATE fiche.activite SET libelle=$1, mois_relatif=$2, mois=$3 WHERE id=$4 RETURNING *`;
-
-      // Envoi de la requête
       dbConn.pool.query(
-        putActiviteQuery,
+        `UPDATE fiche.activite SET libelle=$1, mois_relatif=$2, mois=$3 WHERE id=$4 RETURNING *`,
         [libelle_activite, mois_relatif, mois, id_activite],
-        (error, results) => {
-          if (error) {
-            reject(error);
+        (err, res) => {
+          if (err) {
+            reject(err);
           }
-
-          // Si la requête fonctionne, renvoie l'activité qui a été modifiée
-          resolve(results.rows[0]);
+          resolve(res.rows[0]);
         }
       );
     });
   };
 
   // Construction d'une Promise pour récupérer l'activité et ses dépenses associées
-  const promiseDeleteAnciennesDepenses = (id_activite) => {
+  const deletePreviousDepenses = (id_activite) => {
     return new Promise((resolve, reject) => {
-      // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
-      const deleteAnciennesDepensesQuery = `DELETE FROM fiche.depense WHERE id_activite=$1 GROUP BY a.id`;
-
-      // Envoi de la requête asynchrone
       dbConn.pool.query(
-        deleteAnciennesDepensesQuery,
+        `DELETE FROM fiche.depense WHERE id_activite=$1`,
         [id_activite],
-        (error, results) => {
-          if (error) {
-            reject(error);
+        (err, res) => {
+          if (err) {
+            reject(err);
           }
-
-          // Si la requête fonctionne
           resolve(results.rows[0]);
         }
       );
@@ -176,25 +158,16 @@ const putActivite = (request, response) => {
 
   // Création d'une fonction qui retourne une Promise pour l'ajout d'une dépense
   const promiseInsertDepense = (depense, id_activite) => {
-    // Desctructure les données contenues dans la dépense
     const { libelle_depense, montant } = depense;
-
     return new Promise((resolve, reject) => {
-      // Construction de la requête pour créer la dépense
-      const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING *`;
-
-      // Envoi de la requête asynchrone
       dbConn.pool.query(
-        postDepenseQuery,
+        `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING *`,
         [id_activite, libelle_depense, montant],
-        (error, results) => {
-          if (error) {
-            // Si la requête échoue
-            reject(error);
+        (err, res) => {
+          if (err) {
+            reject(err);
           }
-
-          // Si l'ajout de la dépense réussi
-          resolve('Dépense ajoutée', results.rows[0]);
+          resolve(res.rows[0]);
         }
       );
     });
@@ -204,10 +177,9 @@ const putActivite = (request, response) => {
     return promiseInsertDepense(depense, id_activite);
   };
 
-  // Permet d'attendre que TOUTES les dépenses ait été ajoutée
-  const ajouteNouvellesDepenses = async (id_activite) => {
+  // Permet d'attendre que TOUTES les dépenses ait été ajoutées
+  const ajouteNouvellesDepenses = async (depenses, id_activite) => {
     return Promise.all(
-      // TODO INSERT, UPDATE or DELETE ici
       depenses.map((depense) => {
         asyncPromiseInsertDepense(depense, id_activite);
       })
@@ -217,20 +189,14 @@ const putActivite = (request, response) => {
   // Construction d'une Promise pour récupérer l'activité et ses dépenses associées
   const getActiviteAvecDepenses = (id_activite) => {
     return new Promise((resolve, reject) => {
-      // Créé la requête pour récupérer l'activité avec toutes ses dépenses associées
-      const getActiviteAvecDepensesQuery = `SELECT a.*, array_remove(json_agg(json_build_object('id', d.id,'id_activite', d.id_activite,'libelle', d.libelle,'montant', d.montant)) 
-        depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`;
-
-      // Envoi de la requête asynchrone
       dbConn.pool.query(
-        getActiviteAvecDepensesQuery,
+        `SELECT a.*, array_remove(json_agg(json_build_object('id', d.id,'id_activite', d.id_activite,'libelle', d.libelle,'montant', d.montant)) 
+        depenses FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id=$1 GROUP BY a.id`,
         [id_activite],
         (error, results) => {
           if (error) {
             reject(error);
           }
-
-          // Si la requête fonctionne
           resolve(results.rows[0]);
         }
       );
@@ -238,24 +204,23 @@ const putActivite = (request, response) => {
   };
 
   // Fonction pour enchaîner les requêtes asynchrones
-  const doModifierActiviteEtDepenses = async (id_activite) => {
-    // Modifie les informations principales de l'activité
-    await promiseModifieActivite(id_activite);
-    await promiseDeleteAnciennesDepenses(id_activite);
-    await ajouteNouvellesDepenses(id_activite);
-
-    // Récupérer l'activité avec ses dépenses associées dans la base de données
+  const doModifierActiviteEtDepenses = async (id_activite, depenses) => {
+    await updateActivite(id_activite);
+    await deletePreviousDepenses(id_activite);
+    await ajouteNouvellesDepenses(depenses, id_activite);
     const responseBody = await getActiviteAvecDepenses(id_activite);
     return responseBody;
   };
 
-  // Appel de la fonction asynchrone principale
-  doModifierActiviteEtDepenses(id_activite)
+  // Appel de la fonction asynchrone principale et renvoie la réponse
+  doModifierActiviteEtDepenses(id_activite, depenses)
     .then((result) => {
-      // Si les requêtes ont fonctionné, renvoyée un HTTP 201 avec le détail de l'activité et des dépenses
       response.status(201).json(result);
     })
-    .catch((e) => console.log(chalk.red.bold(e)));
+    .catch((e) => {
+      console.log(chalk.red.bold(e));
+      response.sendStatus(500);
+    });
 };
 
 // SUPPRIME UNE ACTIVITE
