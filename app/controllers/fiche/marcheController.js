@@ -39,22 +39,55 @@ const getMarches = (request, response) => {
   }
 };
 
-// A DISCUTER
-// Je me dis qu'il vaut mieux qu'il faut renvoyer le mérché complet avec les prix.
+// ----- CREER UN NOUVEAU MARCHE ----- //
 const postMarche = (request, response) => {
-  const { id_produit, type_marche } = request.body;
+  const {
+    id_produit,
+    localisation,
+    type_marche,
+    prix_january,
+    prix_february,
+    prix_march,
+    prix_april,
+    prix_may,
+    prix_june,
+    prix_july,
+    prix_august,
+    prix_september,
+    prix_october,
+    prix_november,
+    prix_december,
+    commentaire,
+  } = request.body;
 
-  const postMarcheQuery =
-    'INSERT INTO fiche.marche(id,id_produit,type_marche) VALUES (DEFAULT, $1,$2)';
+  const postMarcheQuery = `INSERT INTO fiche.marche(id,id_produit, localisation, type_marche, prix_january, prix_february, prix_march, prix_april, prix_may, prix_june, prix_july, prix_august, prix_september, prix_october, prix_november, prix_december,commentaire) 
+    VALUES (DEFAULT, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING *`;
   dbConn.pool.query(
     postMarcheQuery,
-    [id_produit, type_marche],
-    (error, results) => {
-      if (error) {
-        throw error;
+    [
+      id_produit,
+      localisation,
+      type_marche,
+      prix_january,
+      prix_february,
+      prix_march,
+      prix_april,
+      prix_may,
+      prix_june,
+      prix_july,
+      prix_august,
+      prix_september,
+      prix_october,
+      prix_november,
+      prix_december,
+      commentaire,
+    ],
+    (err, res) => {
+      if (err) {
+        throw err;
       }
 
-      response.status(201).send(`Create`);
+      response.status(201).send(res.rows[0]);
     }
   );
 };

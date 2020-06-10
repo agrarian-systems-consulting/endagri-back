@@ -29,3 +29,7 @@ test('Doit récupérer la liste de tous les marchés pour une production défini
   expect(res.body[0].libelle_production).toBeDefined();
   expect(res.body[0].unite).toBeDefined();
 });
+
+test('Doit créer un nouveau marché', async () => {
+  const res = await request(app).post(`/marche`).send({}).expect(201);
+});

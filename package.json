@@ -46,7 +46,7 @@
       "text",
       "lcov"
     ],
-    "collectCoverage": false,
+    "collectCoverage": true,
     "coveragePathIgnorePatterns": [
       "/node_modules/"
     ]
