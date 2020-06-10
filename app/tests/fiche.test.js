@@ -16,8 +16,6 @@ beforeAll((done) => {
 test('Doit retourner toutes les fiches techniques', (done) => {
   request(app)
     .get('/fiches')
-    .set('Accept', 'application/json')
-    .expect('Content-Type', /json/)
     .expect(200)
     .end(function (err, res) {
       // console.log('response.body =', res.body);
@@ -37,8 +35,6 @@ test('Doit retourner toutes les fiches techniques', (done) => {
 test("Doit retourner toutes les fiches techniques d'un seul auteur", (done) => {
   request(app)
     .get('/fiches/?id_utilisateur=1')
-    .set('Accept', 'application/json')
-    .expect('Content-Type', /json/)
     .expect(200)
     .end(function (err, res) {
       if (err) return done(err);
@@ -55,8 +51,6 @@ test("Doit retourner toutes les fiches techniques d'un seul auteur", (done) => {
 test("Doit retourner le contenu d'une fiche technique", (done) => {
   request(app)
     .get('/fiche/1')
-    .set('Accept', 'application/json')
-    .expect('Content-Type', /json/)
     .expect(200)
     .end(function (err, res) {
       // console.log('response.body =', res.body);
@@ -76,8 +70,6 @@ test('Doit créer une fiche technique sans activités ni ventes', (done) => {
       ini_debut: 1,
       ini_fin: 3,
     })
-    .set('Accept', 'application/json')
-    .expect('Content-Type', /json/)
     .expect(201)
     .end(function (err, res) {
       if (err) return done(err);
@@ -153,8 +145,6 @@ test('Doit créer une fiche technique avec des ventes, des activités et des dé
         },
       ],
     })
-    .set('Accept', 'application/json')
-    .expect('Content-Type', /json/)
     .expect(201)
     .end(function (err, res) {
       if (err) return done(err);

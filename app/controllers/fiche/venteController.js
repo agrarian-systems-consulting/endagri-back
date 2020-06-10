@@ -1,4 +1,4 @@
-const dbConn = require('../../db/pool');
+import dbConn from '../../db/pool';
 
 const postVente = (request, response) => {
   // Récupère l'id de la fiche technique depuis les params

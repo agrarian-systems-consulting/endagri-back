@@ -1,13 +1,18 @@
-const dbConn = require('../../db/pool');
+import dbConn from '../../db/pool';
 
-// LISTE DES MARCHES
-//TODO :
-// - Asc : Créer jointure avec la table Produit (et peut-être même avec Production idéalement)
+// ---- LISTER LES MARCHES ----- //
+// Créer un test
+// JOIN production
+// Ajouter paramètre optionnel
+// Créer jointure avec la table Produit (et peut-être même avec Production idéalement)
 // Ca permettrait de montrer les marchés production > produit > marchés associés avec des GROUP BY
-// - Ajouter des params optionnels sur productions et produits ?
 const getMarches = (request, response) => {
-  const getMarchesQuery = `SELECT id,id_produit,type_marche,localisation,prix_janvier,prix_fevrier,prix_mars,prix_avril,prix_mai,prix_juin
-    prix_juillet,prix_aout,prix_septembre,prix_octobre,prix_novembre,prix_decembre FROM fiche.marche ORDER BY id ASC`;
+  const getMarchesQuery = `
+  SELECT m.*, p.id_production, p.libelle as libelle_produit, p.unite, prod.libelle as libelle_production
+  FROM fiche.marche m 
+  LEFT JOIN fiche.produit p ON m.id_produit = p.id
+  LEFT JOIN fiche.production prod ON p.id_production = prod.id 
+  ORDER BY m.id ASC`;
   dbConn.pool.query(getMarchesQuery, (error, results) => {
     if (error) {
       throw error;

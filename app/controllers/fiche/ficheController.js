@@ -1,4 +1,4 @@
-const dbConn = require('../../db/pool');
+import dbConn from '../../db/pool';
 
 // Encore des tests à créer
 // Transformer postFiche avec des Promises
