@@ -1,24 +1,41 @@
 import dbConn from '../../db/pool';
 
 // ---- LISTER LES MARCHES ----- //
-// Créer un test
-// JOIN production
-// Ajouter paramètre optionnel
-// Créer jointure avec la table Produit (et peut-être même avec Production idéalement)
-// Ca permettrait de montrer les marchés production > produit > marchés associés avec des GROUP BY
 const getMarches = (request, response) => {
-  const getMarchesQuery = `
-  SELECT m.*, p.id_production, p.libelle as libelle_produit, p.unite, prod.libelle as libelle_production
-  FROM fiche.marche m 
-  LEFT JOIN fiche.produit p ON m.id_produit = p.id
-  LEFT JOIN fiche.production prod ON p.id_production = prod.id 
-  ORDER BY m.id ASC`;
-  dbConn.pool.query(getMarchesQuery, (error, results) => {
-    if (error) {
-      throw error;
-    }
-    response.status(200).send(results.rows);
-  });
+  // Récupère le paramètre optionnel id_utilisateur pour filtrer les fiches techniques
+  const id_production = request.query.id_production;
+
+  if (id_production !== undefined) {
+    const getMarchesByIdProductionQuery = `
+    SELECT m.*, p.id_production, p.libelle as libelle_produit, p.unite, prod.libelle as libelle_production
+    FROM fiche.marche m 
+    LEFT JOIN fiche.produit p ON m.id_produit = p.id
+    LEFT JOIN fiche.production prod ON p.id_production = prod.id WHERE prod.id=$1
+    ORDER BY p.id_production ASC`;
+    dbConn.pool.query(
+      getMarchesByIdProductionQuery,
+      [id_production],
+      (error, results) => {
+        if (error) {
+          throw error;
+        }
+        response.status(200).send(results.rows);
+      }
+    );
+  } else {
+    const getMarchesQuery = `
+    SELECT m.*, p.id_production, p.libelle as libelle_produit, p.unite, prod.libelle as libelle_production
+    FROM fiche.marche m 
+    LEFT JOIN fiche.produit p ON m.id_produit = p.id
+    LEFT JOIN fiche.production prod ON p.id_production = prod.id 
+    ORDER BY p.id_production ASC`;
+    dbConn.pool.query(getMarchesQuery, (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).send(results.rows);
+    });
+  }
 };
 
 // A DISCUTER

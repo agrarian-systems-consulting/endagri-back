@@ -6,7 +6,7 @@ import dbConn from '../../db/pool';
 // ----- RECUPERE LA LISTE DES FICHES ----- //
 const getFiches = (request, response) => {
   // Récupère le paramètre optionnel id_utilisateur pour filtrer les fiches techniques
-  const id_utilisateur = request.query.id_utilisateur; // J'ai essayé const id_utilisateur = request.query.id_utilisateur || true pour ne pas avoir à créer la condition ci-après mais ne marche pas
+  const id_utilisateur = request.query.id_utilisateur;
 
   if (id_utilisateur !== undefined) {
     // Construction de la requête pour récupérer la liste des fiches techniques associées à l'id_utilisateur

@@ -110,8 +110,10 @@ test("Doit modifier une activite et des dépenses existantes associées d'une fi
   expect(res.body.id).toBeDefined();
   expect(res.body.libelle).toBe("Un titre d'activité modifié par le test 4");
   expect(res.body.depenses).toBeDefined();
-  console.log(chalk.inverse(JSON.stringify(res.body.depenses, 2, true)));
-  expect(res.body.depenses.length).toBe(2);
+  expect(
+    res.body.depenses.length,
+    "Doit avoir deux dépenses associées. Si ce n'est pas le cas, cela vient probablement des await sur le Promise.all"
+  ).toBe(2);
 });
 
 test("Doit supprimer une activité d'une fiche technique", (done) => {
