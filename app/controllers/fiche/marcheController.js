@@ -1,9 +1,8 @@
 import dbConn from '../../db/pool';
+import chalk from 'chalk';
 
 // ---- LISTER LES MARCHES ----- //
-// Ajouter le param optionnel dans Swagger
 const getMarches = (request, response) => {
-  // Récupère le paramètre optionnel id_utilisateur pour filtrer les fiches techniques
   const id_production = request.query.id_production;
 
   if (id_production !== undefined) {
@@ -93,8 +92,8 @@ const postMarche = (request, response) => {
 };
 
 // ------ LIRE LES VALEURS D'UN MARCHE ----- //
+// Problème : Retourne les valeurs de prix sous la forme de strings
 const getMarcheById = (request, response) => {
-  // Récupère l'identifiant du marché recherché
   const id_marche = request.params.id;
 
   dbConn.pool.query(
@@ -174,16 +173,23 @@ const putMarcheById = (request, response) => {
   );
 };
 
-// DONE
+// ----- SUPPRIMER UN MARCHE ----- //
 const deleteMarcheById = (request, response) => {
   const id_marche = request.params.id;
-  const deleteMarcheByIdQuery = 'DELETE FROM fiche.marche WHERE id=$1';
-  dbConn.pool.query(deleteMarcheByIdQuery, [id_marche], (error, results) => {
-    if (error) {
-      throw error;
+  dbConn.pool.query(
+    'DELETE FROM fiche.marche WHERE id=$1 RETURNING *',
+    [id_marche],
+    (err, res) => {
+      if (err) {
+        throw err;
+      }
+      if (res.rows[0] !== undefined) {
+        response.status(200).send(res.rows[0]);
+      } else {
+        response.sendStatus(404);
+      }
     }
-    response.status(200).send(`Delete`);
-  });
+  );
 };
 
 export {

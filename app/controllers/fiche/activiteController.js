@@ -256,7 +256,7 @@ const deleteActivite = (request, response) => {
         throw err;
       }
       if (res.rows[0] !== undefined) {
-        response.sendStatus(204);
+        response.status(200).send(res.rows[0]);
       } else {
         response.sendStatus(404);
       }

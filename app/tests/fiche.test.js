@@ -152,7 +152,10 @@ test("Doit refuser la modification d'une fiche technique inexistante", async () 
 });
 
 test('Doit supprimer une fiche technique', async () => {
-  const res = request(app).delete(`/fiche/${id_fiche_technique}`).expect(204);
+  const res = await request(app)
+    .delete(`/fiche/${id_fiche_technique}`)
+    .expect(200);
+  expect(res.body.id).toBeDefined();
 });
 
 test("Doit refuser la suppression d'une fiche technique inexistante", async () => {

@@ -9,6 +9,8 @@ const id_production = 18;
 const id_marche = 4574;
 const id_produit = 14;
 
+// Problème mineur DELETE marche, le res.body est vide alors qu'on a mis RETURNING * dans la requête
+
 test('Doit récupérer la liste de tous les marchés', async () => {
   const res = await request(app).get(`/marches`).expect(200);
   expect(res.body[0].id).toBeDefined();
@@ -77,7 +79,7 @@ test('Doit modifier un marché existant', async () => {
       prix_february: 10,
       prix_march: 20,
       prix_april: 30,
-      prix_may: 40, 
+      prix_may: 40,
       prix_june: 50,
       prix_july: 60,
       prix_august: 40,
@@ -89,9 +91,18 @@ test('Doit modifier un marché existant', async () => {
     })
     .expect(200);
 
-  expect(res.body[0].id).toBeDefined();
-  expect(res.body[0].id_produit).toBe(id_produit.toString());
-  expect(res.body[0].commentaire).toBe('Commentaire modifié');
+  expect(res.body.id).toBeDefined();
+  expect(res.body.id_produit).toBe(id_produit.toString());
+  expect(res.body.commentaire).toBe('Commentaire modifié');
+});
+
+test('Doit supprimer un marché existant', async () => {
+  const res = await request(app).delete(`/marche/${id_marche}`).expect(200);
+  expect(res.body.id).toBeDefined();
+});
+
+test("Doit renvoyer un 404 lors de la suppression d'un marché inexistant", async () => {
+  const res = await request(app).delete(`/marche/3456893`).expect(404);
 });
 
 // Créé une fiche à supprimer dans un test

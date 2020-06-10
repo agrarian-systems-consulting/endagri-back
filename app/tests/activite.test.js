@@ -116,14 +116,11 @@ test("Doit modifier une activite et des dépenses existantes associées d'une fi
   ).toBe(2);
 });
 
-test("Doit supprimer une activité d'une fiche technique", (done) => {
-  request(app)
+test("Doit supprimer une activité d'une fiche technique", async () => {
+  const res = await request(app)
     .delete(`/fiche/${id_fiche_technique}/activite/${id_activite}`)
-    .expect(204)
-    .end(function (err, res) {
-      if (err) return done(err);
-      done();
-    });
+    .expect(200);
+  expect(res.body.id).toBeDefined();
 });
 
 beforeAll((done) => {

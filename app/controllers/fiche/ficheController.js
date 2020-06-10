@@ -216,8 +216,8 @@ const deleteFicheById = (request, response) => {
       if (err) {
         throw err;
       }
-      if (res.rows[0].id !== undefined) {
-        response.status(204).send(res.rows[0]);
+      if (res.rows[0] !== undefined) {
+        response.status(200).send(res.rows[0]);
       } else {
         response.sendStatus(404);
       }
