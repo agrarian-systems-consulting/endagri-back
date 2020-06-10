@@ -153,12 +153,11 @@ const putActivite = (request, response) => {
             reject(err);
           }
           resolve(res.rows);
-          console
-            .log
-            // chalk.inverse.green(
-            //   'Step 2 - Les anciennes dépenses sont supprimées'
-            // )
-            ();
+          // console
+          //   .log
+          // chalk.inverse.green(
+          //   'Step 2 - Les anciennes dépenses sont supprimées'
+          // )
         }
       );
     });
