@@ -21,7 +21,7 @@ test("Doit récupérer la liste de toutes les productions d'un seul type de prod
   });
 });
 
-test('Doit créer une nouvelle production', async () => {
+test('Doit créer une nouvelle production avec des produits associés', async () => {
   const res = await request(app)
     .post(`/production`)
     .send({
@@ -44,4 +44,16 @@ test('Doit créer une nouvelle production', async () => {
   expect(res.body.produits).toBeDefined();
   expect(res.body.produits.length).toBe(2);
   expect(res.body.produits[0].libelle).toBe('Paille de chose');
+});
+
+test('Doit créer une nouvelle production sans produits associés', async () => {
+  const res = await request(app)
+    .post(`/production`)
+    .send({
+      libelle_production: 'Un essai de production',
+      type_production: 'Culture annuelle',
+    })
+    .expect(200);
+  expect(res.body.id).toBeDefined();
+  expect(res.body.produits.length).toBe(0);
 });

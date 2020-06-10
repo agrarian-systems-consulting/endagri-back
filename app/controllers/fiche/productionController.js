@@ -30,7 +30,6 @@ const getProductions = (request, response) => {
 };
 
 // --- CREER UNE PRODUCTION ET SES PRODUITS ASSOCIES --- //
-// Problème : Ne semble pas attendre la fin de Promise.all
 const postProduction = (request, response) => {
   const { libelle_production, type_production, produits } = request.body;
 
@@ -92,7 +91,9 @@ const postProduction = (request, response) => {
       libelle_production,
       type_production
     );
-    await ajouterProduits(id_production, produits);
+    if (produits !== undefined) {
+      await ajouterProduits(id_production, produits);
+    }
     const responseBody = await getProductionEtProduits(id_production);
     return responseBody;
   };

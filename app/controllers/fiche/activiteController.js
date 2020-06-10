@@ -133,7 +133,6 @@ const putActivite = (request, response) => {
           if (err) {
             reject(err);
           }
-          // console.log(chalk.inverse.green('Step 1 - Activité mise à jour'));
           resolve(res.rows[0]);
         }
       );
@@ -151,11 +150,6 @@ const putActivite = (request, response) => {
             reject(err);
           }
           resolve(res.rows);
-          // console
-          //   .log
-          // chalk.inverse.green(
-          //   'Step 2 - Les anciennes dépenses sont supprimées'
-          // )
         }
       );
     });
@@ -173,9 +167,6 @@ const putActivite = (request, response) => {
             reject(err);
           }
           resolve(res.rows[0]);
-          // console.log(
-          //   chalk.inverse.green('Step 3 - Une nouvelle dépense ajoutée')
-          // );
         }
       );
     });
@@ -202,11 +193,6 @@ const putActivite = (request, response) => {
             reject(err);
           }
           resolve(res.rows[0]);
-          // console.log(
-          //   chalk.inverse.green(
-          //     "Step 4 - L'activité est récupérée avec les dépenses associées"
-          //   )
-          // );
         }
       );
     });
@@ -218,7 +204,6 @@ const putActivite = (request, response) => {
     await deletePreviousDepenses(id_activite);
 
     if (depenses !== undefined) {
-      // Problème : Le await ici ne fonctionne pas et je ne sais pas pourquoi
       await ajouteNouvellesDepenses(depenses, id_activite);
     }
 
