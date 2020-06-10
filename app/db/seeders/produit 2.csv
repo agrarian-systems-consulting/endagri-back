@@ -1,0 +1,60 @@
+﻿id;id_production;libelle;unite
+1;1;Ail;kg
+2;2;Grains d'avoine;quintal
+3;2;Paille d'avoine;tonne
+4;3;Grains de blé dur;quintal
+5;3;Paille de blé dur;tonne
+6;4;Grains de blé tendre;quintal
+7;4;Paille de blé tendre;tonne
+8;5;Blettes;kg
+9;6;Graines de colza;tonne
+10;7;Epices;kg
+11;8;Epinards;kg
+12;9;Fenouil;kg
+13;10;Féverolles;kg
+14;11;Fèves;kg
+15;12;Gombo;kg
+16;13;Melon;kg
+17;14;Mloukhia;kg
+18;15;Oignons;kg
+19;16;Grains d'orge;quintal
+20;16;Paille d'orge;tonne
+21;17;Pastèques;kg
+22;18;Persil;kg
+23;19;Petits pois;kg
+24;20;Piments;kg
+25;21;Pois chiche;kg
+26;22;Pommes de terres;tonne
+27;23;Radis;kg
+28;24;Tomate;kg
+29;25;Graines de tournesol;tonne
+30;26;Grains de triticale;quintal
+31;26;Paille de triticale;tonne
+32;27;Abricots;tonne
+33;28;Amandes;tonne
+34;29;Artichaut;tonne
+35;30;Citrons;tonne
+36;31;Figues;tonne
+37;32;Fraises;kg
+38;33;Grenades;tonne
+39;34;Mandarines;tonne
+40;35;Olives;tonne
+41;36;Oranges maltaises;tonne
+42;37;Oranges Thomson;tonne
+43;38;Pêches;tonne
+44;39;Poires;tonne
+45;40;Pommes;tonne
+46;41;Prunes;tonne
+47;42;Raisins de table;tonne
+48;43;Raisins pour vin;tonne
+49;44;Lait de vache;litre
+50;44;Fumier;tonne
+51;44;Veaux;unité
+52;44;Génisses;unité
+53;44;Vaches de réforme;unité
+54;44;Femelles adultes;unité
+55;44;Mâles adultes;unité
+56;45;Agneaux;unité
+57;45;Agnelles;unité
+58;45;Brebis;unité
+59;45;Mouton;unité

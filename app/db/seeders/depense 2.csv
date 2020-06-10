@@ -1,0 +1,108 @@
+﻿id;id_activite;libelle;montant
+1;1;Tracteur;120
+2;2;Tracteur;60
+3;3;Tracteur;30
+4;4;Main d'œuvre;45
+5;4;Fumier;100
+6;5;Main d'œuvre;45
+7;5;Engrais;156
+8;6;Main d'œuvre;45
+9;6;Engrais;62
+10;7;Main d'œuvre;300
+11;7;Semences et Plants;1125
+12;8;Main d'œuvre;300
+13;9;Engrais;124
+14;10;Engrais;50
+15;11;Main d'œuvre;100
+16;11;Traitement phytosanitaire;540
+17;12;Engrais;50
+18;13;Engrais;85
+19;14;Engrais;63
+20;15;Engrais;40
+21;16;Main d'œuvre;100
+22;16;Traitement phytosanitaire;750
+23;17;Engrais;125
+24;18;Engrais;25
+25;19;Main d'œuvre;100
+26;19;Traitement phytosanitaire;480
+27;20;Main d'œuvre;45
+28;20;Main d'œuvre;210
+29;22;Main d'œuvre;750
+30;23;Divers;96
+31;24;Tracteur;80
+32;25;Main d'œuvre;40
+33;26;Engrais;67
+34;27;Engrais;68
+35;28;Tracteur;50
+36;29;Engrais;45
+37;30;Engrais;56
+38;31;Engrais;76
+39;32;Tracteur;100
+40;45;Paille;60
+41;45;Fourrages verts;60
+42;34;Paille;60
+43;34;Fourrages verts;60
+44;35;Paille;60
+45;35;Fourrages verts;60
+46;36;Paille;60
+47;36;Fourrages verts;60
+48;37;Paille;60
+49;37;Fourrages verts;60
+50;38;Paille;60
+51;38;Fourrages verts;60
+52;39;Paille;60
+53;39;Foin;30
+54;39;Fourrages verts;30
+55;40;Paille;60
+56;40;Foin;30
+57;40;Fourrages verts;30
+58;41;Paille;60
+59;41;Foin;30
+60;41;Fourrages verts;30
+61;42;Paille;60
+62;42;Foin;60
+63;43;Paille;60
+64;43;Foin;60
+65;44;Paille;60
+66;44;Foin;60
+67;46;Concentrés (Boost avant mise-bas 10kg/vache/jour);270
+68;47;Concentrés (Boost avant mise-bas 10kg/vache/jour);270
+69;48;Concentrés (Pic de lactation 8kg/vache/jour);216
+70;49;Concentrés (Pic de lactation 8kg/vache/jour);216
+71;50;Concentrés (Pic de lactation 8kg/vache/jour);216
+72;51;Concentrés (Pic de lactation 8kg/vache/jour);216
+73;52;Concentrés (Pic de lactation 8kg/vache/jour);216
+74;53;Concentrés (Pic de lactation 8kg/vache/jour);216
+75;54;Concentrés (Fin de lactation 6kg/vache/jour);162
+76;55;Concentrés (Fin de lactation 6kg/vache/jour);162
+77;56;Concentrés (Fin de lactation 6kg/vache/jour);162
+78;57;Concentrés (Fin de lactation 6kg/vache/jour);162
+79;58;Concentrés (Tarissement 4kg/vache/jour);108
+80;59;Concentrés (Tarissement 4kg/vache/jour);108
+81;71;Paille;60
+82;71;Fourrages verts;60
+83;60;Paille;60
+84;60;Fourrages verts;60
+85;61;Paille;60
+86;61;Fourrages verts;60
+87;62;Paille;60
+88;62;Fourrages verts;60
+89;63;Paille;60
+90;63;Fourrages verts;60
+91;64;Paille;60
+92;64;Fourrages verts;60
+93;65;Paille;60
+94;65;Foin;30
+95;65;Fourrages verts;30
+96;66;Paille;60
+97;66;Foin;30
+98;66;Fourrages verts;30
+99;67;Paille;60
+100;67;Foin;30
+101;67;Fourrages verts;30
+102;68;Paille;60
+103;68;Foin;60
+104;69;Paille;60
+105;69;Foin;60
+106;70;Paille;60
+107;70;Foin;60

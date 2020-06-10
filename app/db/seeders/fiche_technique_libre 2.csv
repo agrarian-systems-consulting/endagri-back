@@ -1,0 +1,5 @@
+﻿id;id_fiche_technique;id_analyse;date_ini;coeff_surface_ou_nombre_animaux;coeff_main_oeuvre_familiale
+1;1;1;01/03/2020;2,5;0,5
+2;3;1;01/01/2020;10;0,75
+3;2;2;01/01/2020;5;0,2
+4;4;2;01/01/2020;20;0,1

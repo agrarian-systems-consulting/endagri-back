@@ -1,0 +1,65 @@
+﻿id;libelle;type_production
+1;Ail;Culture annuelle
+2;Avoine;Culture annuelle
+3;Blé dur;Culture annuelle
+4;Blé tendre;Culture annuelle
+5;Blette;Culture annuelle
+6;Colza;Culture annuelle
+7;Epices;Culture annuelle
+8;Epinard;Culture annuelle
+9;Fenouil;Culture annuelle
+10;Feverolles;Culture annuelle
+11;Feves;Culture annuelle
+12;Gombo;Culture annuelle
+13;Melon;Culture annuelle
+14;Mloukhia;Culture annuelle
+15;Oignon;Culture annuelle
+16;Orge;Culture annuelle
+17;Pastèque;Culture annuelle
+18;Persil;Culture annuelle
+19;Petit pois;Culture annuelle
+20;Piment;Culture annuelle
+21;Pois chiche;Culture annuelle
+22;Pomme de terre;Culture annuelle
+23;Radis;Culture annuelle
+24;Tomate;Culture annuelle
+25;Tournesol;Culture annuelle
+26;Triticale;Culture annuelle
+27;Abricotier;Culture pérenne
+28;Amandier;Culture pérenne
+29;Artichaut;Culture pérenne
+30;Citronnier;Culture pérenne
+31;Figues;Culture pérenne
+32;Fraises;Culture pérenne
+33;Grenadiers;Culture pérenne
+34;Mandarines;Culture pérenne
+35;Olives;Culture pérenne
+36;Oranger Maltais;Culture pérenne
+37;Oranger Thomson;Culture pérenne
+38;Pêcher;Culture pérenne
+39;Poirier;Culture pérenne
+40;Pommier;Culture pérenne
+41;Prunier;Culture pérenne
+42;Vignes à raisins de table;Culture pérenne
+43;Vignes à vin;Culture pérenne
+44;Bovin laitier;Elevage naisseur laitier
+45;Ovins viande;Elevage naisseur viande
+;;
+;;
+;;
+;;
+;;
+;;
+;;
+;;
+;;
+;;
+;;
+;;
+;;
+;;
+;;
+;;
+;;
+;;
+;;
