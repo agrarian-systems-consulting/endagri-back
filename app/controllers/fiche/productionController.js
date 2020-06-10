@@ -75,7 +75,7 @@ const postProduction = (request, response) => {
   const getProductionEtProduits = (id_production) => {
     return new Promise((resolve, reject) => {
       dbConn.pool.query(
-        'SELECT production.*,json_agg(produit.*) FROM fiche.production AS production LEFT JOIN fiche.produit produit ON produit.id_production = production.id WHERE production.id=$1 GROUP BY production.id',
+        `SELECT production.*,json_agg(json_build_object('id',produit.id,'libelle',produit.libelle,'unite',produit.unite)) produits FROM fiche.production AS production LEFT JOIN fiche.produit produit ON produit.id_production = production.id WHERE production.id=$1 GROUP BY production.id`,
         [id_production],
         (err, res) => {
           if (err) {

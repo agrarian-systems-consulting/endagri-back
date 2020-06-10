@@ -61,14 +61,12 @@ const postActivite = (request, response) => {
     });
   };
 
-  const asyncPromiseDepense = async (depense, id_activite) => {
-    return promiseDepense(depense, id_activite);
-  };
-
   // Permet d'attendre que TOUTES les dépenses ait été ajoutées
   const ajouterDepenses = async (id_activite) => {
     return Promise.all(
-      depenses.map((depense) => asyncPromiseDepense(depense, id_activite))
+      depenses.map((depense) => {
+        return promiseDepense(depense, id_activite);
+      })
     );
   };
 
@@ -183,15 +181,11 @@ const putActivite = (request, response) => {
     });
   };
 
-  const asyncPromiseInsertDepense = async (depense) => {
-    return promiseInsertDepense(depense);
-  };
-
   // Permet d'attendre que TOUTES les dépenses aient été ajoutées
   const ajouteNouvellesDepenses = async (depenses) => {
     return Promise.all(
       depenses.map((depense) => {
-        asyncPromiseInsertDepense(depense);
+        return promiseInsertDepense(depense);
       })
     );
   };

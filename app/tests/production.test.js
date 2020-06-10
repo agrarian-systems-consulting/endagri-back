@@ -39,4 +39,9 @@ test('Doit créer une nouvelle production', async () => {
       ],
     })
     .expect(200);
+
+  expect(res.body.id).toBeDefined();
+  expect(res.body.produits).toBeDefined();
+  expect(res.body.produits.length).toBe(2);
+  expect(res.body.produits[0].libelle).toBe('Paille de chose');
 });
