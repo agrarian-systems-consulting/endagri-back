@@ -29,89 +29,80 @@
 28;20;Main d'œuvre;210
 29;22;Main d'œuvre;750
 30;23;Divers;96
-31;24;Tracteur;120
-32;25;Tracteur;60
-33;26;Tracteur;30
-34;27;Main d'œuvre;30
-35;28;Main d'œuvre;30
-36;29;Main d'œuvre;30
-37;30;Main d'œuvre;150
-38;31;Main d'œuvre;300
-39;34;Main d'œuvre;30
-40;35;Tracteur;40
-41;37;Main d'œuvre;30
-42;40;Main d'œuvre;300
-43;41;Main d'œuvre;375
-44;42;Tracteur;60
-45;27;Fumier;125
-46;28;Engrais;78
-47;29;Engrais;93
-48;30;Semences et Plants;10500
-49;32;Engrais;85
-50;33;Engrais;50
-51;34;Traitement phytosanitaire;250
-52;36;Engrais;50
-53;37;Traitement phytosanitaire;500
-54;38;Engrais;100
-55;39;Engrais;250
-56;44;Tracteur;35
-57;46;Main d'œuvre;20
-58;47;Main d'œuvre;40
-59;48;Main d'œuvre;35
-60;51;Tracteur;15
-61;52;Main d'œuvre;30
-62;45;Main d'œuvre;360
-63;46;Engrais;65
-64;47;Engrais;70
-65;49;Engrais;180
-66;50;Engrais;54
-67;51;Engrais;440
-68;54;Tracteur;35
-69;55;Tracteur;35
-70;56;Main d'œuvre;180
-71;57;Main d'œuvre;20
-72;58;Main d'œuvre;20
-73;59;Main d'œuvre;15
-74;57;Engrais;32
-75;58;Engrais;25
-76;75;Paille;60
-77;75;Fourrages verts;60
-78;64;Paille;60
-79;64;Fourrages verts;60
-80;65;Paille;60
-81;65;Fourrages verts;60
-82;66;Paille;60
-83;66;Fourrages verts;60
-84;67;Paille;60
-85;67;Fourrages verts;60
-86;68;Paille;60
-87;68;Fourrages verts;60
-88;69;Paille;60
-89;69;Foin;30
-90;69;Fourrages verts;30
-91;70;Paille;60
-92;70;Foin;30
-93;70;Fourrages verts;30
-94;71;Paille;60
-95;71;Foin;30
-96;71;Fourrages verts;30
-97;72;Paille;60
-98;72;Foin;60
-99;73;Paille;60
-100;73;Foin;60
-101;74;Paille;60
-102;74;Foin;60
-103;76;Concentrés (Boost avant mise-bas 10kg/vache/jour);270
-104;77;Concentrés (Boost avant mise-bas 10kg/vache/jour);270
-105;78;Concentrés (Pic de lactation 8kg/vache/jour);216
-106;79;Concentrés (Pic de lactation 8kg/vache/jour);216
-107;80;Concentrés (Pic de lactation 8kg/vache/jour);216
-108;81;Concentrés (Pic de lactation 8kg/vache/jour);216
-109;82;Concentrés (Pic de lactation 8kg/vache/jour);216
-110;83;Concentrés (Pic de lactation 8kg/vache/jour);216
-111;84;Concentrés (Fin de lactation 6kg/vache/jour);162
-112;85;Concentrés (Fin de lactation 6kg/vache/jour);162
-113;86;Concentrés (Fin de lactation 6kg/vache/jour);162
-114;87;Concentrés (Fin de lactation 6kg/vache/jour);162
-115;88;Concentrés (Tarissement 4kg/vache/jour);108
-116;89;Concentrés (Tarissement 4kg/vache/jour);108
+31;24;Tracteur;80
+32;25;Main d'œuvre;40
+33;26;Engrais;67
+34;27;Engrais;68
+35;28;Tracteur;50
+36;29;Engrais;45
+37;30;Engrais;56
+38;31;Engrais;76
+39;32;Tracteur;100
+40;45;Paille;60
+41;45;Fourrages verts;60
+42;34;Paille;60
+43;34;Fourrages verts;60
+44;35;Paille;60
+45;35;Fourrages verts;60
+46;36;Paille;60
+47;36;Fourrages verts;60
+48;37;Paille;60
+49;37;Fourrages verts;60
+50;38;Paille;60
+51;38;Fourrages verts;60
+52;39;Paille;60
+53;39;Foin;30
+54;39;Fourrages verts;30
+55;40;Paille;60
+56;40;Foin;30
+57;40;Fourrages verts;30
+58;41;Paille;60
+59;41;Foin;30
+60;41;Fourrages verts;30
+61;42;Paille;60
+62;42;Foin;60
+63;43;Paille;60
+64;43;Foin;60
+65;44;Paille;60
+66;44;Foin;60
+67;46;Concentrés (Boost avant mise-bas 10kg/vache/jour);270
+68;47;Concentrés (Boost avant mise-bas 10kg/vache/jour);270
+69;48;Concentrés (Pic de lactation 8kg/vache/jour);216
+70;49;Concentrés (Pic de lactation 8kg/vache/jour);216
+71;50;Concentrés (Pic de lactation 8kg/vache/jour);216
+72;51;Concentrés (Pic de lactation 8kg/vache/jour);216
+73;52;Concentrés (Pic de lactation 8kg/vache/jour);216
+74;53;Concentrés (Pic de lactation 8kg/vache/jour);216
+75;54;Concentrés (Fin de lactation 6kg/vache/jour);162
+76;55;Concentrés (Fin de lactation 6kg/vache/jour);162
+77;56;Concentrés (Fin de lactation 6kg/vache/jour);162
+78;57;Concentrés (Fin de lactation 6kg/vache/jour);162
+79;58;Concentrés (Tarissement 4kg/vache/jour);108
+80;59;Concentrés (Tarissement 4kg/vache/jour);108
+81;71;Paille;60
+82;71;Fourrages verts;60
+83;60;Paille;60
+84;60;Fourrages verts;60
+85;61;Paille;60
+86;61;Fourrages verts;60
+87;62;Paille;60
+88;62;Fourrages verts;60
+89;63;Paille;60
+90;63;Fourrages verts;60
+91;64;Paille;60
+92;64;Fourrages verts;60
+93;65;Paille;60
+94;65;Foin;30
+95;65;Fourrages verts;30
+96;66;Paille;60
+97;66;Foin;30
+98;66;Fourrages verts;30
+99;67;Paille;60
+100;67;Foin;30
+101;67;Fourrages verts;30
+102;68;Paille;60
+103;68;Foin;60
+104;69;Paille;60
+105;69;Foin;60
+106;70;Paille;60
+107;70;Foin;60

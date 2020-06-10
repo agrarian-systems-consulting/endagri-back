@@ -1,0 +1,6 @@
+﻿id;id_analyse;libelle;mois_reel;montant
+1;1;Eau;01/07/2020;1000
+2;1;Electricité;01/09/2020;300
+3;1;Gasoil;01/10/2020;600
+4;2;Eau;01/10/2020;550
+5;2;Gasoil;01/09/2020;1250
