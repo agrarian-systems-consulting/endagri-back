@@ -4,6 +4,7 @@ import dbConn from '../../db/pool';
 // Transformer postFiche avec des Promises
 
 // ----- RECUPERE LA LISTE DES FICHES ----- //
+// Ajouter un param optionnel selon la catégorie de production
 const getFiches = (request, response) => {
   // Récupère le paramètre optionnel id_utilisateur pour filtrer les fiches techniques
   const id_utilisateur = request.query.id_utilisateur;
@@ -154,19 +155,20 @@ const postFiche = (request, response) => {
 const getFicheById = (request, response) => {
   const id_fiche = request.params.id;
 
-  const getFicheByIdQuery = `WITH subquery AS(
-    SELECT act.mois_relatif,SUM(d.montant) dep,act.id_fiche_technique,f.libelle FROM fiche.activite act LEFT JOIN fiche.depense d ON act.id=d.id_activite 
-    JOIN fiche.fiche_technique f ON act.id_fiche_technique=f.id
-    GROUP BY act.mois_relatif,act.id_fiche_technique,f.libelle ORDER BY act.mois_relatif 
-   )
-   SELECT libelle,JSON_AGG(JSON_BUILD_OBJECT('mois relatif',mois_relatif,'depenses',dep)) flux FROM subquery WHERE subquery.id_fiche_technique=$1 
-   GROUP BY libelle`;
+  const getFicheByIdQuery = `
+  SELECT f.*, json_agg(CASE a.id WHEN NULL 
+  THEN NULL ELSE a.* END) activites,json_agg(CASE v.id WHEN NULL 
+    THEN NULL ELSE v.* END) ventes 
+  FROM fiche.fiche_technique f 
+  LEFT JOIN fiche.activite a ON a.id_fiche_technique = f.id 
+  LEFT JOIN fiche.vente v ON v.id_fiche_technique = f.id 
+  WHERE f.id = $1 GROUP BY f.id`;
 
   dbConn.pool.query(getFicheByIdQuery, [id_fiche], (error, results) => {
     if (error) {
       throw error;
     }
-    response.status(200).send(results.rows);
+    response.status(200).send(results.rows[0]);
   });
 };
 

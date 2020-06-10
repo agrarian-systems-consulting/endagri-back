@@ -2,66 +2,38 @@ import request from 'supertest';
 import assert from 'assert';
 import app from '../../server';
 import dbConn from '../db/pool';
+import chalk from 'chalk';
+import regeneratorRuntime from 'regenerator-runtime';
 
-// Créé une fiche à supprimer dans un test
-beforeAll((done) => {
-  const postFicheQuery =
-    'INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id';
+const id_fiche_technique = 1001;
 
-  dbConn.pool
-    .query(postFicheQuery, [999, 65, 'Carottes en sol argileux', 65, 2, 6])
-    .then(() => done());
+test('Doit retourner toutes les fiches techniques', async () => {
+  const res = await request(app).get('/fiches').expect(200);
+
+  expect(res.body.length).toBeGreaterThan(3);
+  expect(res.body[0].libelle_production).toBeDefined();
 });
 
-test('Doit retourner toutes les fiches techniques', (done) => {
-  request(app)
-    .get('/fiches')
-    .expect(200)
-    .end(function (err, res) {
-      // console.log('response.body =', res.body);
-      if (err) return done(err);
-      expect(
-        res.body.length,
-        'Il y au moins 4 fiches techniques dans la base de données'
-      ).toBeGreaterThan(3);
-      expect(
-        res.body[0].libelle_production,
-        'Le nom de la production doit être récupéré avec le contenu de la fiche technique grâce au JOIN dans le SQL'
-      ).toBeDefined();
-      done();
-    });
+test("Doit retourner toutes les fiches techniques d'un seul auteur", async () => {
+  const res = await request(app).get('/fiches/?id_utilisateur=1').expect(200);
+
+  expect(res.body.length).toBe(3);
 });
 
-test("Doit retourner toutes les fiches techniques d'un seul auteur", (done) => {
-  request(app)
-    .get('/fiches/?id_utilisateur=1')
-    .expect(200)
-    .end(function (err, res) {
-      if (err) return done(err);
+test("Doit retourner le contenu d'une fiche technique", async () => {
+  const res = await request(app)
+    .get('`/fiche/${id_fiche_technique}`')
+    .expect(200);
 
-      // console.log('response.body =', res.body);
-      expect(
-        res.body.length,
-        'Il y au moins 3 fiches techniques dans la base de données pour cet utilisateur'
-      ).toBe(3);
-      done();
-    });
+  expect(res.body.id).toBe(1);
+  expect(res.body.libelle).toBe('Carottes en sol argileux');
+  expect(res.body.activites).toBeDefined();
+  expect(res.body.ventes).toBeDefined();
+  expect(res.body.type_production).toBeDefined();
 });
 
-test("Doit retourner le contenu d'une fiche technique", (done) => {
-  request(app)
-    .get('/fiche/1')
-    .expect(200)
-    .end(function (err, res) {
-      // console.log('response.body =', res.body);
-      if (err) return done(err);
-      //TODO : Améliorer ce test pour tester le contenu renvoyer par cette requête
-      done();
-    });
-});
-
-test('Doit créer une fiche technique sans activités ni ventes', (done) => {
-  request(app)
+test('Doit créer une fiche technique sans activités ni ventes', async () => {
+  const res = await request(app)
     .post('/fiche')
     .send({
       libelle_fiche: 'Pomme de terres en agriculture biologique',
@@ -70,13 +42,9 @@ test('Doit créer une fiche technique sans activités ni ventes', (done) => {
       ini_debut: 1,
       ini_fin: 3,
     })
-    .expect(201)
-    .end(function (err, res) {
-      if (err) return done(err);
-      // console.log('res.body =', res.body);
-      expect(res.body.id).toBeDefined();
-      done();
-    });
+    .expect(201);
+
+  expect(res.body.id).toBeDefined();
 });
 
 test('Doit créer une fiche technique avec des ventes, des activités et des dépenses associées', (done) => {
@@ -157,7 +125,7 @@ test('Doit créer une fiche technique avec des ventes, des activités et des dé
 
 test("Doit modifier les informations principales d'une fiche technique", (done) => {
   request(app)
-    .put('/fiche/999')
+    .put(`/fiche/${id_fiche_technique}`)
     .send({
       libelle_fiche: 'Un titre modifié',
       ini_debut: 1,
@@ -175,14 +143,30 @@ test("Doit modifier les informations principales d'une fiche technique", (done) 
     });
 });
 
-//TODO :
-//@Asc Tester les suppressions en cascade
-test('Doit supprimer une fiche technique', (done) => {
-  request(app)
-    .delete('/fiche/999')
-    .expect(204)
-    .end(function (err, res) {
-      if (err) return done(err);
-      done();
-    });
+test('Doit supprimer une fiche technique', async () => {
+  const res = request(app).delete(`/fiche/${id_fiche_technique}`).expect(204);
+});
+
+// Créé une fiche à supprimer dans un test
+beforeAll((done) => {
+  const postFicheQuery =
+    'INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id';
+
+  dbConn.pool
+    .query(postFicheQuery, [
+      id_fiche_technique,
+      65,
+      'Carottes en sol argileux',
+      65,
+      2,
+      6,
+    ])
+    .then(() => done());
+});
+
+// Créé une fiche à supprimer dans un test
+afterAll((done) => {
+  const deleteQuery = 'DELETE FROM fiche.fiche_technique WHERE id=$1';
+
+  dbConn.pool.query(deleteQuery, [id_fiche_technique]).then(() => done());
 });
