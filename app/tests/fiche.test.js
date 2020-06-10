@@ -22,14 +22,15 @@ test("Doit retourner toutes les fiches techniques d'un seul auteur", async () =>
 
 test("Doit retourner le contenu d'une fiche technique", async () => {
   const res = await request(app)
-    .get('`/fiche/${id_fiche_technique}`')
+    .get(`/fiche/${id_fiche_technique}`)
     .expect(200);
 
-  expect(res.body.id).toBe(1);
+  expect(res.body.id).toBe(id_fiche_technique);
   expect(res.body.libelle).toBe('Carottes en sol argileux');
   expect(res.body.activites).toBeDefined();
   expect(res.body.ventes).toBeDefined();
   expect(res.body.type_production).toBeDefined();
+  expect(res.body.id_production).toBeDefined();
 });
 
 test('Doit créer une fiche technique sans activités ni ventes', async () => {
