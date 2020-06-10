@@ -119,6 +119,7 @@ const postActivite = (request, response) => {
 };
 
 // ------ MODIFIER UNE ACTIVITE ------ //
+// Problème mineur : N'await pas que toutes les dépenses soient ajoutée avec de faire le SELECT Prolème lié au Promise.all je suppose.
 const putActivite = (request, response) => {
   const id_fiche_technique = request.params.id_fiche_technique;
   const id_activite = request.params.id_activite;
@@ -221,7 +222,9 @@ const putActivite = (request, response) => {
   const doModifierActiviteEtDepenses = async () => {
     await updateActivite(id_activite);
     await deletePreviousDepenses(id_activite);
-    if (depenses != undefined) {
+
+    if (depenses !== undefined) {
+      // Problème : Le await ici ne fonctionne pas et je ne sais pas pourquoi
       await ajouteNouvellesDepenses(depenses, id_activite);
     }
 
@@ -241,32 +244,24 @@ const putActivite = (request, response) => {
     });
 };
 
-// SUPPRIME UNE ACTIVITE
-// @Asc v1 Implémenter les DELETE en cascade sur dépenses dans postgre
+// ------ SUPPRIME UNE ACTIVITE ------ //
 const deleteActivite = (request, response) => {
-  // Récupère l'id de la fiche technique depuis les params de l'URL
   const id_fiche_technique = request.params.id; // A utiliser plus tard pour vérifier les droits de l'utilisateur
-
-  // Récupère l'id de l'activité
   const id_activite = request.params.id_activite;
-
-  const deleteActiviteQuery = `DELETE FROM fiche.activite WHERE id=$1 RETURNING *`;
-  dbConn.pool.query(deleteActiviteQuery, [id_activite], (error, results) => {
-    if (error) {
-      throw error;
+  dbConn.pool.query(
+    `DELETE FROM fiche.activite WHERE id=$1 RETURNING *`,
+    [id_activite],
+    (err, res) => {
+      if (err) {
+        throw err;
+      }
+      if (res.rows[0] !== undefined) {
+        response.sendStatus(204);
+      } else {
+        response.sendStatus(404);
+      }
     }
-    // console.log(results.rows);
-    if (results.rows[0] !== undefined) {
-      // console.log('Deleted : ' + JSON.stringify(results.rows[0], true, 2));
-      response.sendStatus(204);
-    } else {
-      response.sendStatus(404);
-    }
-  });
+  );
 };
 
-module.exports = {
-  postActivite,
-  putActivite,
-  deleteActivite,
-};
+export { postActivite, putActivite, deleteActivite };

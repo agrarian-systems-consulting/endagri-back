@@ -91,6 +91,7 @@ test("Doit modifier une activite sans dépenses d'une fiche technique", async ()
 
   expect(res.body.id).toBeDefined();
   expect(res.body.libelle).toBe("Un titre d'activité modifié par le test 3");
+  // expect(res.body.depenses.length).toBe(0);
 });
 
 test("Doit modifier une activite et des dépenses existantes associées d'une fiche technique", async () => {
