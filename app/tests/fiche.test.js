@@ -124,8 +124,8 @@ test('Doit créer une fiche technique avec des ventes, des activités et des dé
     });
 });
 
-test("Doit modifier les informations principales d'une fiche technique", (done) => {
-  request(app)
+test("Doit modifier les informations principales d'une fiche technique", async () => {
+  const res = await request(app)
     .put(`/fiche/${id_fiche_technique}`)
     .send({
       libelle_fiche: 'Un titre modifié',
@@ -133,15 +133,10 @@ test("Doit modifier les informations principales d'une fiche technique", (done) 
       ini_fin: 3,
       commentaire: 'Un commentaire sur une fiche modifiée',
     })
-    .expect(200)
-    .end(function (err, res) {
-      if (err) return done(err);
-      expect(res.body.libelle).toBe('Un titre modifié');
-      expect(res.body.commentaire).toBe(
-        'Un commentaire sur une fiche modifiée'
-      );
-      done();
-    });
+    .expect(200);
+
+  expect(res.body.libelle).toBe('Un titre modifié');
+  expect(res.body.commentaire).toBe('Un commentaire sur une fiche modifiée');
 });
 
 test('Doit supprimer une fiche technique', async () => {

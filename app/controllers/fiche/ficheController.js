@@ -151,7 +151,6 @@ const postFiche = (request, response) => {
 };
 
 // ---- RECUPERE LE CONTENU D'UNE FICHE ---- //
-// Créer un test
 const getFicheById = (request, response) => {
   const id_fiche = request.params.id;
 
