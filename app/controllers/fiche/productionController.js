@@ -1,7 +1,6 @@
 import dbConn from '../../db/pool';
 
 // ---- LISTER TOUTES LES PRODUCTIONS ---- //
-// Ajouter le param optionnel
 const getProductions = (request, response) => {
   const { type_production } = request.query;
 
@@ -106,11 +105,10 @@ const postProduction = (request, response) => {
     });
 };
 
-// CREER VUE
+// ---- RECUPERER UNE PRODUCTION ET SES PRODUITS --- //
 const getProductionById = (request, response) => {
   const id_production = request.params.id;
-  const getProductionByIdQuery =
-    'SELECT id,libelle,type_production FROM fiche.production WHERE id=$1';
+  const getProductionByIdQuery = `SELECT production.*, json_agg(json_build_object('id',produit.id,'libelle',produit.libelle,'unite',produit.libelle)) produits FROM fiche.production production LEFT JOIN fiche.produit produit ON produit.id_production = production.id WHERE production.id=$1 GROUP BY production.id`;
   dbConn.pool.query(
     getProductionByIdQuery,
     [id_production],
@@ -118,7 +116,7 @@ const getProductionById = (request, response) => {
       if (error) {
         throw error;
       }
-      response.status(200).send(results.rows);
+      response.status(200).send(results.rows[0]);
     }
   );
 };
