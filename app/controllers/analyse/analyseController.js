@@ -53,6 +53,19 @@ const postAnalyse = (request, response) => {
 const getAnalyseById = (request, response) => {
   const id_analyse = request.params.id;
 
+  // Step 1 Fetch analyse/:id
+  // Step 2 A partir de date_debut_analyse et date_fuin_analyse, créer un array de mois analysés
+  // Step 3 Fetch flux mensuels par catégorie, (les )dépenses et les ventes) controller FluxMoisReelsMoisCatController.js
+  // Step 4 Dépenses : On boucle sur les flux mensuels de dépenses, si categories_depenses.libelle_categorie = libelle_coeff_depense (Boucler sur coeff_depenses)
+  // - Si match, on applique le coeff_intraconsommation sur categories_depenses.total_depenses_categorie
+  // ET le coeff général surface
+  // ET SI categories_depenses.libelle_categorie = "Main d'oeuvre"",on applique le coeff général main d'oeuvre familial
+  // Step 5 Ventes : On boucle sur les flux mensuels de ventes, si categories_ventes.libelle_categorie = coeff_vente.libelle_categorie (on boucle dessus)
+  // - Si match, on applique les trois coeff + le principal surface_nom_de_meres.
+  // Step 6 Faire les sommes des ventes et dépenses
+  // Step 7 Solde et Solde cumulé
+  // Step 8 Contruire le json complet
+
   const getAnalyseByIdQuery = `WITH subquery AS(
     SELECT a.id,a.created,a.modified,a.nom_utilisateur,a.nom_client,a.montant_tresorerie_initiale,a.date_debut_analyse,a.date_fin_analyse,
       json_agg(json_build_object('id_fiche_technique_libre',ftl.id,'id_fiche_technique',ftl.id_fiche_technique,'date_ini',ftl.date_ini,'coeff_surface_ou_nombre_animaux',ftl.coeff_surface_ou_nombre_animaux,
