@@ -1,6 +1,6 @@
-![BuildStatus](#buildstatus#) ![Functions](#functions# 'Make me better!')
-
 # Endagri - API REST
+
+![BuildStatus](#buildstatus#) ![Functions](#functions# 'Make me better!')
 
 One Paragraph of project description goes here
 
