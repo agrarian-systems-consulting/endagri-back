@@ -288,7 +288,7 @@ const deleteProductionById = (request, response) => {
     });
 };
 
-export {
+export default {
   getProductions,
   postProduction,
   getProductionById,

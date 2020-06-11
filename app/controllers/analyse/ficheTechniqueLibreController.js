@@ -1,11 +1,8 @@
-const dbConn = require('../../db/pool')
+import dbConn from '../../db/pool';
 
 // CREER UNE NOUVELLE FICHE
-// @Asc v1 Faire en sorte que la response ne soit renvoyée que lorsque les query pour créer les ventes et activités sont resolved (à voir si on garde dépenses et activités dans ce endpoint quand même)
-// @Asc v1 Supprimer id_utilisateur si pose problème tant que la table User n'existe pas
-// @Enda v2 Gérer id_utilisateur avec la table User
-const postFicheTechniqueLibre = (request, response) => {
 
+const postFicheTechniqueLibre = (request, response) => {
   const id_analyse = request.params.id_analyse;
   // Destructure les données contenus dans la requête
   const {
@@ -24,7 +21,12 @@ const postFicheTechniqueLibre = (request, response) => {
       // Envoi de la requête asynchrone
       dbConn.pool.query(
         postFicheTechniqueLibreQuery,
-        [date_ini, coeff_surface_ou_nombre_animaux, coeff_main_oeuvre_familiale,id_analyse],
+        [
+          date_ini,
+          coeff_surface_ou_nombre_animaux,
+          coeff_main_oeuvre_familiale,
+          id_analyse,
+        ],
         (error, results) => {
           if (error) {
             // Si la requête échoue, reject la Promise
@@ -42,11 +44,12 @@ const postFicheTechniqueLibre = (request, response) => {
   };
 
   const promiseCoeffVente = (coeff_vente, id_fiche_technique_libre) => {
-  
-    const { libelle_categorie, //swagger à modifier
+    const {
+      libelle_categorie, //swagger à modifier
       coeff_autoconsommation,
       coeff_intraconsommation,
-      coeff_rendement } = coeff_vente;
+      coeff_rendement,
+    } = coeff_vente;
 
     return new Promise((resolve, reject) => {
       // Construction de la requête pour créer la dépense
@@ -56,35 +59,41 @@ const postFicheTechniqueLibre = (request, response) => {
       // Envoi de la requête asynchrone
       dbConn.pool.query(
         postCoeffVenteQuery,
-        [ id_fiche_technique_libre,
+        [
+          id_fiche_technique_libre,
           libelle_categorie, //swagger à modifier
           coeff_autoconsommation,
           coeff_intraconsommation,
-          coeff_rendement],
+          coeff_rendement,
+        ],
         (error, results) => {
           if (error) {
             // Si la requête échoue
             reject(error);
-          }         
+          }
           resolve('Coeff Vente ajoutée', results.rows[0]);
         }
       );
     });
   };
 
-  const asyncPromiseCoeffVente = async (coeff_vente, id_fiche_technique_libre) => {
+  const asyncPromiseCoeffVente = async (
+    coeff_vente,
+    id_fiche_technique_libre
+  ) => {
     return promiseCoeffVente(coeff_vente, id_fiche_technique_libre);
   };
   // Permet d'attendre que TOUTES les coeff ventes aient été ajoutées
   const ajouterCoeffVentes = async (id_fiche_technique_libre) => {
     return Promise.all(
-      coeff_ventes.map((coeff_vente) => asyncPromiseCoeffVente(coeff_vente, id_fiche_technique_libre))
+      coeff_ventes.map((coeff_vente) =>
+        asyncPromiseCoeffVente(coeff_vente, id_fiche_technique_libre)
+      )
     );
   };
 
   ////
   const promiseCoeffDepense = (coeff_depense, id_fiche_technique_libre) => {
-  
     const { libelle_categorie, coeff_intraconsommation } = coeff_depense;
 
     return new Promise((resolve, reject) => {
@@ -95,25 +104,30 @@ const postFicheTechniqueLibre = (request, response) => {
       // Envoi de la requête asynchrone
       dbConn.pool.query(
         postCoeffDepenseQuery,
-        [ libelle_categorie, coeff_intraconsommation],
+        [libelle_categorie, coeff_intraconsommation],
         (error, results) => {
           if (error) {
             // Si la requête échoue
             reject(error);
-          }         
+          }
           resolve('Coeff Dépense ajoutée', results.rows[0]);
         }
       );
     });
   };
 
-  const asyncPromiseCoeffDepense = async (coeff_depense, id_fiche_technique_libre) => {
+  const asyncPromiseCoeffDepense = async (
+    coeff_depense,
+    id_fiche_technique_libre
+  ) => {
     return promiseCoeffDepense(coeff_depense, id_fiche_technique_libre);
   };
   // Permet d'attendre que TOUTES les coeff ventes aient été ajoutées
   const ajouterCoeffDepenses = async (id_fiche_technique_libre) => {
     return Promise.all(
-      coeff_depenses.map((coeff_depense) => asyncPromiseCoeffDepense(coeff_depense, id_fiche_technique_libre))
+      coeff_depenses.map((coeff_depense) =>
+        asyncPromiseCoeffDepense(coeff_depense, id_fiche_technique_libre)
+      )
     );
   };
 
@@ -167,10 +181,8 @@ const postFicheTechniqueLibre = (request, response) => {
       response.status(201).json(result);
     })
     .catch((e) => console.log(chalk.red.bold(e)));
-    
-  
 };
 
 module.exports = {
-    postFicheTechniqueLibre,
-}
+  postFicheTechniqueLibre,
+};

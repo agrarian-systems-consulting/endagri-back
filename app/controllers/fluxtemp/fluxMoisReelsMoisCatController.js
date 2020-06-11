@@ -88,6 +88,6 @@ const getFluxMoisReelsByIdByMois = (request, response) => {
 
 }
 
-module.exports = {
+export default {
   getFluxMoisReelsByIdByMois
 }

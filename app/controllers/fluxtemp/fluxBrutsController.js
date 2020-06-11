@@ -21,6 +21,6 @@ const getFluxBrutsById = (request, response) => {
   });
 }
 
-module.exports = {
+export default {
   getFluxBrutsById,
 }

@@ -127,7 +127,7 @@ const getVenteById = (request, response) => {
   });
 };
 
-module.exports = {
+export default {
   getFluxMoisReelsById,
   getVenteByIdFiche,
   getVenteById

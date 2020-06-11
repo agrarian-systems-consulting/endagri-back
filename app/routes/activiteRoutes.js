@@ -1,6 +1,6 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const activiteController = require('../controllers/fiche/activiteController');
+import activiteController from '../controllers/fiche/activiteController';
 
 router.post(
   '/fiche/:id_fiche_technique/activite',
@@ -15,4 +15,4 @@ router.delete(
   activiteController.deleteActivite
 );
 
-module.exports = router;
+export default router;

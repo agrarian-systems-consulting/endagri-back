@@ -224,4 +224,10 @@ const deleteFicheById = (request, response) => {
   );
 };
 
-export { getFiches, postFiche, getFicheById, putFicheById, deleteFicheById };
+export default {
+  getFiches,
+  postFiche,
+  getFicheById,
+  putFicheById,
+  deleteFicheById,
+};

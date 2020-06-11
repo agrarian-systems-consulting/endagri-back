@@ -72,7 +72,6 @@ const putVente = (request, response) => {
 };
 
 // ---- SUPPRIME UNE VENTE ---- //
-// Modifier le Swagger
 const deleteVente = (request, response) => {
   const id_fiche_technique = request.params.id;
   const id_vente = request.params.id_vente;
@@ -91,4 +90,4 @@ const deleteVente = (request, response) => {
   });
 };
 
-export { postVente, putVente, deleteVente };
+export default { postVente, putVente, deleteVente };

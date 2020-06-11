@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const venteController = require('../controllers/fiche/venteController');
+import venteController from '../controllers/fiche/venteController';
 
 router.post('/fiche/:id/vente', venteController.postVente);
 router.put('/fiche/:id/vente/:id_vente', venteController.putVente);
 router.delete('/fiche/:id/vente/:id_vente', venteController.deleteVente);
 
-module.exports = router;
+export default router;

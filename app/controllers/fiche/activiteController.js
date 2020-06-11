@@ -243,4 +243,4 @@ const deleteActivite = (request, response) => {
   );
 };
 
-export { postActivite, putActivite, deleteActivite };
+export default { postActivite, putActivite, deleteActivite };

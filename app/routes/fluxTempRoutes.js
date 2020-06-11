@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const fluxBrutsController = require('../controllers/fluxtemp/fluxBrutsController');
-const fluxMoisReelsController = require('../controllers/fluxtemp/fluxMoisReelsController');
-const fluxMoisReelsMoisController = require('../controllers/fluxtemp/fluxMoisReelsMoisController');
-const fluxMoisReelsMoisCatController = require('../controllers/fluxtemp/fluxMoisReelsMoisCatController');
+import fluxBrutsController from '../controllers/fluxtemp/fluxBrutsController';
+import fluxMoisReelsController  from '../controllers/fluxtemp/fluxMoisReelsController';
+import fluxMoisReelsMoisController from '../controllers/fluxtemp/fluxMoisReelsMoisController';
+import fluxMoisReelsMoisCatController from '../controllers/fluxtemp/fluxMoisReelsMoisCatController';
 
 router.get('/fiche/:id/fluxbruts', fluxBrutsController.getFluxBrutsById);
 router.get('/fiche/:id/flux_mois_reels', fluxMoisReelsController.getFluxMoisReelsById);
@@ -12,4 +12,4 @@ router.get('/vente/:id', fluxMoisReelsController.getVenteById);
 router.get('/fiche/:id/flux_mois_reels_mois', fluxMoisReelsMoisController.getFluxMoisReelsByIdByMois);
 router.get('/fiche/:id/flux_mois_reels_mois_categorie', fluxMoisReelsMoisCatController.getFluxMoisReelsByIdByMois);
 
-module.exports = router;
+export default router;

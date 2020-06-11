@@ -193,7 +193,7 @@ const deleteMarcheById = (request, response) => {
   );
 };
 
-export {
+export default {
   getMarches,
   postMarche,
   getMarcheById,
