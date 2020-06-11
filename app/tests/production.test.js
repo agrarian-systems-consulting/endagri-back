@@ -72,7 +72,35 @@ test('Doit récupérer une production existante avec ses produits associés', as
   expect(res.body.produits.length).toBe(2);
 });
 
-//Devrait petre écrit avec des Promises
+test('Doit modifier une production existante avec ses produits associés', async () => {
+  const res = await request(app)
+    .put(`/production/${id_production}`)
+    .send({
+      libelle_production: 'Libelle mis à jour',
+      type_production: 'Culture annuelle',
+      produits: [
+        {
+          libelle_produit: 'Paille de mise à jour',
+          unite: 'tonne de matière sèche',
+        },
+        {
+          libelle_produit: 'Egalement mis à jour',
+          unite: 'quintal',
+        },
+        {
+          libelle_produit: 'Un troisième produit créé',
+          unite: 'quintal',
+        },
+      ],
+    })
+    .expect(200);
+
+  expect(res.body.id).toBeDefined();
+  expect(res.body.produits).toBeDefined();
+  expect(res.body.produits.length).toBe(3);
+});
+
+//Devrait être écrit avec des Promises
 beforeAll((done) => {
   dbConn.pool.query(
     'INSERT INTO fiche.production(id,libelle,type_production) VALUES ($1,$2,$3) RETURNING *',

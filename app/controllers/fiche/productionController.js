@@ -121,22 +121,115 @@ const getProductionById = (request, response) => {
   );
 };
 
-// A DISCUTER
+// ---- MODIFIER UNE PRODUCTION ET SES PRODUITS --- //
 const putProductionById = (request, response) => {
   const id_production = request.params.id;
-  const { libelle_production, type_production } = request.body;
-  const putProductionQuery =
-    'UPDATE fiche.production SET libelle=$1, type_production=$2 WHERE id=$3';
-  dbConn.pool.query(
-    putProductionQuery,
-    [libelle_production, type_production, id_production],
-    (error, results) => {
-      if (error) {
-        throw error;
-      }
-      response.status(200).send(`Update`);
+  const { libelle_production, type_production, produits } = request.body;
+
+  const supprimerAnciensProduits = (id_production) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        `DELETE FROM fiche.produit WHERE id_production=$1 RETURNING *`,
+        [id_production],
+        (err, res) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(res.rows);
+        }
+      );
+    });
+  };
+
+  const modifierProduction = (
+    libelle_production,
+    type_production,
+    id_production
+  ) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        'UPDATE fiche.production SET libelle=$1, type_production=$2 WHERE id=$3 RETURNING *',
+        [libelle_production, type_production, id_production],
+        (err, res) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(res.rows[0]);
+        }
+      );
+    });
+  };
+
+  const promiseInsertProduit = (id_production, { libelle_produit, unite }) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        'INSERT INTO fiche.produit(id, id_production,libelle,unite) VALUES (DEFAULT, $1,$2, $3)',
+        [id_production, libelle_produit, unite],
+        (err, res) => {
+          if (err) {
+            reject(err);
+          }
+          resolve();
+        }
+      );
+    });
+  };
+
+  const ajouterProduits = async (id_production, produits) => {
+    return Promise.all(
+      produits.map((produit) => {
+        return promiseInsertProduit(id_production, produit);
+      })
+    );
+  };
+
+  const getProductionEtProduits = (id_production) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        `SELECT production.*,json_agg(json_build_object('id',produit.id,'libelle',produit.libelle,'unite',produit.unite)) produits FROM fiche.production AS production LEFT JOIN fiche.produit produit ON produit.id_production = production.id WHERE production.id=$1 GROUP BY production.id`,
+        [id_production],
+        (err, res) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(res.rows[0]);
+        }
+      );
+    });
+  };
+
+  const doModifierProductionEtProduits = async (
+    libelle_production,
+    type_production,
+    produits,
+    id_production
+  ) => {
+    await modifierProduction(
+      libelle_production,
+      type_production,
+      id_production
+    );
+
+    await supprimerAnciensProduits(id_production);
+
+    if (produits !== undefined) {
+      await ajouterProduits(id_production, produits);
     }
-  );
+    const responseBody = await getProductionEtProduits(id_production);
+    return responseBody;
+  };
+
+  doModifierProductionEtProduits(
+    libelle_production,
+    type_production,
+    produits,
+    id_production
+  )
+    .then((responseBody) => response.status(200).send(responseBody))
+    .catch((e) => {
+      console.log(e);
+      throw e;
+    });
 };
 
 // DONE
