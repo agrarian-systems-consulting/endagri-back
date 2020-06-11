@@ -532,3 +532,52 @@ INSERT INTO fiche.production(id,libelle,type_production) VALUES(DEFAULT,'Raisins
 INSERT INTO fiche.production(id,libelle,type_production) VALUES(DEFAULT,'Raisins pour vin','Culture pérenne');
 INSERT INTO fiche.production(id,libelle,type_production) VALUES(DEFAULT,'Bovin laitier','Elevage naisseur laitier');
 INSERT INTO fiche.production(id,libelle,type_production) VALUES(DEFAULT,'Ovins viande','Elevage naisseur viande');
+
+-- INSERT analyse_fiche.analyse
+
+INSERT INTO analyse_fiche.analyse(id,created,modified,nom_utilisateur,nom_client,montant_tresorerie_initiale,date_debut_analyse,date_fin_analyse)
+VALUES(DEFAULT,'2020-06-10','2020-06-10','Hugo','Client A',1500,'2020-01-01','2021-01-01');
+INSERT INTO analyse_fiche.analyse(id,created,modified,nom_utilisateur,nom_client,montant_tresorerie_initiale,date_debut_analyse,date_fin_analyse)
+VALUES(DEFAULT,'2020-06-10','2020-06-10','Florian','Client B',2300,'2020-01-01','2021-01-01');
+
+-- INSERT analyse_fiche.coeff_depense
+
+INSERT INTO analyse_fiche.coeff_depense(id,id_fiche_technique_libre,libelle_categorie,coeff_intraconsommation)
+VALUES(DEFAULT,2,'Paille',0.5);
+INSERT INTO analyse_fiche.coeff_depense(id,id_fiche_technique_libre,libelle_categorie,coeff_intraconsommation)
+VALUES(DEFAULT,4,'Concentrés',0.1);
+
+-- INSERT analyse_fiche.coeff_vente
+
+INSERT INTO analyse_fiche.coeff_vente(id,id_fiche_technique_libre,coeff_autoconsommation,coeff_intraconsommation,coeff_rendement)
+VALUES(DEFAULT,1,0,0,1);
+INSERT INTO analyse_fiche.coeff_vente(id,id_fiche_technique_libre,coeff_autoconsommation,coeff_intraconsommation,coeff_rendement)
+VALUES(DEFAULT,2,0.1,0,1.2);
+INSERT INTO analyse_fiche.coeff_vente(id,id_fiche_technique_libre,coeff_autoconsommation,coeff_intraconsommation,coeff_rendement)
+VALUES(DEFAULT,3,0,0,1);
+INSERT INTO analyse_fiche.coeff_vente(id,id_fiche_technique_libre,coeff_autoconsommation,coeff_intraconsommation,coeff_rendement)
+VALUES(DEFAULT,4,0,0,1);
+
+-- INSERT analyse_fiche.depense_libre
+
+INSERT INTO analyse_fiche.depense_libre(id,id_analyse,libelle,mois_reel,montant)
+VALUES(DEFAULT,1,'Eau','2020-07-01',1000);
+INSERT INTO analyse_fiche.depense_libre(id,id_analyse,libelle,mois_reel,montant)
+VALUES(DEFAULT,1,'Electricité','2020-09-01',300);
+INSERT INTO analyse_fiche.depense_libre(id,id_analyse,libelle,mois_reel,montant)
+VALUES(DEFAULT,1,'Gasoil','2020-10-01',600);
+INSERT INTO analyse_fiche.depense_libre(id,id_analyse,libelle,mois_reel,montant)
+VALUES(DEFAULT,2,'Eau','2020-10-01',550);
+INSERT INTO analyse_fiche.depense_libre(id,id_analyse,libelle,mois_reel,montant)
+VALUES(DEFAULT,2,'Gasoil','2020-09-01',1250);
+
+-- INSERT analyse_fiche.fiche_technique_libre
+
+INSERT INTO analyse_fiche.fiche_technique_libre(id,id_fiche_technique,id_analyse,date_ini,coeff_surface_ou_nombre_animaux,coeff_main_oeuvre_familiale)
+VALUES(DEFAULT,1,1,'2020-03-01',2.5,0.5);
+INSERT INTO analyse_fiche.fiche_technique_libre(id,id_fiche_technique,id_analyse,date_ini,coeff_surface_ou_nombre_animaux,coeff_main_oeuvre_familiale)
+VALUES(DEFAULT,3,1,'2020-01-01',10,0.75);
+INSERT INTO analyse_fiche.fiche_technique_libre(id,id_fiche_technique,id_analyse,date_ini,coeff_surface_ou_nombre_animaux,coeff_main_oeuvre_familiale)
+VALUES(DEFAULT,2,2,'2020-01-01',5,0.2);
+INSERT INTO analyse_fiche.fiche_technique_libre(id,id_fiche_technique,id_analyse,date_ini,coeff_surface_ou_nombre_animaux,coeff_main_oeuvre_familiale)
+VALUES(DEFAULT,4,2,'2020-01-01',20,0.1);
