@@ -1,4 +1,5 @@
 import dbConn from '../../db/pool';
+const _ = require('lodash');
 
 // ---- LISTER TOUTES LES ANALYSES ---- //
 const getAnalyses = (request, response) => {
@@ -53,42 +54,31 @@ const postAnalyse = (request, response) => {
 const getAnalyseById = (request, response) => {
   const id_analyse = request.params.id;
 
-  // Step 1 Fetch analyse/:id
-  // Step 2 A partir de date_debut_analyse et date_fuin_analyse, créer un array de mois analysés
-  // Step 3 Fetch flux mensuels par catégorie, (les )dépenses et les ventes) controller FluxMoisReelsMoisCatController.js
-  // Step 4 Dépenses : On boucle sur les flux mensuels de dépenses, si categories_depenses.libelle_categorie = libelle_coeff_depense (Boucler sur coeff_depenses)
-  // - Si match, on applique le coeff_intraconsommation sur categories_depenses.total_depenses_categorie
-  // ET le coeff général surface
-  // ET SI categories_depenses.libelle_categorie = "Main d'oeuvre"",on applique le coeff général main d'oeuvre familial
-  // Step 5 Ventes : On boucle sur les flux mensuels de ventes, si categories_ventes.libelle_categorie = coeff_vente.libelle_categorie (on boucle dessus)
-  // - Si match, on applique les trois coeff + le principal surface_nom_de_meres.
-  // Step 6 Faire les sommes des ventes et dépenses
-  // Step 7 Solde et Solde cumulé
-  // Step 8 Contruire le json complet
-
-  const getAnalyseByIdQuery = `WITH subquery AS(
-    SELECT a.id,a.created,a.modified,a.nom_utilisateur,a.nom_client,a.montant_tresorerie_initiale,a.date_debut_analyse,a.date_fin_analyse,
-      json_agg(json_build_object('id_fiche_technique_libre',ftl.id,'id_fiche_technique',ftl.id_fiche_technique,'date_ini',ftl.date_ini,'coeff_surface_ou_nombre_animaux',ftl.coeff_surface_ou_nombre_animaux,
-                   'coeff_main_oeuvre_familiale',ftl.coeff_main_oeuvre_familiale,
-      'coeff_ventes',(SELECT json_agg(json_build_object('libelle_categorie',cfv.libelle_categorie,'coeff_autoconsommation',cfv.coeff_autoconsommation,
-      'coeff_intraconsommation',cfv.coeff_intraconsommation,'coeff_rendement',cfv.coeff_rendement)) FROM analyse_fiche.coeff_vente cfv 
-       WHERE cfv.id_fiche_technique_libre = ftl.id),
-      'coeff_depenses',(SELECT json_agg(json_build_object('libelle_categorie',cfd.libelle_categorie,'coeff_intraconsommation',cfd.coeff_intraconsommation)) FROM analyse_fiche.coeff_vente cfd 
-       WHERE cfd.id_fiche_technique_libre = ftl.id))) fiches_techniques_libres
-      FROM analyse_fiche.analyse a JOIN analyse_fiche.depense_libre dl ON a.id=dl.id_analyse
-      JOIN analyse_fiche.fiche_technique_libre ftl ON a.id=ftl.id_analyse WHERE a.id=$1
-      GROUP BY a.id,a.created,a.modified,a.nom_utilisateur,a.nom_client,a.montant_tresorerie_initiale,a.date_debut_analyse,a.date_fin_analyse
-    )
-    SELECT subquery.id,subquery.created,subquery.modified,subquery.nom_utilisateur,subquery.nom_client,subquery.montant_tresorerie_initiale,subquery.date_debut_analyse,
-    subquery.date_fin_analyse,subquery.fiches_techniques_libres,
-    (SELECT json_agg(json_build_object('id',dl.id,'libelle',libelle,'mois_reel',mois_reel,'montant',montant)) 
-     FROM analyse_fiche.depense_libre dl WHERE subquery.id=dl.id_analyse) depenses_libres
-    FROM subquery`;
-  dbConn.pool.query(getAnalyseByIdQuery, [id_analyse], (error, results) => {
+  const getInfoAnalyse = `SELECT a.id,a.nom_utilisateur,a.nom_client,a.montant_tresorerie_initiale,a.date_debut_analyse,a.date_fin_analyse
+  FROM analyse_fiche.analyse a WHERE a.id=$1`;//a.created,a.modified,
+  dbConn.pool.query(getInfoAnalyse, [id_analyse], (error, results) => {
     if (error) {
       throw error;
     }
-    response.status(200).send(results.rows[0]);
+    const infoAnalyse = results.rows;
+
+    const getInfoFTL = `SELECT ftl.id id_ftl,ftl.id_fiche_technique::integer,ftl.date_ini,ftl.coeff_surface_ou_nombre_animaux::integer,ftl.coeff_main_oeuvre_familiale::integer,
+    (SELECT json_agg(json_build_object('libelle_categorie',cfv.libelle_categorie,'coeff_autoconsommation',cfv.coeff_autoconsommation,
+    'coeff_intraconsommation',cfv.coeff_intraconsommation,'coeff_rendement',cfv.coeff_rendement)) coeff_ventes FROM analyse_fiche.coeff_vente cfv 
+      WHERE cfv.id_fiche_technique_libre=ftl.id) coeff_ventes, 
+        (SELECT json_agg(json_build_object('libelle_categorie',cfd.libelle_categorie,'coeff_intraconsommation',cfd.coeff_intraconsommation)) coeff_depenses 
+        FROM analyse_fiche.coeff_depense cfd WHERE cfd.id_fiche_technique_libre=ftl.id) coeff_depenses
+    FROM analyse_fiche.fiche_technique_libre ftl WHERE ftl.id_analyse=$1 ORDER BY ftl.id`;
+    dbConn.pool.query(getInfoFTL, [id_analyse], (error, results) => {
+      if (error) {
+        throw error;
+      }
+      const infoFTL = results.rows;
+      let resultjson = _.extend({}, infoAnalyse, {
+        "fiches_techniques_libres": [infoFTL],
+      });
+      response.status(200).send(resultjson);
+    })
   });
 };
 
@@ -148,6 +138,22 @@ const deleteAnalyseById = (request, response) => {
       }
     }
   );
+};
+
+const getAnalyseFluxMoisFiche = (request, response) => {
+
+  // Step 1 Fetch analyse/:id
+  // Step 2 A partir de date_debut_analyse et date_fuin_analyse, créer un array de mois analysés
+  // Step 3 Fetch flux mensuels par catégorie, (les )dépenses et les ventes) controller FluxMoisReelsMoisCatController.js
+  // Step 4 Dépenses : On boucle sur les flux mensuels de dépenses, si categories_depenses.libelle_categorie = libelle_coeff_depense (Boucler sur coeff_depenses)
+  // - Si match, on applique le coeff_intraconsommation sur categories_depenses.total_depenses_categorie
+  // ET le coeff général surface
+  // ET SI categories_depenses.libelle_categorie = "Main d'oeuvre"",on applique le coeff général main d'oeuvre familial
+  // Step 5 Ventes : On boucle sur les flux mensuels de ventes, si categories_ventes.libelle_categorie = coeff_vente.libelle_categorie (on boucle dessus)
+  // - Si match, on applique les trois coeff + le principal surface_nom_de_meres.
+  // Step 6 Faire les sommes des ventes et dépenses
+  // Step 7 Solde et Solde cumulé
+  // Step 8 Contruire le json complet
 };
 
 export default {
