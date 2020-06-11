@@ -47,6 +47,7 @@ const postAnalyse = (request, response) => {
 };
 
 // ---- RECUPERER LES INFORMATIONS D'UNE ANALYSE ---- //
+// Modifier la requête parceque ne renvoie rien si l'analyse n'a pas de fiches techniques libres associées ou de dépenses libres associées
 const getAnalyseById = (request, response) => {
   const id_analyse = request.params.id;
 
@@ -107,4 +108,31 @@ const putAnalyseById = (request, response) => {
   );
 };
 
-export default { getAnalyses, postAnalyse, getAnalyseById, putAnalyseById };
+// ---- CREER MODIFIER UNE ANALYSE ---- //
+const deleteAnalyseById = (request, response) => {
+  const id_analyse = request.params.id;
+
+  dbConn.pool.query(
+    `DELETE FROM analyse_fiche.analyse 
+      WHERE id=$1 RETURNING *`,
+    [id_analyse],
+    (err, res) => {
+      if (err) {
+        throw err;
+      }
+      if (res.rows[0] !== undefined) {
+        response.status(200).send(res.rows[0]);
+      } else {
+        response.sendStatus(404);
+      }
+    }
+  );
+};
+
+export default {
+  getAnalyses,
+  postAnalyse,
+  getAnalyseById,
+  putAnalyseById,
+  deleteAnalyseById,
+};
