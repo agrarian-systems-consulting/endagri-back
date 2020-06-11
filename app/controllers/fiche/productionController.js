@@ -245,7 +245,7 @@ const deleteProductionById = (request, response) => {
           if (err) {
             reject(err);
           }
-          console.log(res.rows[0]);
+
           if (res.rows[0] !== undefined) {
             resolve(res.rows[0].id);
           } else {
