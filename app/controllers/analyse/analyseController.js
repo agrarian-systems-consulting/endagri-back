@@ -87,7 +87,7 @@ const putAnalyseById = (request, response) => {
       nom_utilisateur = $2,
       nom_client = $3,
       montant_tresorerie_initiale = $4,
-      date_debut_analyse = $5
+      date_debut_analyse = $5,
       date_fin_analyse = $6 
       WHERE id=$1 RETURNING *`,
     [

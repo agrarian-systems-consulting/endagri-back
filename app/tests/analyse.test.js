@@ -25,10 +25,6 @@ test('Doit créer une nouvelle analyse', async () => {
   expect(res.body.montant_tresorerie_initiale).toBe(3000);
   expect(res.body.date_debut_analyse).toBeDefined();
   expect(res.body.date_fin_analyse).toBeDefined();
-  expect(res.body.produits.fiche_techniques_libres).toBeDefined();
-  expect(res.body.produits.fiche_techniques_libres.length).toBe(0);
-  expect(res.body.produits.depenses_libres).toBeDefined();
-  expect(res.body.produits.depenses_libres.length).toBe(0);
 });
 
 // A adapter à une analyse de test spécifique
@@ -39,8 +35,8 @@ test('Doit récupérer une analyse', async () => {
   expect(res.body.nom_utilisateur).toBeDefined();
   expect(res.body.nom_client).toBeDefined();
   expect(res.body.montant_tresorerie_initiale).toBeDefined();
-  expect(res.body.produits.fiche_techniques_libres).toBeDefined();
-  expect(res.body.produits.depenses_libres).toBeDefined();
+  expect(res.body.fiches_techniques_libres).toBeDefined();
+  expect(res.body.depenses_libres).toBeDefined();
 });
 
 // A adapter à une analyse de test spécifique
