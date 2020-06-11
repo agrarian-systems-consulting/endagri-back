@@ -1,6 +1,4 @@
-| Build                         | Functions                                   | Lines                               |
-| ----------------------------- | ------------------------------------------- | ----------------------------------- |
-| ![BuildStatus](#buildstatus#) | ![Functions](#functions# 'Make me better!') | ![Lines](#lines# 'Make me better!') |
+![BuildStatus](#buildstatus#) ![Functions](#functions# 'Make me better!')
 
 # Endagri - API REST
 
