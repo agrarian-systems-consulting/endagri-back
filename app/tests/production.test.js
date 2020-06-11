@@ -106,6 +106,10 @@ test('Doit supprimer une production et ses produits associés', async () => {
     .expect(204);
 });
 
+test("Doit renvoyer 404 lors de la suppression d'une production inexistante", async () => {
+  const res = await request(app).delete(`/production/567098356`).expect(404);
+});
+
 //Devrait être écrit avec des Promises
 beforeAll((done) => {
   dbConn.pool.query(

@@ -241,24 +241,29 @@ const deleteProductionById = (request, response) => {
       dbConn.pool.query(
         'DELETE FROM fiche.production WHERE id=$1 RETURNING *',
         [id_production],
-        (error, results) => {
-          if (error) {
-            reject(error);
+        (err, res) => {
+          if (err) {
+            reject(err);
           }
-          resolve(res.rows[0].id);
+          console.log(res.rows[0]);
+          if (res.rows[0] !== undefined) {
+            resolve(res.rows[0].id);
+          } else {
+            reject();
+          }
         }
       );
     });
   };
 
-  const supprimerProduit = (id_production) => {
+  const supprimerProduits = (id_production) => {
     return new Promise((resolve, reject) => {
       dbConn.pool.query(
         'DELETE FROM fiche.produit WHERE id_production=$1 RETURNING *',
         [id_production],
-        (error, results) => {
-          if (error) {
-            reject(error);
+        (err, res) => {
+          if (err) {
+            reject(err);
           }
           resolve();
         }
@@ -266,17 +271,21 @@ const deleteProductionById = (request, response) => {
     });
   };
 
-  const doWork = async () => {
-    await supprimerProduction;
-    await supprimerProduit;
+  const doWork = async (id_production) => {
+    await supprimerProduction(id_production);
+    await supprimerProduits(id_production);
     return;
   };
 
   doWork(id_production)
     .then(() => {
-      response.send(204);
+      response.sendStatus(204);
     })
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.log(e);
+
+      response.sendStatus(404);
+    });
 };
 
 export {
