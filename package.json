@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "nodemon --exec babel-node index.js",
     "test": "jest --detectOpenHandles",
-    "make-badges": "node_modules/.bin/jest-badges-readme"
+    "make-badges": "node_modules/.bin/jest-badges-readme",
+    "prebuild": "echo false > .buildstatus",
+    "postbuild": "echo true > .buildstatus"
   },
   "keywords": [],
   "author": "",

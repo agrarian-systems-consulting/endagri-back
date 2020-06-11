@@ -1,6 +1,6 @@
 | Build                         | Statements                                    | Branches                                  | Functions                                   | Lines                               |
 | ----------------------------- | --------------------------------------------- | ----------------------------------------- | ------------------------------------------- | ----------------------------------- |
-| ![BuildStatus](#buildstatus#) | ![Statements](https://img.shields.io/badge/Coverage-87.82%25-yellow.svg 'Make me better!') | ![Branches](https://img.shields.io/badge/Coverage-60.66%25-red.svg 'Make me better!') | ![Functions](https://img.shields.io/badge/Coverage-96.9%25-brightgreen.svg 'Make me better!') | ![Lines](https://img.shields.io/badge/Coverage-87.82%25-yellow.svg 'Make me better!') |
+| ![BuildStatus](https://img.shields.io/badge/Build-Passing-brightgreen.svg) | ![Statements](https://img.shields.io/badge/Coverage-87.82%25-yellow.svg 'Make me better!') | ![Branches](https://img.shields.io/badge/Coverage-60.66%25-red.svg 'Make me better!') | ![Functions](https://img.shields.io/badge/Coverage-96.9%25-brightgreen.svg 'Make me better!') | ![Lines](https://img.shields.io/badge/Coverage-87.82%25-yellow.svg 'Make me better!') |
 
 # Endagri - API REST
 
