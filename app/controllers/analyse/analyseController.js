@@ -1,4 +1,4 @@
-const dbConn = require('../../db/pool');
+import dbConn from '../../db/pool';
 
 // ---- LISTER TOUTES LES ANALYSES ---- //
 const getAnalyses = (request, response) => {

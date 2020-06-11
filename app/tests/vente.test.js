@@ -1,8 +1,6 @@
 import request from 'supertest';
-import assert from 'assert';
 import app from '../../server';
 import dbConn from '../db/pool';
-import chalk from 'chalk';
 import regeneratorRuntime from 'regenerator-runtime';
 
 // Paramètres pour la mise en place d'une fiche technique, des activités et des dépenses nécessaires pour les tests
