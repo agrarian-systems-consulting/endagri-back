@@ -38,7 +38,7 @@ const getDepenseLibreById = (request, response) => {
   const id_depense_libre = request.params.id_depense_libre;
 
   dbConn.pool.query(
-    `SELECT * FROM analyse_fiche.depense_libre
+    `SELECT id, id_analyse::integer, libelle, mois_reel, montant::integer FROM analyse_fiche.depense_libre
     WHERE id=$1
     ORDER BY id ASC`,
     [id_depense_libre],

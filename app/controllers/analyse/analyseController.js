@@ -48,6 +48,8 @@ const postAnalyse = (request, response) => {
 
 // ---- RECUPERER LES INFORMATIONS D'UNE ANALYSE ---- //
 // Modifier la requête parceque ne renvoie rien si l'analyse n'a pas de fiches techniques libres associées ou de dépenses libres associées
+// Problème : Renvoie plusieurs fois la même dépense libre
+// Renvoyer l'id des fiches_techniques libres également
 const getAnalyseById = (request, response) => {
   const id_analyse = request.params.id;
 
@@ -59,7 +61,7 @@ const getAnalyseById = (request, response) => {
    WHERE cfv.id_fiche_technique_libre = ftl.id),
   'coeff_depenses',(SELECT json_agg(json_build_object('libelle_categorie',cfd.libelle_categorie,'coeff_intraconsommation',cfd.coeff_intraconsommation)) FROM analyse_fiche.coeff_vente cfd 
    WHERE cfd.id_fiche_technique_libre = ftl.id))) fiches_techniques_libres,
-   json_agg(json_build_object('libelle',libelle,'mois_reel',mois_reel,'montant',montant)) depenses_libres
+   json_agg(json_build_object('id',dl.id,'libelle',libelle,'mois_reel',mois_reel,'montant',montant)) depenses_libres
   FROM analyse_fiche.analyse a JOIN analyse_fiche.depense_libre dl ON a.id=dl.id_analyse
   JOIN analyse_fiche.fiche_technique_libre ftl ON a.id=ftl.id_analyse WHERE a.id=$1
   GROUP BY a.id,a.created,a.modified,a.nom_utilisateur,a.nom_client,a.montant_tresorerie_initiale,a.date_debut_analyse,a.date_fin_analyse`;
