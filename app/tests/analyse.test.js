@@ -39,6 +39,7 @@ test('Doit récupérer une analyse qui a des fiches techniques libres et dépens
   expect(res.body.montant_tresorerie_initiale).toBeDefined();
   expect(res.body.fiches_techniques_libres).toBeDefined();
   expect(res.body.depenses_libres).toBeDefined();
+  expect(res.body.depenses_libres[0].id).toBeDefined();
 });
 
 test("Doit récupérer une analyse qui n'a pas de fiches techniques libres", async () => {

@@ -77,7 +77,6 @@ test("Doit renvoyer 404 lors de la suppression d'une vente inexistante", async (
     .expect(404);
 });
 
-//Devrait être écrit avec des Promises
 beforeAll((done) => {
   dbConn.pool.query(
     `INSERT INTO fiche.vente(id, id_fiche_technique, id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max) 

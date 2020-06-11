@@ -34,5 +34,4 @@ app.use(analyseRoutes);
 app.use(depenseLibreRoutes);
 
 // L'application est lancée depuis le fichier index.js pour permettre à Jest de faire fonctionner les tests
-
 export default app;
