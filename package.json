@@ -48,7 +48,8 @@
     ],
     "collectCoverage": true,
     "coveragePathIgnorePatterns": [
-      "/node_modules/"
+      "/node_modules/",
+      "/app/controllers/fluxtemp/"
     ]
   }
 }

@@ -1,4 +1,4 @@
-![Statements](https://img.shields.io/badge/Coverage-71.32%25-red.svg 'Make me better')
+![Statements](https://img.shields.io/badge/Coverage-87.82%25-yellow.svg 'Make me better')
 
 # Endagri - API REST
 
