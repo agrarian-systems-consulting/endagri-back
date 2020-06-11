@@ -1,6 +1,6 @@
 # Endagri - API REST
 
-![BuildStatus](https://img.shields.io/badge/Build-Passing-brightgreen.svg) ![Functions](https://img.shields.io/badge/Coverage-96.9%25-brightgreen.svg 'Make me better!')
+![BuildStatus](https://img.shields.io/badge/Build-Passing-brightgreen.svg) ![Functions](https://img.shields.io/badge/Coverage-96.99%25-brightgreen.svg 'Make me better!')
 
 One Paragraph of project description goes here
 
