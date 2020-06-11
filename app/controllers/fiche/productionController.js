@@ -232,20 +232,51 @@ const putProductionById = (request, response) => {
     });
 };
 
-// DONE
+// ---- SUPPRIMER UNE PRODUCTION ET SES PRODUITS --- //
 const deleteProductionById = (request, response) => {
   const id_production = request.params.id;
-  const deleteProductionByIdQuery = 'DELETE FROM fiche.production WHERE id=$1';
-  dbConn.pool.query(
-    deleteProductionByIdQuery,
-    [id_production],
-    (error, results) => {
-      if (error) {
-        throw error;
-      }
-      response.status(200).send(`Delete`);
-    }
-  );
+
+  const supprimerProduction = (id_production) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        'DELETE FROM fiche.production WHERE id=$1 RETURNING *',
+        [id_production],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(res.rows[0].id);
+        }
+      );
+    });
+  };
+
+  const supprimerProduit = (id_production) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        'DELETE FROM fiche.produit WHERE id_production=$1 RETURNING *',
+        [id_production],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          }
+          resolve();
+        }
+      );
+    });
+  };
+
+  const doWork = async () => {
+    await supprimerProduction;
+    await supprimerProduit;
+    return;
+  };
+
+  doWork(id_production)
+    .then(() => {
+      response.send(204);
+    })
+    .catch((e) => console.log(e));
 };
 
 export {

@@ -100,6 +100,12 @@ test('Doit modifier une production existante avec ses produits associés', async
   expect(res.body.produits.length).toBe(3);
 });
 
+test('Doit supprimer une production et ses produits associés', async () => {
+  const res = await request(app)
+    .delete(`/production/${id_production}`)
+    .expect(204);
+});
+
 //Devrait être écrit avec des Promises
 beforeAll((done) => {
   dbConn.pool.query(
