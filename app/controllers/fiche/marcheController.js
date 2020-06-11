@@ -61,7 +61,7 @@ const postMarche = (request, response) => {
   } = request.body;
 
   const postMarcheQuery = `INSERT INTO fiche.marche(id,id_produit, localisation, type_marche, prix_january, prix_february, prix_march, prix_april, prix_may, prix_june, prix_july, prix_august, prix_september, prix_october, prix_november, prix_december,commentaire) 
-    VALUES (DEFAULT, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING *`;
+    VALUES (DEFAULT, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING id,id_produit::integer, localisation, type_marche, prix_january::integer, prix_february::integer, prix_march::integer, prix_april::integer, prix_may::integer, prix_june::integer, prix_july::integer, prix_august::integer, prix_september::integer, prix_october::integer, prix_november::integer, prix_december::integer,commentaire`;
   dbConn.pool.query(
     postMarcheQuery,
     [
@@ -98,7 +98,7 @@ const getMarcheById = (request, response) => {
   const id_marche = request.params.id;
 
   dbConn.pool.query(
-    `SELECT * FROM fiche.marche WHERE id=$1`,
+    `SELECT id,id_produit::integer, localisation, type_marche, prix_january::integer, prix_february::integer, prix_march::integer, prix_april::integer, prix_may::integer, prix_june::integer, prix_july::integer, prix_august::integer, prix_september::integer, prix_october::integer, prix_november::integer, prix_december::integer,commentaire FROM fiche.marche WHERE id=$1`,
     [id_marche],
     (err, res) => {
       if (err) {
@@ -144,7 +144,8 @@ const putMarcheById = (request, response) => {
     prix_november = $14,
     prix_december = $15,
     commentaire = $16 
-    WHERE id=$1 RETURNING *`;
+    WHERE id=$1 
+    RETURNING id,id_produit::integer, localisation, type_marche, prix_january::integer, prix_february::integer, prix_march::integer, prix_april::integer, prix_may::integer, prix_june::integer, prix_july::integer, prix_august::integer, prix_september::integer, prix_october::integer, prix_november::integer, prix_december::integer,commentaire`;
   dbConn.pool.query(
     putMarcheByIdQuery,
     [
@@ -178,7 +179,7 @@ const putMarcheById = (request, response) => {
 const deleteMarcheById = (request, response) => {
   const id_marche = request.params.id;
   dbConn.pool.query(
-    'DELETE FROM fiche.marche WHERE id=$1 RETURNING *',
+    'DELETE FROM fiche.marche WHERE id=$1 RETURNING id',
     [id_marche],
     (err, res) => {
       if (err) {

@@ -56,14 +56,15 @@ test('Doit créer un nouveau marché', async () => {
     .expect(201);
 
   expect(res.body.id).toBeDefined();
-  expect(res.body.id_produit).toBe(id_produit.toString());
+  expect(res.body.id_produit).toBe(id_produit);
+  expect(res.body.prix_july).toBe(60);
 });
 
 test("Doit récupérer les données d'un marché existant", async () => {
   const res = await request(app).get(`/marche/${id_marche}`).expect(200);
 
   expect(res.body.id).toBeDefined();
-  expect(res.body.id_produit).toBe(id_produit.toString());
+  expect(res.body.id_produit).toBe(id_produit);
   expect(res.body.prix_july).toBe(364);
 });
 
@@ -79,7 +80,7 @@ test('Doit modifier un marché existant', async () => {
       prix_april: 30,
       prix_may: 40,
       prix_june: 50,
-      prix_july: 60,
+      prix_july: 80,
       prix_august: 40,
       prix_september: 20,
       prix_october: 10,
@@ -90,7 +91,8 @@ test('Doit modifier un marché existant', async () => {
     .expect(200);
 
   expect(res.body.id).toBeDefined();
-  expect(res.body.id_produit).toBe(id_produit.toString());
+  expect(res.body.id_produit).toBe(id_produit);
+  expect(res.body.prix_july).toBe(80);
   expect(res.body.commentaire).toBe('Commentaire modifié');
 });
 
