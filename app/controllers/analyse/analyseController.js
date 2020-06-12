@@ -1,5 +1,6 @@
 import dbConn from '../../db/pool';
 const _ = require('lodash');
+const fetch = require('node-fetch');
 
 // ---- LISTER TOUTES LES ANALYSES ---- //
 const getAnalyses = (request, response) => {
@@ -140,15 +141,67 @@ const deleteAnalyseById = (request, response) => {
   );
 };
 
-const getAnalyseFluxMoisFiche = (request, response) => {
+const getAnalyseFluxFichesLibresById = (request, response) => {
 
+  const id_analyse = request.params.id;
+  
   // Step 1 Fetch analyse/:id
-  // Step 2 A partir de date_debut_analyse et date_fuin_analyse, créer un array de mois analysés
-  // Step 3 Fetch flux mensuels par catégorie, (les )dépenses et les ventes) controller FluxMoisReelsMoisCatController.js
-  // Step 4 Dépenses : On boucle sur les flux mensuels de dépenses, si categories_depenses.libelle_categorie = libelle_coeff_depense (Boucler sur coeff_depenses)
-  // - Si match, on applique le coeff_intraconsommation sur categories_depenses.total_depenses_categorie
-  // ET le coeff général surface
-  // ET SI categories_depenses.libelle_categorie = "Main d'oeuvre"",on applique le coeff général main d'oeuvre familial
+  // Step 2 A partir de date_debut_analyse et date_fin_analyse, créer un array de mois analysés
+  const periode_analyse = [];
+  const coeff_ventes = [];
+  const coeff_general_surf = [];
+  const idFicheTechnique = [];
+  try {
+    fetch('http://localhost:3333/analyse/'+id_analyse+'')
+      .then(async (response) => {
+        const data = await response.json();
+        periode_analyse.push(data[Object.keys(data)[0]].date_debut_analyse,data[Object.keys(data)[0]].date_fin_analyse);
+        const fiches_techniques_libres = data.fiches_techniques_libres[0];
+        fiches_techniques_libres.map((e) => {
+          coeff_ventes.push(e.coeff_ventes);
+          coeff_general_surf.push(e.coeff_surface_ou_nombre_animaux);
+          idFicheTechnique.push(e.id_fiche_technique);
+        })
+        
+        // Step 3 Fetch flux mensuels par catégorie, (les )dépenses et les ventes) controller FluxMoisReelsMoisCatController.js
+        idFicheTechnique.map((e) => {
+          console.log('id_fiche_techique' +e);
+          try {           
+            fetch('http://localhost:3333/fiche/'+e+'/flux_mois_reels_mois_categorie')
+              .then(async (response) => {
+                const data = await response.json();
+                const flux = data.flux[0];
+                // Step 4 Dépenses : On boucle sur les flux mensuels de dépenses, si categories_depenses.libelle_categorie = libelle_coeff_depense (Boucler sur coeff_depenses)
+                flux.map((e) => {
+                  let moisReelsFlux = e.mois_reel;
+                  let categoriesDepenses = e.categories_depenses;
+                  for (var i = 0; i < categoriesDepenses.length; i++) {
+                    for (var j = 0; j < coeff_ventes.length; j++) {
+                      // - Si match, on applique le coeff_intraconsommation sur categories_depenses.total_depenses_categorie
+                      // ET le coeff général surface
+                      // ET SI categories_depenses.libelle_categorie = "Main d'oeuvre"",on applique le coeff général main d'oeuvre familial
+                      if(categoriesDepenses[i].libelle_categorie===coeff_ventes[j].libelle_categorie){
+                        //console.log('yes :'+categoriesDepenses[i].libelle_categorie+' <=> '+coeff_ventes[j].libelle_categorie+'');
+                        let opeCategorieDepense = coeff_ventes[j].coeff_intraconsommation*categoriesDepenses[i].total_depenses_categorie;
+                      }else{
+                        //console.log('no');
+                      }
+                      
+                    }
+                  }                
+                })           
+              });
+          } catch (error) {
+            console.log(error);
+          }
+        })
+        
+      });
+  } catch (error) {
+    console.log(error);
+  }
+  //response.status(200).send(periode_analyse) 
+
   // Step 5 Ventes : On boucle sur les flux mensuels de ventes, si categories_ventes.libelle_categorie = coeff_vente.libelle_categorie (on boucle dessus)
   // - Si match, on applique les trois coeff + le principal surface_nom_de_meres.
   // Step 6 Faire les sommes des ventes et dépenses
@@ -162,4 +215,5 @@ export default {
   getAnalyseById,
   putAnalyseById,
   deleteAnalyseById,
+  getAnalyseFluxFichesLibresById,
 };
