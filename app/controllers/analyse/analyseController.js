@@ -1,11 +1,8 @@
 import dbConn from '../../db/pool';
 const _ = require('lodash');
-const fetch = require('node-fetch');
 import eachMonthOfInterval from 'date-fns/eachMonthOfInterval';
-import chalk from 'chalk';
 import { format } from 'date-fns';
-import { forEach } from 'lodash';
-import { id } from 'date-fns/locale';
+import isWithinInterval from 'date-fns/isWithinInterval';
 
 // ---- LISTER TOUTES LES ANALYSES ---- //
 const getAnalyses = (request, response) => {
@@ -252,24 +249,30 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       id_analyse
     );
 
-    //console.log(fiches_techniques_libres);
     const depensesMoisReelsParFicheTechnique = await getDepensesMoisReelsFichesTechniques(
       fiches_techniques_libres
     );
 
-    //Simplifier l'array
-    const depensesMoisReels = _.flatten(depensesMoisReelsParFicheTechnique);
-    console.log(depensesMoisReels);
-    // TODO : Ne garder que les dépenses dans les mois de la période d'analyse
-    const depensesMoisReels_ = depensesMoisReels.filter((dep) => dep.mois_reel > '2018-11-31')
+    // Simplifier l'array
+    let depensesMoisReels = _.flatten(depensesMoisReelsParFicheTechnique);
+
+    // Ne garder que les dépenses dans les mois de la période d'analyse
+    depensesMoisReels = depensesMoisReels.filter((dep) =>
+      isWithinInterval(dep.mois_reel, {
+        start: analyse.date_debut_analyse,
+        end: analyse.date_fin_analyse,
+      })
+    );
 
     // Boucler sur l'array des dépenses pour appliquer les coefficients
-    const data = depensesMoisReels_.map((depense) => {
-      
+    let depensesMoisReelsAvecCoeff = depensesMoisReels.map((depense) => {
       let coeffs = {
         coeff_surface_ou_nombre_animaux: 1,
         coeff_main_oeuvre_familiale: 0,
+        coeff_intraconsommation: 0,
       };
+
+      // Insérer les coefficients surface et main d'oeuvre familiale
       fiches_techniques_libres.forEach((ftl) => {
         if (ftl.id_fiche_technique === depense.id_fiche_technique) {
           coeffs.coeff_surface_ou_nombre_animaux =
@@ -281,27 +284,37 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
           }
         }
 
-        // TODO : Ajouter les autres coefficients ici
+        // Ajoute le coefficient d'intraconsommation sur certains catégories de dépenses
         if (ftl.coeff_depenses !== null) {
-          ftl.coeff_depenses.forEach((dep) => {
-            // Ce n'est pas le bon truc ici, revoir la structure de table de coeff_depenses qui doit matcher sur l'id_fiche_technique_libre plutôt
-            if (dep.id_fiche_technique_libre === depense.id) {
-              console.log('match sur ', dep.id_depense);
+          ftl.coeff_depenses.forEach((coeff_dep) => {
+            if (depense.libelle === coeff_dep.libelle_categorie) {
+              coeffs.coeff_intraconsommation =
+                coeff_dep.coeff_intraconsommation;
             }
           });
         }
       });
+
       return Object.assign(depense, coeffs);
     });
 
     // Calculer les nouvelles valeurs en tenant compte des coefficients
+    // Optim : Idéalement il ne faudrait pas reboucler ici, il aurait fallu faire le calcul au fil de l'eau
+    let depensesMoisReelsAvecTotal = depensesMoisReelsAvecCoeff.map((dep) => {
+      let montant_total =
+        dep.montant *
+        dep.coeff_surface_ou_nombre_animaux *
+        (1 - dep.coeff_main_oeuvre_familiale) *
+        (1 - dep.coeff_intraconsommation);
+      return Object.assign(dep, { montant_total });
+    });
 
     // Faire la même avec les ventes...
 
     // Calculer le solde (peut-être fait en front)
 
     // Calculer le solde cumulé (peut-être fait en front)
-    return data;
+    return depensesMoisReelsAvecCoeff;
   };
 
   // Appel de la fonction asynchrone principale et renvoie la réponse
