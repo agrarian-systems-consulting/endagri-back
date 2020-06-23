@@ -3,6 +3,7 @@ const _ = require('lodash');
 const fetch = require('node-fetch');
 import eachMonthOfInterval from 'date-fns/eachMonthOfInterval';
 import chalk from 'chalk';
+import { format } from 'date-fns';
 // ---- LISTER TOUTES LES ANALYSES ---- //
 const getAnalyses = (request, response) => {
   const getAnalysesQuery = `SELECT * FROM analyse_fiche.analyse ORDER BY id ASC`;
@@ -205,24 +206,39 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
   };
 
   // Construction d'une Promise pour récupérer les dépenses associées à une fche technique
-  const getDepensesMoisReelsFicheTechnique = (id_fiche, date_ini) => {
+  const getDepensesMoisReelsFicheTechnique = (id_fiche, date_ini_formatted) => {
     return new Promise((resolve, reject) => {
       dbConn.pool.query(
-        `SELECT 
-        CASE
-          WHEN act.mois IS NOT NULL THEN $2::timestamp + interval '1 month' * act.mois::integer
-          ELSE $2::timestamp + interval '1 month' * act.mois_relatif::integer
-        END as mois_reel,SUM(d.montant) total_depenses,'...' as total_ventes,'...' as solde, '...' as solde_cumule,
-        JSON_AGG(JSON_BUILD_OBJECT('depense_id',d.id,'libelle_depense',d.libelle,'montant_depense',d.montant)) depenses
-       FROM fiche.activite act JOIN fiche.depense d ON act.id=d.id_activite 
-         JOIN fiche.fiche_technique f ON act.id_fiche_technique=f.id WHERE f.id=$1 GROUP BY mois_reel,act.id_fiche_technique ORDER BY mois_reel`,
-        [id_fiche, date_ini],
+        ` SELECT 
+          CASE
+            WHEN act.mois IS NOT NULL 
+              THEN $2::timestamp + interval '1 month' * act.mois::integer
+              ELSE $2::timestamp + interval '1 month' * act.mois_relatif::integer
+            END as mois_reel,
+            act.mois_relatif,
+            act.mois,
+            act.id_fiche_technique,
+          JSON_AGG(
+            JSON_BUILD_OBJECT(
+              'id',d.id,
+              'id_activite',d.id_activite,
+              'id_fiche_technique',act.id_fiche_technique,
+              'libelle_depense',d.libelle,
+              'montant_depense',d.montant)
+              ) depenses
+          FROM fiche.activite act 
+            JOIN fiche.depense d ON act.id=d.id_activite 
+            JOIN fiche.fiche_technique f ON act.id_fiche_technique=f.id 
+          WHERE f.id=$1 
+          GROUP BY mois_reel,act.mois_relatif,act.mois,act.id_fiche_technique 
+          ORDER BY mois_reel`,
+        [id_fiche, date_ini_formatted],
         (err, res) => {
           if (err) {
             reject(err);
           }
-          console.log(res.rows[0]);
-          resolve(res.rows[0]);
+          console.log(res.rows);
+          resolve(res.rows);
         }
       );
     });
@@ -245,22 +261,26 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
     );
 
     // Récupérer pour chaque fiche_technique_libre, la fiche technique associée
-    fiches_techniques_libres.map(async (ftl) => {
-      const fiche_technique = await getFicheTechniqueById(
-        ftl.id_fiche_technique
-      );
-      // Temporaire
-      const date_ini = new Date('2020-06-04');
+    const data = await fiches_techniques_libres.map(
+      async ({ id_fiche_technique, date_ini }) => {
+        const fiche_technique = await getFicheTechniqueById(id_fiche_technique);
 
-      const depensesMoisReelsFicheTechnique = await getDepensesMoisReelsFicheTechnique(
-        ftl.id_fiche_technique,
-        date_ini
-      );
+        // Problème ici sur le formatage de la date
+        // 2019-12-31T23:00:00.000Z donne 2020-01-01
+        const date_ini_formatted = format(date_ini, 'yyyy-MM-dd');
+        console.log('date_ini = ', date_ini);
+        console.log('date_ini_formatted = ', date_ini_formatted);
 
-      return fiche_technique;
-    });
+        const depensesMoisReelsFicheTechnique = await getDepensesMoisReelsFicheTechnique(
+          id_fiche_technique,
+          date_ini_formatted
+        );
 
-    // Appliquer les coefficients sur les fiches techniques
+        return depensesMoisReelsFicheTechnique;
+      }
+    );
+
+    console.log(data);
   };
 
   // Appel de la fonction asynchrone principale et renvoie la réponse
