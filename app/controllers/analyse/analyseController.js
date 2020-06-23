@@ -259,11 +259,12 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
 
     //Simplifier l'array
     const depensesMoisReels = _.flatten(depensesMoisReelsParFicheTechnique);
-    //console.log(depensesMoisReels);
+    console.log(depensesMoisReels);
     // TODO : Ne garder que les dépenses dans les mois de la période d'analyse
+    const depensesMoisReels_ = depensesMoisReels.filter((dep => dep.mois_reel > '2018-11-31')
 
     // Boucler sur l'array des dépenses pour appliquer les coefficients
-    const data = depensesMoisReels.map((depense) => {
+    const data = depensesMoisReels_.map((depense) => {
       
       let coeffs = {
         coeff_surface_ou_nombre_animaux: 1,
