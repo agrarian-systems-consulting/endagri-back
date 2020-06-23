@@ -254,7 +254,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       fiches_techniques_libres
     );
 
-    return depensesMoisReels;
+    return _.flatten(depensesMoisReels);
   };
 
   // Appel de la fonction asynchrone principale et renvoie la réponse
