@@ -278,8 +278,16 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
             coeffs.coeff_main_oeuvre_familiale =
               ftl.coeff_main_oeuvre_familiale;
           }
+        }
 
-          // Ajouter les autres coefficients ici
+        // TODO : Ajouter les autres coefficients ici
+        if (ftl.coeff_depenses !== null) {
+          ftl.coeff_depenses.forEach((dep) => {
+            // Ce n'est pas le bon truc ici, revoir la structure de table de coeff_depenses qui doit matcher sur l'id_fiche_technique_libre plutôt
+            if (dep.id_depense === depense.id) {
+              console.log('match sur ', dep.id_depense);
+            }
+          });
         }
       });
 
