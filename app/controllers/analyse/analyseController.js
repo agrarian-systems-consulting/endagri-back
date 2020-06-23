@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 import eachMonthOfInterval from 'date-fns/eachMonthOfInterval';
 import chalk from 'chalk';
 import { format } from 'date-fns';
+
 // ---- LISTER TOUTES LES ANALYSES ---- //
 const getAnalyses = (request, response) => {
   const getAnalysesQuery = `SELECT * FROM analyse_fiche.analyse ORDER BY id ASC`;
@@ -194,31 +195,28 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
     return new Promise((resolve, reject) => {
       dbConn.pool.query(
         ` SELECT 
-          CASE
-            WHEN act.mois IS NOT NULL 
-              THEN to_date(act.mois::text, 'MM')
-              ELSE $2::timestamp + interval '1 month' * act.mois_relatif::integer
-            END as mois_reel,
-            act.mois_relatif,
-            act.mois,
-          JSON_AGG(
-            JSON_BUILD_OBJECT(
-              'id_fiche_technique',act.id_fiche_technique,
-              'libelle_depense',d.libelle,
-              'montant_depense',d.montant)
-              ) depenses
-          FROM fiche.activite act 
-            JOIN fiche.depense d ON act.id=d.id_activite 
-            JOIN fiche.fiche_technique f ON act.id_fiche_technique=f.id 
-          WHERE f.id=$1 
-          GROUP BY mois_reel,act.mois_relatif,act.mois,act.id_fiche_technique 
-          ORDER BY mois_reel`,
+            CASE
+              WHEN act.mois IS NOT NULL 
+                THEN to_date(act.mois::text, 'MM')
+                ELSE $2::timestamp + interval '1 month' * act.mois_relatif::integer
+              END as mois_reel,
+            d.id,
+            d.id_activite::integer,
+            d.libelle,
+            d.montant,
+            act.id_fiche_technique::integer as id_fiche_technique
+          FROM fiche.depense d 
+            JOIN fiche.activite act ON act.id=d.id_activite 
+          WHERE act.id_fiche_technique=$1 
+          GROUP BY act.mois, act.mois_relatif, act.id_fiche_technique, d.id
+          `,
         [id_fiche, date_ini_formatted],
         (err, res) => {
           if (err) {
+            console.log(err);
             reject(err);
           }
-          console.log(res.rows);
+
           resolve(res.rows);
         }
       );
@@ -232,7 +230,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       fiches_techniques_libres.map((ftl) => {
         return promiseGetDepensesMoisReelsFicheTechnique(
           ftl.id_fiche_technique,
-          ftl.date_ini
+          format(ftl.date_ini, 'yyyy-MM-dd')
         );
       })
     );
@@ -252,7 +250,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       id_analyse
     );
 
-    const depensesMoisReels = getDepensesMoisReelsFichesTechniques(
+    const depensesMoisReels = await getDepensesMoisReelsFichesTechniques(
       fiches_techniques_libres
     );
 
