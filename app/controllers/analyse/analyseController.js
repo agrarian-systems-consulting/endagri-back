@@ -143,6 +143,7 @@ const deleteAnalyseById = (request, response) => {
   );
 };
 
+//
 const getAnalyseFluxFichesLibresById = async (request, response) => {
   const id_analyse = request.params.id;
 
@@ -163,7 +164,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
     });
   };
 
-  // Construction d'une Promise pour récupérer les informations de l'analyse
+  // Construction d'une Promise pour récupérer les fiches techniques libres de l'analyse
   const getFichesTechniquesLibres = (id_analyse) => {
     return new Promise((resolve, reject) => {
       dbConn.pool.query(
@@ -185,43 +186,23 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
     });
   };
 
-  // Construction d'une Promise pour récupérer les informations de l'analyse
-  const getFicheTechniqueById = (id_fiche) => {
-    return new Promise((resolve, reject) => {
-      dbConn.pool.query(
-        `
-          SELECT *
-          FROM fiche.fiche_technique 
-          WHERE id=$1 
-          `,
-        [id_fiche],
-        (err, res) => {
-          if (err) {
-            reject(err);
-          }
-          resolve(res.rows[0]);
-        }
-      );
-    });
-  };
-
-  // Construction d'une Promise pour récupérer les dépenses associées à une fche technique
-  const getDepensesMoisReelsFicheTechnique = (id_fiche, date_ini_formatted) => {
+  // Construction d'une Promise pour récupérer les dépenses associées à une fiche technique
+  const promiseGetDepensesMoisReelsFicheTechnique = (
+    id_fiche,
+    date_ini_formatted
+  ) => {
     return new Promise((resolve, reject) => {
       dbConn.pool.query(
         ` SELECT 
           CASE
             WHEN act.mois IS NOT NULL 
-              THEN $2::timestamp + interval '1 month' * act.mois::integer
+              THEN to_date(act.mois::text, 'MM')
               ELSE $2::timestamp + interval '1 month' * act.mois_relatif::integer
             END as mois_reel,
             act.mois_relatif,
             act.mois,
-            act.id_fiche_technique,
           JSON_AGG(
             JSON_BUILD_OBJECT(
-              'id',d.id,
-              'id_activite',d.id_activite,
               'id_fiche_technique',act.id_fiche_technique,
               'libelle_depense',d.libelle,
               'montant_depense',d.montant)
@@ -244,9 +225,20 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
     });
   };
 
-  // Fonction pour enchaîner les requêtes asynchrones
+  const getDepensesMoisReelsFichesTechniques = async (
+    fiches_techniques_libres
+  ) => {
+    return Promise.all(
+      fiches_techniques_libres.map((ftl) => {
+        return promiseGetDepensesMoisReelsFicheTechnique(
+          ftl.id_fiche_technique,
+          ftl.date_ini
+        );
+      })
+    );
+  };
+
   const doWork = async () => {
-    // Récupérer les informations de base de l'analyse
     const analyse = await getAnalyse(id_analyse);
 
     // Créer un array de mois compris entre date de début et de fin d'analyse
@@ -260,27 +252,11 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       id_analyse
     );
 
-    // Récupérer pour chaque fiche_technique_libre, la fiche technique associée
-    const data = await fiches_techniques_libres.map(
-      async ({ id_fiche_technique, date_ini }) => {
-        const fiche_technique = await getFicheTechniqueById(id_fiche_technique);
-
-        // Problème ici sur le formatage de la date
-        // 2019-12-31T23:00:00.000Z donne 2020-01-01
-        const date_ini_formatted = format(date_ini, 'yyyy-MM-dd');
-        console.log('date_ini = ', date_ini);
-        console.log('date_ini_formatted = ', date_ini_formatted);
-
-        const depensesMoisReelsFicheTechnique = await getDepensesMoisReelsFicheTechnique(
-          id_fiche_technique,
-          date_ini_formatted
-        );
-
-        return depensesMoisReelsFicheTechnique;
-      }
+    const depensesMoisReels = getDepensesMoisReelsFichesTechniques(
+      fiches_techniques_libres
     );
 
-    console.log(data);
+    return depensesMoisReels;
   };
 
   // Appel de la fonction asynchrone principale et renvoie la réponse
@@ -292,89 +268,6 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       console.log(chalk.red.bold(e));
       response.sendStatus(500);
     });
-
-  // Etape 1
-  // Créer l'array des mois réels compris entre le début et la fin d'analyse
-
-  // // Step 1 Fetch analyse/:id
-  // // Step 2 A partir de date_debut_analyse et date_fin_analyse, créer un array de mois analysés
-  // const periode_analyse = [];
-  // const coeff_ventes = [];
-  // const coeff_general_surf = [];
-  // const idFicheTechnique = [];
-  // try {
-  //   fetch('http://localhost:3333/analyse/' + id_analyse + '').then(
-  //     async (response) => {
-  //       const data = await response.json();
-
-  //       // Créer l'array de mois réels
-  //       periode_analyse.push(
-  //         data[Object.keys(data)[0]].date_debut_analyse,
-  //         data[Object.keys(data)[0]].date_fin_analyse
-  //       );
-
-  //       // R2cupérer toutes les données de toutes les fiches techniques libres
-  //       const fiches_techniques_libres = data.fiches_techniques_libres[0];
-
-  //       fiches_techniques_libres.map((e) => {
-  //         coeff_ventes.push(e.coeff_ventes);
-  //         //add coeff_depenses
-  //         coeff_general_surf.push(e.coeff_surface_ou_nombre_animaux);
-  //         idFicheTechnique.push(e.id_fiche_technique);
-  //       });
-
-  //       // Step 3 Fetch flux mensuels par catégorie, (les )dépenses et les ventes) controller FluxMoisReelsMoisCatController.js
-  //       idFicheTechnique.map((e) => {
-  //         console.log('id_fiche_techique' + e);
-  //         try {
-  //           fetch(
-  //             'http://localhost:3333/fiche/' +
-  //               e +
-  //               '/flux_mois_reels_mois_categorie'
-  //           ).then(async (response) => {
-  //             const data = await response.json();
-  //             const flux = data.flux[0];
-  //             // Step 4 Dépenses : On boucle sur les flux mensuels de dépenses, si categories_depenses.libelle_categorie = libelle_coeff_depense (Boucler sur coeff_depenses)
-  //             flux.map((e) => {
-  //               let moisReelsFlux = e.mois_reel;
-  //               let categoriesDepenses = e.categories_depenses;
-
-  //               for (var i = 0; i < categoriesDepenses.length; i++) {
-  //                 for (var j = 0; j < coeff_ventes.length; j++) {
-  //                   // - Si match, on applique le coeff_intraconsommation sur categories_depenses.total_depenses_categorie
-  //                   // ET le coeff général surface
-  //                   // ET SI categories_depenses.libelle_categorie = "Main d'oeuvre"",on applique le coeff général main d'oeuvre familial
-  //                   if (
-  //                     categoriesDepenses[i].libelle_categorie ===
-  //                     coeff_ventes[j].libelle_categorie
-  //                   ) {
-  //                     //console.log('yes :'+categoriesDepenses[i].libelle_categorie+' <=> '+coeff_ventes[j].libelle_categorie+'');
-  //                     let opeCategorieDepense =
-  //                       coeff_ventes[j].coeff_intraconsommation *
-  //                       categoriesDepenses[i].total_depenses_categorie;
-  //                   } else {
-  //                     //console.log('no');
-  //                   }
-  //                 }
-  //               }
-  //             });
-  //           });
-  //         } catch (error) {
-  //           console.log(error);
-  //         }
-  //       });
-  //     }
-  //   );
-  // } catch (error) {
-  //   console.log(error);
-  // }
-  //response.status(200).send(periode_analyse)
-
-  // Step 5 Ventes : On boucle sur les flux mensuels de ventes, si categories_ventes.libelle_categorie = coeff_vente.libelle_categorie (on boucle dessus)
-  // - Si match, on applique les trois coeff + le principal surface_nom_de_meres.
-  // Step 6 Faire les sommes des ventes et dépenses
-  // Step 7 Solde et Solde cumulé
-  // Step 8 Contruire le json complet
 };
 
 export default {
