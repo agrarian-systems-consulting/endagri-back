@@ -235,72 +235,6 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
     );
   };
 
-  // Construction d'une Promise pour récupérer les ventes associées à une fiche technique
-  const promiseGetVentesMoisReelsFicheTechnique = (
-    id_fiche,
-    date_ini_formatted
-  ) => {
-    return new Promise((resolve, reject) => {
-      const getVenteFicheQuery = `SELECT 
-      CASE
-        WHEN v.mois IS NOT NULL THEN CONCAT('prix_',TO_CHAR($2::timestamp + interval '1 month' * v.mois::integer,'month'))
-        ELSE CONCAT('prix_',TO_CHAR($2::timestamp + interval '1 month' * v.mois_relatif::integer,'month'))
-      END as col_prix_marche
-      FROM fiche.vente v JOIN fiche.marche m ON v.id_marche = m.id WHERE v.id_fiche_technique=$1`;
-      dbConn.pool.query(
-        getVenteFicheQuery,
-        [id_fiche, date_ini_formatted],
-        (err, res) => {
-          if (err) {
-            console.log(err);
-            reject(err);
-          }
-          const prix_marche = res.rows[0].col_prix_marche;
-
-          const getVenteMoisReelsByIdQuery = `WITH subquery AS(
-            SELECT 
-            CASE
-              WHEN v.mois IS NOT NULL THEN $2::timestamp + interval '1 month' * v.mois::integer
-              ELSE $2::timestamp + interval '1 month' * v.mois_relatif::integer
-            END mois_reel,
-            SUM(m.${prix_marche}*v.rendement) total_ventes_categorie,
-            CONCAT((SELECT p.libelle FROM fiche.produit p WHERE id=m.id_produit ),' ', m.type_marche, ' ', m.localisation) libelle_marche
-            FROM fiche.vente v JOIN fiche.marche m ON v.id_marche = m.id
-            WHERE v.id_fiche_technique=$1 GROUP BY libelle_marche,mois_reel ORDER BY mois_reel
-          )
-          SELECT mois_reel,SUM(total_ventes_categorie) total_ventes,
-          JSON_AGG(JSON_BUILD_OBJECT('libelle_categorie',libelle_marche,'total_ventes_categorie',total_ventes_categorie)) categories_ventes FROM subquery
-          GROUP BY mois_reel ORDER BY mois_reel`;
-
-          dbConn.pool.query(
-            getVenteMoisReelsByIdQuery,
-            [id_fiche, date_ini_formatted],
-            (error, res) => {
-              if (error) {
-                console.log(err);
-                reject(err);
-              }
-              resolve(res.rows);
-            }
-          )
-        }
-      )
-    })
-  };
-
-  const getVentesMoisReelsFichesTechniques = async (
-    fiches_techniques_libres
-  ) => {
-    return Promise.all(
-      fiches_techniques_libres.map((ftl) => {
-        return promiseGetVentesMoisReelsFicheTechnique(
-          ftl.id_fiche_technique,
-          format(ftl.date_ini, 'yyyy-MM-dd')
-        );
-      })
-    );
-  };
-
   const doWork = async () => {
     const analyse = await getAnalyse(id_analyse);
 
@@ -329,23 +263,6 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         end: analyse.date_fin_analyse,
       })
     );
-
-    const ventesMoisReelsParFicheTechnique = await getVentesMoisReelsFichesTechniques(
-      fiches_techniques_libres
-    );
-
-    // Simplifier l'array
-    let ventesMoisReels = _.flatten(ventesMoisReelsParFicheTechnique);
-
-    // Ne garder que les dépenses dans les mois de la période d'analyse
-    ventesMoisReels = ventesMoisReels.filter((vent) =>
-      isWithinInterval(vent.mois_reel, {
-        start: analyse.date_debut_analyse,
-        end: analyse.date_fin_analyse,
-      })
-    );
-
-    console.log(ventesMoisReels);
 
     // Boucler sur l'array des dépenses pour appliquer les coefficients
     let depensesMoisReelsAvecCoeff = depensesMoisReels.map((depense) => {
