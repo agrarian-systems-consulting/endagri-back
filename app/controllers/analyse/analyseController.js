@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 import eachMonthOfInterval from 'date-fns/eachMonthOfInterval';
 import chalk from 'chalk';
 import { format } from 'date-fns';
+import { forEach } from 'lodash';
 
 // ---- LISTER TOUTES LES ANALYSES ---- //
 const getAnalyses = (request, response) => {
@@ -258,26 +259,30 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
     const depensesMoisReels = _.flatten(depensesMoisReelsParFicheTechnique);
 
     // Boucler sur l'array des dépenses pour appliquer les coefficients
-    depensesMoisReels.forEach((depense) => {
-      // Boucler sur les fiches techniques libres pour trouver un match
+    const data = depensesMoisReels.map((depense) => {
+      let coeffs = { coeff_surface_ou_nombre_animaux: 1 };
+
       fiches_techniques_libres.forEach((ftl) => {
         if (ftl.id_fiche_technique === depense.id_fiche_technique) {
-          console.log(
-            'Sur la dépense ',
-            depense.id,
-            ' ça matche ',
-            ftl.id_fiche_technique,
-            ' = ',
-            depense.id_fiche_technique,
-            ' il faudrait appliquer le coeff ',
-            ftl.coeff_surface_ou_nombre_animaux
-          );
+          coeffs.coeff_surface_ou_nombre_animaux =
+            ftl.coeff_surface_ou_nombre_animaux;
+        }
+      });
+
+      return Object.assign(depense, coeffs);
+      // PROBLEME ICI
+      fiches_techniques_libres.forEach((ftl) => {
+        if (ftl.id_fiche_technique == depense.id_fiche_technique) {
+          console.log(ftl.id_fiche_technique, depense.id_fiche_technique);
+          return Object.assign(depense, {
+            coeff_surface_ou_nombre_animaux: 'value',
+          });
         }
       });
     });
     // Ne garder que les mois de la période d'analyse
 
-    return depensesMoisReels;
+    return data;
   };
 
   // Appel de la fonction asynchrone principale et renvoie la réponse
