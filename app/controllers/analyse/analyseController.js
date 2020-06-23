@@ -250,11 +250,34 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       id_analyse
     );
 
-    const depensesMoisReels = await getDepensesMoisReelsFichesTechniques(
+    const depensesMoisReelsParFicheTechnique = await getDepensesMoisReelsFichesTechniques(
       fiches_techniques_libres
     );
 
-    return _.flatten(depensesMoisReels);
+    //Simplifier l'array
+    const depensesMoisReels = _.flatten(depensesMoisReelsParFicheTechnique);
+
+    // Boucler sur l'array des dépenses pour appliquer les coefficients
+    depensesMoisReels.forEach((depense) => {
+      // Boucler sur les fiches techniques libres pour trouver un match
+      fiches_techniques_libres.forEach((ftl) => {
+        if (ftl.id_fiche_technique === depense.id_fiche_technique) {
+          console.log(
+            'Sur la dépense ',
+            depense.id,
+            ' ça matche ',
+            ftl.id_fiche_technique,
+            ' = ',
+            depense.id_fiche_technique,
+            ' il faudrait appliquer le coeff ',
+            ftl.coeff_surface_ou_nombre_animaux
+          );
+        }
+      });
+    });
+    // Ne garder que les mois de la période d'analyse
+
+    return depensesMoisReels;
   };
 
   // Appel de la fonction asynchrone principale et renvoie la réponse
