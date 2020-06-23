@@ -252,23 +252,23 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       id_analyse
     );
 
-    console.log(fiches_techniques_libres);
+    //console.log(fiches_techniques_libres);
     const depensesMoisReelsParFicheTechnique = await getDepensesMoisReelsFichesTechniques(
       fiches_techniques_libres
     );
 
     //Simplifier l'array
     const depensesMoisReels = _.flatten(depensesMoisReelsParFicheTechnique);
-
+    //console.log(depensesMoisReels);
     // TODO : Ne garder que les dépenses dans les mois de la période d'analyse
 
     // Boucler sur l'array des dépenses pour appliquer les coefficients
     const data = depensesMoisReels.map((depense) => {
+      
       let coeffs = {
         coeff_surface_ou_nombre_animaux: 1,
         coeff_main_oeuvre_familiale: 0,
       };
-
       fiches_techniques_libres.forEach((ftl) => {
         if (ftl.id_fiche_technique === depense.id_fiche_technique) {
           coeffs.coeff_surface_ou_nombre_animaux =
@@ -284,13 +284,12 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         if (ftl.coeff_depenses !== null) {
           ftl.coeff_depenses.forEach((dep) => {
             // Ce n'est pas le bon truc ici, revoir la structure de table de coeff_depenses qui doit matcher sur l'id_fiche_technique_libre plutôt
-            if (dep.id_depense === depense.id) {
+            if (dep.id_fiche_technique_libre === depense.id) {
               console.log('match sur ', dep.id_depense);
             }
           });
         }
       });
-
       return Object.assign(depense, coeffs);
     });
 
@@ -310,7 +309,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       response.status(200).json(responseBody);
     })
     .catch((e) => {
-      console.log(chalk.red.bold(e));
+      //console.log(chalk.red.bold(e));
       response.sendStatus(500);
     });
 };
