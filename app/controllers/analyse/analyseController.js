@@ -199,7 +199,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         ` SELECT 
             CASE
               WHEN act.mois IS NOT NULL 
-                THEN to_date(act.mois::text, 'MM')
+                THEN to_date(CONCAT(to_char($2::timestamp,'YYYY'), '-', act.mois), 'YYYY-MM')
                 ELSE $2::timestamp + interval '1 month' * act.mois_relatif::integer
               END as mois_reel,
             d.id,
