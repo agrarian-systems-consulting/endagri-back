@@ -300,7 +300,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
 
     // Calculer les nouvelles valeurs en tenant compte des coefficients
     // Optim : Idéalement il ne faudrait pas reboucler ici, il aurait fallu faire le calcul au fil de l'eau
-    let depensesMoisReelsAvecTotal = depensesMoisReelsAvecCoeff.map((dep) => {
+    depensesMoisReelsAvecCoeff.map((dep) => {
       let montant_total =
         dep.montant *
         dep.coeff_surface_ou_nombre_animaux *
