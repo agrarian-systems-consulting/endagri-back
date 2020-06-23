@@ -5,6 +5,7 @@ import eachMonthOfInterval from 'date-fns/eachMonthOfInterval';
 import chalk from 'chalk';
 import { format } from 'date-fns';
 import { forEach } from 'lodash';
+import { id } from 'date-fns/locale';
 
 // ---- LISTER TOUTES LES ANALYSES ---- //
 const getAnalyses = (request, response) => {
@@ -251,6 +252,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       id_analyse
     );
 
+    console.log(fiches_techniques_libres);
     const depensesMoisReelsParFicheTechnique = await getDepensesMoisReelsFichesTechniques(
       fiches_techniques_libres
     );
@@ -258,30 +260,39 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
     //Simplifier l'array
     const depensesMoisReels = _.flatten(depensesMoisReelsParFicheTechnique);
 
+    // TODO : Ne garder que les dépenses dans les mois de la période d'analyse
+
     // Boucler sur l'array des dépenses pour appliquer les coefficients
     const data = depensesMoisReels.map((depense) => {
-      let coeffs = { coeff_surface_ou_nombre_animaux: 1 };
+      let coeffs = {
+        coeff_surface_ou_nombre_animaux: 1,
+        coeff_main_oeuvre_familiale: 0,
+      };
 
       fiches_techniques_libres.forEach((ftl) => {
         if (ftl.id_fiche_technique === depense.id_fiche_technique) {
           coeffs.coeff_surface_ou_nombre_animaux =
             ftl.coeff_surface_ou_nombre_animaux;
+
+          if (depense.libelle === "Main d'oeuvre") {
+            coeffs.coeff_main_oeuvre_familiale =
+              ftl.coeff_main_oeuvre_familiale;
+          }
+
+          // Ajouter les autres coefficients ici
         }
       });
 
       return Object.assign(depense, coeffs);
-      // PROBLEME ICI
-      fiches_techniques_libres.forEach((ftl) => {
-        if (ftl.id_fiche_technique == depense.id_fiche_technique) {
-          console.log(ftl.id_fiche_technique, depense.id_fiche_technique);
-          return Object.assign(depense, {
-            coeff_surface_ou_nombre_animaux: 'value',
-          });
-        }
-      });
     });
-    // Ne garder que les mois de la période d'analyse
 
+    // Calculer les nouvelles valeurs en tenant compte des coefficients
+
+    // Faire la même avec les ventes...
+
+    // Calculer le solde (peut-être fait en front)
+
+    // Calculer le solde cumulé (peut-être fait en front)
     return data;
   };
 
