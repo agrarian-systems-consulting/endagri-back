@@ -1,6 +1,7 @@
 import dbConn from '../../db/pool';
 const _ = require('lodash');
 import eachMonthOfInterval from 'date-fns/eachMonthOfInterval';
+import chalk from 'chalk';
 import { format } from 'date-fns';
 import isWithinInterval from 'date-fns/isWithinInterval';
 
@@ -459,7 +460,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         total_depenses: 0,
         total_ventes: 0,
         solde: 0,
-        depenses: [],
+        depenses: [], // On pourra utiliser ces arrays si ils veulent du détail sur l'origine des flux de dépenses et ventes
         ventes: [],
       };
     });
@@ -503,7 +504,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       response.status(200).json(responseBody);
     })
     .catch((e) => {
-      //console.log(chalk.red.bold(e));
+      console.log(chalk.red.bold(e));
       response.sendStatus(500);
     });
 };
