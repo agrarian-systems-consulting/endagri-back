@@ -2,7 +2,7 @@
 
 ![BuildStatus](https://img.shields.io/badge/Build-Passing-brightgreen.svg) ![Functions](https://img.shields.io/badge/Coverage-96.99%25-brightgreen.svg 'Make me better!')
 
-One Paragraph of project description goes here
+Cette application correspond à l'API REST de l'application Endagri
 
 ## Getting Started
 
