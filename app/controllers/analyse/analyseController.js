@@ -244,7 +244,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
     return new Promise((resolve, reject) => {
       const getVenteFicheQuery = `SELECT 
       CASE
-        WHEN v.mois IS NOT NULL THEN CONCAT('prix_',TO_CHAR($2::timestamp + interval '1 month' * v.mois::integer,'month'))
+        WHEN v.mois IS NOT NULL THEN CONCAT('prix_',TO_char(to_date(CONCAT(to_char($2::timestamp,'YYYY'), '-', LPAD(v.mois::text,2, '0')), 'YYYY-MM')::timestamp,'month')) 
         ELSE CONCAT('prix_',TO_CHAR($2::timestamp + interval '1 month' * v.mois_relatif::integer,'month'))
       END as col_prix_marche
       FROM fiche.vente v JOIN fiche.marche m ON v.id_marche = m.id WHERE v.id_fiche_technique=$1`;
@@ -264,7 +264,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
           WITH subquery AS(
             SELECT 
               CASE
-                WHEN v.mois IS NOT NULL THEN $2::timestamp + interval '1 month' * v.mois::integer
+                WHEN v.mois IS NOT NULL THEN to_date(CONCAT(to_char($2::timestamp,'YYYY'), '-', v.mois), 'YYYY-MM')
                 ELSE $2::timestamp + interval '1 month' * v.mois_relatif::integer
               END mois_reel,
               v.id_fiche_technique id_fiche_technique,
