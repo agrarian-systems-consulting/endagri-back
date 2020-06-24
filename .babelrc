@@ -1,9 +1,12 @@
 {
-  "presets": ["@babel/preset-env"],
-  "plugins": [
+  "presets": [
     [
-      "@babel/plugin-proposal-object-rest-spread",
-      { "loose": true, "useBuiltIns": true }
+      "@babel/preset-env",
+      {
+        "targets": {
+          "node": "current"
+        }
+      }
     ]
   ],
   "comments": false

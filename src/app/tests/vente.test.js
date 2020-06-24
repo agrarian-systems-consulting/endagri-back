@@ -1,7 +1,7 @@
 import request from 'supertest';
 import app from '../../server';
 import dbConn from '../db/pool';
-import regeneratorRuntime from 'regenerator-runtime';
+import 'regenerator-runtime/runtime';
 
 // Paramètres pour la mise en place d'une fiche technique, des activités et des dépenses nécessaires pour les tests
 const id_fiche_technique = 2;

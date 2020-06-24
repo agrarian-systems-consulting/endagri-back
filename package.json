@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --exec babel-node index.js",
+    "start": "npm run build && node build/index.js",
+    "build": "rm -rf build && babel src -d build",
+    "dev": "nodemon --exec babel-node src/index.js",
     "test": "jest --detectOpenHandles",
     "make-badges": "node_modules/.bin/jest-badges-readme",
     "prebuild": "echo false > .buildstatus",
@@ -26,6 +28,7 @@
     "pg": "^8.2.1"
   },
   "devDependencies": {
+    "@babel/cli": "^7.10.3",
     "@babel/core": "^7.10.2",
     "@babel/node": "^7.10.1",
     "@babel/plugin-proposal-object-rest-spread": "^7.10.3",
@@ -36,6 +39,7 @@
     "jest": "^26.0.1",
     "jest-expect-message": "^1.0.2",
     "nodemon": "^2.0.4",
+    "regenerator-runtime": "^0.13.5",
     "supertest": "^4.0.2"
   },
   "engines": {

@@ -1,7 +1,7 @@
 import request from 'supertest';
 import app from '../../server';
 import dbConn from '../db/pool';
-import regeneratorRuntime from 'regenerator-runtime';
+import 'regenerator-runtime/runtime'
 
 const id_analyse = 346742;
 const id_depense_libre = 234565;

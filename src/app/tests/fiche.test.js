@@ -3,7 +3,7 @@ import assert from 'assert';
 import app from '../../server';
 import dbConn from '../db/pool';
 import chalk from 'chalk';
-import regeneratorRuntime from 'regenerator-runtime';
+import 'regenerator-runtime/runtime'
 
 const id_fiche_technique = 1001;
 
