@@ -282,7 +282,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
             ORDER BY 
               mois_reel
           )
-          SELECT id_fiche_technique::integer, mois_reel,SUM(total_ventes_categorie)::integer montant,libelle_marche as libelle_categorie FROM subquery
+          SELECT id_fiche_technique::integer, mois_reel ,SUM(total_ventes_categorie)::integer montant,libelle_marche as libelle_categorie FROM subquery
           GROUP BY id_fiche_technique, mois_reel, libelle_marche ORDER BY mois_reel`;
 
           dbConn.pool.query(
@@ -316,12 +316,6 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
 
   const doWork = async () => {
     const analyse = await getAnalyse(id_analyse);
-
-    // Créer un array de mois compris entre date de début et de fin d'analyse
-    const arrayMoisReels = eachMonthOfInterval({
-      start: analyse.date_debut_analyse,
-      end: analyse.date_fin_analyse,
-    });
 
     // Récupérer les fiches techniques libres associées à l'analyse
     const fiches_techniques_libres = await getFichesTechniquesLibres(
@@ -450,14 +444,57 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       return Object.assign(vente, { montant_total });
     });
 
-    // Mapper les ventes et dépenses sur l'array de mois réels
-    const data = { depenses: fluxDepenses, ventes: fluxVentes };
-    // Calculer le solde (peut-être fait en front)
+    // -- MAPPER les ventes et dépenses sur l'array de mois réels
 
-    // Calculer le solde cumulé (peut-être fait en front)
+    // Créer un array de mois compris entre date de début et de fin d'analyse
+    let arrayMoisReels = eachMonthOfInterval({
+      start: analyse.date_debut_analyse,
+      end: analyse.date_fin_analyse,
+    });
+
+    // Préparer l'array
+    arrayMoisReels = arrayMoisReels.map((mois) => {
+      return {
+        mois: format(mois, 'yyyy-MM'),
+        total_depenses: 0,
+        total_ventes: 0,
+        solde: 0,
+        depenses: [],
+        ventes: [],
+      };
+    });
+
+    // Mapper toutes les ventes
+    fluxVentes.forEach((vente) => {
+      arrayMoisReels.map((mois) => {
+        if (mois.mois == format(vente.mois_reel, 'yyyy-MM')) {
+          mois.ventes.push(_.omit(vente, 'mois_reel'));
+          mois.total_ventes += vente.montant_total;
+          mois.solde += vente.montant_total;
+        }
+      });
+    });
+
+    // Mapper toutes les depenses
+    fluxDepenses.forEach((depense) => {
+      arrayMoisReels.map((mois) => {
+        if (mois.mois == format(depense.mois_reel, 'yyyy-MM')) {
+          mois.depenses.push(_.omit(depense, 'mois_reel'));
+          mois.total_depenses += depense.montant_total;
+          mois.solde -= depense.montant_total;
+        }
+      });
+    });
+
+    // Calculer le solde cumulé en tenant compte de la trésorerie initiale compte de la trésorerie initiale
+    let solde_cumule = analyse.montant_tresorerie_initiale;
+    arrayMoisReels.map((mois) => {
+      solde_cumule += mois.solde;
+      mois.solde_cumule = solde_cumule;
+    });
 
     // Return la totalité de l'objet
-    return data;
+    return arrayMoisReels;
   };
 
   // Appel de la fonction asynchrone principale et renvoie la réponse
