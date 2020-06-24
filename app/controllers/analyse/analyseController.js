@@ -257,7 +257,10 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
           }
           const prix_marche = res.rows[0].col_prix_marche;
 
-          const getVenteMoisReelsByIdQuery = `WITH subquery AS(
+          // TODO : Ajouter l'id fiche technique dans le requête.
+
+          const getVenteMoisReelsByIdQuery = `
+          WITH subquery AS(
             SELECT 
             CASE
               WHEN v.mois IS NOT NULL THEN $2::timestamp + interval '1 month' * v.mois::integer
@@ -268,8 +271,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
             FROM fiche.vente v JOIN fiche.marche m ON v.id_marche = m.id
             WHERE v.id_fiche_technique=$1 GROUP BY libelle_marche,mois_reel ORDER BY mois_reel
           )
-          SELECT mois_reel,SUM(total_ventes_categorie)::integer total_ventes,libelle_marche as libelle_categorie,
-          JSON_AGG(JSON_BUILD_OBJECT('libelle_categorie',libelle_marche,'total_ventes_categorie',total_ventes_categorie)) categories_ventes FROM subquery
+          SELECT mois_reel,SUM(total_ventes_categorie)::integer total_ventes,libelle_marche as libelle_categorie FROM subquery
           GROUP BY mois_reel, libelle_marche ORDER BY mois_reel`;
 
           dbConn.pool.query(
@@ -391,9 +393,23 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       })
     );
 
-    console.log(ventesMoisReels);
-
     // Boucler sur l'array des ventes pour appliquer les coefficients
+    let ventesMoisReelsAvecCoeff = ventesMoisReels.map((vente) => {
+      let coeffs = {
+        coeff_surface_ou_nombre_animaux: 1,
+        coeff_rendement: 1,
+        coeff_autoconsommation: 0,
+        coeff_intraconsommation: 0,
+      };
+
+      // Insérer les coefficients rendement
+      // fiches_techniques_libres.forEach((ftl) => {
+      //   if (ftl.id_fiche_technique === depense.id_fiche_technique) {
+      //   }
+      // });
+
+      return Object.assign(vente, coeffs);
+    });
 
     // Mapper les ventes et dépenses sur l'array de mois réels
 
