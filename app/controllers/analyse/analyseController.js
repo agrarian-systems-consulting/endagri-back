@@ -268,9 +268,9 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
             FROM fiche.vente v JOIN fiche.marche m ON v.id_marche = m.id
             WHERE v.id_fiche_technique=$1 GROUP BY libelle_marche,mois_reel ORDER BY mois_reel
           )
-          SELECT mois_reel,SUM(total_ventes_categorie) total_ventes,
+          SELECT mois_reel,SUM(total_ventes_categorie)::integer total_ventes,libelle_marche as libelle_categorie,
           JSON_AGG(JSON_BUILD_OBJECT('libelle_categorie',libelle_marche,'total_ventes_categorie',total_ventes_categorie)) categories_ventes FROM subquery
-          GROUP BY mois_reel ORDER BY mois_reel`;
+          GROUP BY mois_reel, libelle_marche ORDER BY mois_reel`;
 
           dbConn.pool.query(
             getVenteMoisReelsByIdQuery,
@@ -282,10 +282,10 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
               }
               resolve(res.rows);
             }
-          )
+          );
         }
-      )
-    })
+      );
+    });
   };
 
   const getVentesMoisReelsFichesTechniques = async (
@@ -315,6 +315,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       id_analyse
     );
 
+    // -- DEPENSES
     const depensesMoisReelsParFicheTechnique = await getDepensesMoisReelsFichesTechniques(
       fiches_techniques_libres
     );
@@ -329,23 +330,6 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         end: analyse.date_fin_analyse,
       })
     );
-
-    const ventesMoisReelsParFicheTechnique = await getVentesMoisReelsFichesTechniques(
-      fiches_techniques_libres
-    );
-
-    // Simplifier l'array
-    let ventesMoisReels = _.flatten(ventesMoisReelsParFicheTechnique);
-
-    // Ne garder que les dépenses dans les mois de la période d'analyse
-    ventesMoisReels = ventesMoisReels.filter((vent) =>
-      isWithinInterval(vent.mois_reel, {
-        start: analyse.date_debut_analyse,
-        end: analyse.date_fin_analyse,
-      })
-    );
-
-    console.log(ventesMoisReels);
 
     // Boucler sur l'array des dépenses pour appliquer les coefficients
     let depensesMoisReelsAvecCoeff = depensesMoisReels.map((depense) => {
@@ -391,12 +375,34 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       return Object.assign(dep, { montant_total });
     });
 
-    // Faire la même avec les ventes...
+    // -- VENTES
+    const ventesMoisReelsParFicheTechnique = await getVentesMoisReelsFichesTechniques(
+      fiches_techniques_libres
+    );
+
+    // Simplifier l'array
+    let ventesMoisReels = _.flatten(ventesMoisReelsParFicheTechnique);
+
+    // Ne garder que les dépenses dans les mois de la période d'analyse
+    ventesMoisReels = ventesMoisReels.filter((vente) =>
+      isWithinInterval(vente.mois_reel, {
+        start: analyse.date_debut_analyse,
+        end: analyse.date_fin_analyse,
+      })
+    );
+
+    console.log(ventesMoisReels);
+
+    // Boucler sur l'array des ventes pour appliquer les coefficients
+
+    // Mapper les ventes et dépenses sur l'array de mois réels
 
     // Calculer le solde (peut-être fait en front)
 
     // Calculer le solde cumulé (peut-être fait en front)
-    return depensesMoisReelsAvecCoeff;
+
+    // Return la totalité de l'objet
+    return ventesMoisReels;
   };
 
   // Appel de la fonction asynchrone principale et renvoie la réponse
