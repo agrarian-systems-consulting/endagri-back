@@ -120,7 +120,7 @@ test('Doit supprimer une fiche technique', async () => {
   expect(res.body.id).toBeDefined();
 });
 test("Doit refuser la suppression d'une fiche technique inexistante", async () => {
-  const res = (0, _supertest.default)(_server.default).delete(`/fiche/98345098343346`).expect(404);
+  const res = await (0, _supertest.default)(_server.default).delete(`/fiche/983450346`).expect(404);
 });
 beforeAll(done => {
   const postFicheQuery = 'INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id';
