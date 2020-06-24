@@ -262,17 +262,28 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
           const getVenteMoisReelsByIdQuery = `
           WITH subquery AS(
             SELECT 
-            CASE
-              WHEN v.mois IS NOT NULL THEN $2::timestamp + interval '1 month' * v.mois::integer
-              ELSE $2::timestamp + interval '1 month' * v.mois_relatif::integer
-            END mois_reel,
-            SUM(m.${prix_marche}*v.rendement) total_ventes_categorie,
-            CONCAT((SELECT p.libelle FROM fiche.produit p WHERE id=m.id_produit ),' ', m.type_marche, ' ', m.localisation) libelle_marche
-            FROM fiche.vente v JOIN fiche.marche m ON v.id_marche = m.id
-            WHERE v.id_fiche_technique=$1 GROUP BY libelle_marche,mois_reel ORDER BY mois_reel
+              CASE
+                WHEN v.mois IS NOT NULL THEN $2::timestamp + interval '1 month' * v.mois::integer
+                ELSE $2::timestamp + interval '1 month' * v.mois_relatif::integer
+              END mois_reel,
+              v.id_fiche_technique id_fiche_technique,
+              SUM(m.${prix_marche}*v.rendement) total_ventes_categorie,
+              CONCAT((SELECT p.libelle FROM fiche.produit p WHERE id=m.id_produit ),' ', m.type_marche, ' ', m.localisation) libelle_marche
+            FROM 
+              fiche.vente v 
+            JOIN 
+              fiche.marche m ON v.id_marche = m.id
+            WHERE 
+              v.id_fiche_technique=$1 
+            GROUP BY 
+              id_fiche_technique, 
+              libelle_marche,
+              mois_reel 
+            ORDER BY 
+              mois_reel
           )
-          SELECT mois_reel,SUM(total_ventes_categorie)::integer total_ventes,libelle_marche as libelle_categorie FROM subquery
-          GROUP BY mois_reel, libelle_marche ORDER BY mois_reel`;
+          SELECT id_fiche_technique::integer, mois_reel,SUM(total_ventes_categorie)::integer montant,libelle_marche as libelle_categorie FROM subquery
+          GROUP BY id_fiche_technique, mois_reel, libelle_marche ORDER BY mois_reel`;
 
           dbConn.pool.query(
             getVenteMoisReelsByIdQuery,
@@ -368,7 +379,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
     });
 
     // Calculer les nouvelles valeurs en tenant compte des coefficients
-    depensesMoisReelsAvecCoeff.map((dep) => {
+    const fluxDepenses = depensesMoisReelsAvecCoeff.map((dep) => {
       let montant_total =
         dep.montant *
         dep.coeff_surface_ou_nombre_animaux *
@@ -402,23 +413,51 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         coeff_intraconsommation: 0,
       };
 
-      // Insérer les coefficients rendement
-      // fiches_techniques_libres.forEach((ftl) => {
-      //   if (ftl.id_fiche_technique === depense.id_fiche_technique) {
-      //   }
-      // });
+      // Insérer les coefficients surface et main d'oeuvre familiale
+      fiches_techniques_libres.forEach((ftl) => {
+        if (ftl.id_fiche_technique === vente.id_fiche_technique) {
+          coeffs.coeff_surface_ou_nombre_animaux =
+            ftl.coeff_surface_ou_nombre_animaux;
+
+          // Ajoute le coefficient d'intraconsommation sur certains catégories de dépenses
+          if (ftl.coeff_ventes !== null) {
+            ftl.coeff_ventes.forEach((coeff_ven) => {
+              if (vente.libelle_categorie === coeff_ven.libelle_categorie) {
+                coeffs.coeff_rendement = coeff_ven.coeff_rendement;
+                coeffs.coeff_intraconsommation =
+                  coeff_ven.coeff_intraconsommation;
+                coeffs.coeff_autoconsommation =
+                  coeff_ven.coeff_autoconsommation;
+              }
+            });
+          }
+        }
+      });
 
       return Object.assign(vente, coeffs);
     });
 
-    // Mapper les ventes et dépenses sur l'array de mois réels
+    // Calculer les valeurs en appliquant les coefficients sur les ventes
+    const fluxVentes = ventesMoisReelsAvecCoeff.map((vente) => {
+      let montant_total = parseInt(
+        vente.montant *
+          vente.coeff_surface_ou_nombre_animaux *
+          vente.coeff_rendement *
+          (1 - vente.coeff_autoconsommation) *
+          (1 - vente.coeff_intraconsommation),
+        10
+      );
+      return Object.assign(vente, { montant_total });
+    });
 
+    // Mapper les ventes et dépenses sur l'array de mois réels
+    const data = { depenses: fluxDepenses, ventes: fluxVentes };
     // Calculer le solde (peut-être fait en front)
 
     // Calculer le solde cumulé (peut-être fait en front)
 
     // Return la totalité de l'objet
-    return ventesMoisReels;
+    return data;
   };
 
   // Appel de la fonction asynchrone principale et renvoie la réponse
