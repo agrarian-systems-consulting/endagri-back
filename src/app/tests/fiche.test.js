@@ -3,7 +3,7 @@ import assert from 'assert';
 import app from '../../server';
 import dbConn from '../db/pool';
 import chalk from 'chalk';
-import 'regenerator-runtime/runtime'
+import 'regenerator-runtime/runtime';
 
 const id_fiche_technique = 1001;
 
@@ -159,7 +159,7 @@ test('Doit supprimer une fiche technique', async () => {
 });
 
 test("Doit refuser la suppression d'une fiche technique inexistante", async () => {
-  const res = request(app).delete(`/fiche/98345098343346`).expect(404);
+  const res = await request(app).delete(`/fiche/983450346`).expect(404);
 });
 
 // Créé une fiche à supprimer dans un test

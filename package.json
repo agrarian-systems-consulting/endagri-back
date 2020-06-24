@@ -58,7 +58,11 @@
     "collectCoverage": true,
     "coveragePathIgnorePatterns": [
       "/node_modules/",
-      "/app/controllers/fluxtemp/"
+      "/app/controllers/fluxtemp/",
+      "/build/"
+    ],
+    "modulePathIgnorePatterns": [
+      "/build/"
     ]
   }
 }
