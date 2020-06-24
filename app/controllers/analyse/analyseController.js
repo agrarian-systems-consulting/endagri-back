@@ -460,6 +460,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         total_depenses: 0,
         total_ventes: 0,
         solde: 0,
+        solde_cumule: 0,
         depenses: [], // On pourra utiliser ces arrays si ils veulent du détail sur l'origine des flux de dépenses et ventes
         ventes: [],
       };
