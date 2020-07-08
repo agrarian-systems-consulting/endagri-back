@@ -147,6 +147,21 @@ const getProduitsByProductionId = (request, response) => {
   );
 };
 
+// ---- RECUPERER TOUS LES PRODUITS --- //
+const getProduits = (request, response) => {
+  const getProduitsQuery = `
+  SELECT 
+    id, libelle, unite
+  FROM fiche.produit
+`;
+  dbConn.pool.query(getProduitsQuery, (error, results) => {
+    if (error) {
+      throw error;
+    }
+    response.status(200).send(results.rows);
+  });
+};
+
 // ---- MODIFIER UNE PRODUCTION ET SES PRODUITS --- //
 const putProductionById = (request, response) => {
   const id_production = request.params.id;
@@ -379,6 +394,7 @@ export default {
   postProduction,
   getProductionById,
   getProduitsByProductionId,
+  getProduits,
   putProductionById,
   deleteProductionById,
   addProductToProduction,

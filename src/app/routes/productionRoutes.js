@@ -12,6 +12,7 @@ router.get('/production/:id', productionController.getProductionById);
 
 router.put('/production/:id', productionController.putProductionById);
 router.delete('/production/:id', productionController.deleteProductionById);
+router.get('/produits', productionController.getProduits);
 router.post('/produit', productionController.addProductToProduction);
 router.delete('/produit/:id', productionController.deleteProduct);
 
