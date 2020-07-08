@@ -323,6 +323,36 @@ const addProductToProduction = (request, response) => {
     });
 };
 
+// --- SUPPRIMER UN PRODUIT EXISTANT --- //
+const deleteProduct = (request, response) => {
+  const { id } = request.query;
+
+  const promiseDeleteProduit = (id) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        'DELETE FROM fiche.produit WHERE id=$1 RETURNING *',
+        [id],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(err);
+          }
+          resolve(res.rows[0]);
+        }
+      );
+    });
+  };
+
+  promiseDeleteProduit(id)
+    .then((res) => {
+      response.sendStatus(204);
+    })
+    .catch((err) => {
+      console.log(err);
+      response.sendStatus(404);
+    });
+};
+
 export default {
   getProductions,
   postProduction,
