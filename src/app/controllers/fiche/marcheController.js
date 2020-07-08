@@ -8,7 +8,7 @@ const getMarches = (request, response) => {
 
   if (id_production !== undefined) {
     const getMarchesByIdProductionQuery = `
-    SELECT m.*, p.id_production, p.libelle as libelle_produit, p.unite, prod.libelle as libelle_production
+    SELECT m.*, p.id_production::integer, p.libelle as libelle_produit, p.unite, prod.libelle as libelle_production
     FROM fiche.marche m 
     LEFT JOIN fiche.produit p ON m.id_produit = p.id
     LEFT JOIN fiche.production prod ON p.id_production = prod.id WHERE prod.id=$1
@@ -25,7 +25,7 @@ const getMarches = (request, response) => {
     );
   } else {
     const getMarchesQuery = `
-    SELECT m.*, p.id_production, p.libelle as libelle_produit, p.unite, prod.libelle as libelle_production
+    SELECT m.*, p.id_production::integer, p.libelle as libelle_produit, p.unite, prod.libelle as libelle_production
     FROM fiche.marche m 
     LEFT JOIN fiche.produit p ON m.id_produit = p.id
     LEFT JOIN fiche.production prod ON p.id_production = prod.id 
@@ -98,7 +98,32 @@ const getMarcheById = (request, response) => {
   const id_marche = request.params.id;
 
   dbConn.pool.query(
-    `SELECT id,id_produit::integer, localisation, type_marche, prix_january::integer, prix_february::integer, prix_march::integer, prix_april::integer, prix_may::integer, prix_june::integer, prix_july::integer, prix_august::integer, prix_september::integer, prix_october::integer, prix_november::integer, prix_december::integer,commentaire FROM fiche.marche WHERE id=$1`,
+    `SELECT 
+      m.id,
+      m.id_produit::integer, 
+      m.localisation, 
+      m.type_marche, 
+      m.prix_january::integer, 
+      m.prix_february::integer, 
+      m.prix_march::integer, 
+      m.prix_april::integer, 
+      m.prix_may::integer, 
+      m.prix_june::integer, 
+      m.prix_july::integer, 
+      m.prix_august::integer, 
+      m.prix_september::integer, 
+      m.prix_october::integer, 
+      m.prix_november::integer, 
+      m.prix_december::integer,
+      m.commentaire,
+      p.unite,
+      p.libelle libelle_produit,
+      prod.libelle libelle_production
+    FROM fiche.marche  m
+    LEFT JOIN fiche.produit p ON m.id_produit = p.id
+    LEFT JOIN fiche.production prod ON p.id_production = prod.id
+
+    WHERE m.id=$1`,
     [id_marche],
     (err, res) => {
       if (err) {

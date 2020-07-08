@@ -126,6 +126,27 @@ const getProductionById = (request, response) => {
   );
 };
 
+// ---- RECUPERER LES PRODUITS D'UNE PRODUCTION --- //
+const getProduitsByProductionId = (request, response) => {
+  const id_production = request.params.id;
+
+  const getProduitsByProductionIdQuery = `
+  SELECT 
+    id, libelle, unite
+  FROM fiche.produit
+  WHERE id_production=$1`;
+  dbConn.pool.query(
+    getProduitsByProductionIdQuery,
+    [id_production],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).send(results.rows);
+    }
+  );
+};
+
 // ---- MODIFIER UNE PRODUCTION ET SES PRODUITS --- //
 const putProductionById = (request, response) => {
   const id_production = request.params.id;
@@ -357,6 +378,7 @@ export default {
   getProductions,
   postProduction,
   getProductionById,
+  getProduitsByProductionId,
   putProductionById,
   deleteProductionById,
   addProductToProduction,
