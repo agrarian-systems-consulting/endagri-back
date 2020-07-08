@@ -12,7 +12,7 @@ const getMarches = (request, response) => {
     FROM fiche.marche m 
     LEFT JOIN fiche.produit p ON m.id_produit = p.id
     LEFT JOIN fiche.production prod ON p.id_production = prod.id WHERE prod.id=$1
-    ORDER BY p.id_production ASC`;
+    ORDER BY m.id ASC`;
     dbConn.pool.query(
       getMarchesByIdProductionQuery,
       [id_production],
@@ -29,7 +29,7 @@ const getMarches = (request, response) => {
     FROM fiche.marche m 
     LEFT JOIN fiche.produit p ON m.id_produit = p.id
     LEFT JOIN fiche.production prod ON p.id_production = prod.id 
-    ORDER BY p.id_production ASC`;
+    ORDER BY m.id ASC`;
     dbConn.pool.query(getMarchesQuery, (error, results) => {
       if (error) {
         throw error;
