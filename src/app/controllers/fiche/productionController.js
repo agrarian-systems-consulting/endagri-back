@@ -360,4 +360,5 @@ export default {
   putProductionById,
   deleteProductionById,
   addProductToProduction,
+  deleteProduct,
 };
