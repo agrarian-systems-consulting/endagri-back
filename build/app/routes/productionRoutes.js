@@ -18,5 +18,6 @@ router.post('/production', _productionController.default.postProduction);
 router.get('/production/:id', _productionController.default.getProductionById);
 router.put('/production/:id', _productionController.default.putProductionById);
 router.delete('/production/:id', _productionController.default.deleteProductionById);
+router.post('/produit', _productionController.default.addProductToProduction);
 var _default = router;
 exports.default = _default;

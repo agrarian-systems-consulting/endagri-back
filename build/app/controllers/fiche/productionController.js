@@ -23,7 +23,7 @@ const getProductions = (request, response) => {
       response.status(200).send(res.rows);
     });
   } else {
-    _pool.default.pool.query(`SELECT p.id,p.libelle, p.type_production, json_agg(json_build_object('libelle',x.libelle,'unite',x.unite)) produits
+    _pool.default.pool.query(`SELECT p.id,p.libelle, p.type_production, json_agg(json_build_object('libelle',x.libelle,'unite',x.unite,'id',x.id)) produits
       FROM fiche.production p
       LEFT JOIN fiche.produit x 
       ON x.id_production = p.id
@@ -248,11 +248,44 @@ const deleteProductionById = (request, response) => {
   });
 };
 
+const addProductToProduction = (request, response) => {
+  const {
+    libelle,
+    unite,
+    id_production
+  } = request.body;
+
+  const promiseAjouterProduit = (libelle, unite, id_production) => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query('INSERT INTO fiche.produit(id,libelle,unite,id_production) VALUES (DEFAULT, $1,$2,$3) RETURNING *', [libelle, unite, id_production], (err, res) => {
+        if (err) {
+          reject(err);
+        }
+
+        resolve(res.rows[0].id);
+      });
+    });
+  };
+
+  const ajouterProduit = async (libelle, unite, id_production) => {
+    await promiseAjouterProduit(libelle, unite, id_production);
+    return;
+  };
+
+  ajouterProduit(libelle, unite, id_production).then(() => {
+    response.sendStatus(204);
+  }).catch(e => {
+    console.log(e);
+    response.sendStatus(404);
+  });
+};
+
 var _default = {
   getProductions,
   postProduction,
   getProductionById,
   putProductionById,
-  deleteProductionById
+  deleteProductionById,
+  addProductToProduction
 };
 exports.default = _default;

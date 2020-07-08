@@ -7,5 +7,6 @@ router.post('/production', productionController.postProduction);
 router.get('/production/:id', productionController.getProductionById);
 router.put('/production/:id', productionController.putProductionById);
 router.delete('/production/:id', productionController.deleteProductionById);
+router.post('/produit', productionController.addProductToProduction);
 
 export default router;

@@ -293,10 +293,41 @@ const deleteProductionById = (request, response) => {
     });
 };
 
+// --- CREER UN PRODUIT ASSOCIE A UNE PRODUCTION EXISTANTE
+const addProductToProduction = (request, response) => {
+  const { libelle, unite, id_production } = request.body;
+
+  const promiseAjouterProduit = (libelle, unite, id_production) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        'INSERT INTO fiche.produit(id,libelle,unite,id_production) VALUES (DEFAULT, $1, $2, $3) RETURNING id',
+        [libelle, unite, id_production],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(err);
+          }
+          resolve(res.rows[0]);
+        }
+      );
+    });
+  };
+
+  promiseAjouterProduit(libelle, unite, id_production)
+    .then((res) => {
+      response.status(200).json(res);
+    })
+    .catch((err) => {
+      console.log(err);
+      response.sendStatus(404);
+    });
+};
+
 export default {
   getProductions,
   postProduction,
   getProductionById,
   putProductionById,
   deleteProductionById,
+  addProductToProduction,
 };
