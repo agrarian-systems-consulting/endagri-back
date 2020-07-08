@@ -325,7 +325,7 @@ const addProductToProduction = (request, response) => {
 
 // --- SUPPRIMER UN PRODUIT EXISTANT --- //
 const deleteProduct = (request, response) => {
-  const { id } = request.query;
+  const { id } = request.params;
 
   const promiseDeleteProduit = (id) => {
     return new Promise((resolve, reject) => {
