@@ -8,9 +8,12 @@ import marcheRoutes from './app/routes/marcheRoutes';
 import fluxTempRoutes from './app/routes/fluxTempRoutes';
 import analyseRoutes from './app/routes/analyseRoutes';
 import depenseLibreRoutes from './app/routes/depenseLibreRoutes';
-
+import cors from 'cors';
 // Crée le serveur Express
 const app = express();
+
+// Nécessaire pour accepter les CORS
+app.use(cors());
 
 // Nécessaire pour parser le contenu des requêtes en json
 const urlencodedParser = bodyParser.urlencoded({
