@@ -17,7 +17,7 @@ const getProductions = (request, response) => {
     );
   } else {
     dbConn.pool.query(
-      `SELECT p.id,p.libelle, p.type_production, json_agg(json_build_object('libelle',x.libelle,'unite',x.unite)) produits
+      `SELECT p.id,p.libelle, p.type_production, json_agg(json_build_object('libelle',x.libelle,'unite',x.unite,'id',x.id)) produits
       FROM fiche.production p
       LEFT JOIN fiche.produit x 
       ON x.id_production = p.id

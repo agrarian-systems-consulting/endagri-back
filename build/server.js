@@ -25,9 +25,12 @@ var _analyseRoutes = _interopRequireDefault(require("./app/routes/analyseRoutes"
 
 var _depenseLibreRoutes = _interopRequireDefault(require("./app/routes/depenseLibreRoutes"));
 
+var _cors = _interopRequireDefault(require("cors"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const app = (0, _express.default)();
+app.use((0, _cors.default)());
 
 const urlencodedParser = _bodyParser.default.urlencoded({
   extended: true

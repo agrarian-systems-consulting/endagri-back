@@ -23,7 +23,12 @@ const getProductions = (request, response) => {
       response.status(200).send(res.rows);
     });
   } else {
-    _pool.default.pool.query('SELECT id,libelle,type_production FROM fiche.production ORDER BY id ASC', (err, res) => {
+    _pool.default.pool.query(`SELECT p.id,p.libelle, p.type_production, json_agg(json_build_object('libelle',x.libelle,'unite',x.unite)) produits
+      FROM fiche.production p
+      LEFT JOIN fiche.produit x 
+      ON x.id_production = p.id
+      GROUP BY p.id
+      ORDER BY p.libelle ASC`, (err, res) => {
       if (err) {
         throw err;
       }
