@@ -230,7 +230,8 @@ const getFicheById = (request, response) => {
             m.type_marche,
             m.localisation,
             m.id id_marche,
-            p.libelle libelle_produit
+            p.libelle libelle_produit,
+            p.unite unite
           FROM 
             fiche.vente v
           LEFT JOIN fiche.marche m  
