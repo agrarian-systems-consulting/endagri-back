@@ -48,13 +48,14 @@ const postFiche = (request, response) => {
     id_utilisateur,
     ini_debut,
     ini_fin,
+    commentaire,
     ventes,
     activites,
   } = request.body;
 
   dbConn.pool.query(
-    `INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin) VALUES (DEFAULT, $1, $2, $3, $4, $5) RETURNING id`,
-    [id_utilisateur, libelle, id_production, ini_debut, ini_fin],
+    `INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin,commentaire) VALUES (DEFAULT, $1, $2, $3, $4, $5,$6) RETURNING id`,
+    [id_utilisateur, libelle, id_production, ini_debut, ini_fin, commentaire],
     (err, res) => {
       if (err) {
         throw err;
