@@ -156,7 +156,18 @@ const getFicheById = (request, response) => {
   const promiseGetFiche = (id) => {
     return new Promise((resolve, reject) => {
       dbConn.pool.query(
-        'SELECT * FROM fiche.fiche_technique WHERE id=$1',
+        ` SELECT 
+            f.*,
+            p.id id_production,
+            p.libelle libelle_production,
+            p.type_production type_production
+          FROM 
+            fiche.fiche_technique f 
+          LEFT JOIN
+            fiche.production p
+            ON f.id_production = p.id
+          WHERE f.id=$1
+          GROUP BY f.id, p.id`,
         [id],
         (err, res) => {
           if (err) {
@@ -186,6 +197,24 @@ const getFicheById = (request, response) => {
     });
   };
 
+  //promises de dépenses
+  const promiseGetDepenses = (id) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        `SELECT d.*, a.mois mois, a.mois_relatif mois_relatif
+        FROM fiche.depense d LEFT JOIN fiche.activite a ON a.id = d.id_activite WHERE a.id_fiche_technique=$1 GROUP BY d.id,a.id ORDER BY a.mois_relatif ASC `,
+        [id],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(err);
+          }
+          resolve(res.rows);
+        }
+      );
+    });
+  };
+
   // Récupères les ventes
   const promiseGetVentes = (id) => {
     return new Promise((resolve, reject) => {
@@ -206,7 +235,8 @@ const getFicheById = (request, response) => {
   const getFicheComplete = async (id) => {
     const ficheBody = await promiseGetFiche(id);
     ficheBody.activites = await promiseActivitesAvecDepenses(id);
-    ficheBody.depenses = await promiseGetVentes(id);
+    ficheBody.ventes = await promiseGetVentes(id);
+    ficheBody.depenses = await promiseGetDepenses(id);
 
     return ficheBody;
   };
