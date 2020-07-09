@@ -24,6 +24,7 @@ const postAnalyse = (request, response) => {
     montant_tresorerie_initiale,
     date_debut_analyse,
     date_fin_analyse,
+    created,
   } = request.body;
 
   dbConn.pool.query(
@@ -33,14 +34,15 @@ const postAnalyse = (request, response) => {
       nom_client,
       montant_tresorerie_initiale,
       date_debut_analyse,
-      date_fin_analyse) 
-      VALUES (DEFAULT, $1, $2, $3, $4, $5) RETURNING *`,
+      date_fin_analyse,created) 
+      VALUES (DEFAULT, $1, $2, $3, $4, $5,$6) RETURNING *`,
     [
       nom_utilisateur,
       nom_client,
       montant_tresorerie_initiale,
       date_debut_analyse,
       date_fin_analyse,
+      created,
     ],
     (error, results) => {
       if (error) {
@@ -66,13 +68,37 @@ const getAnalyseById = (request, response) => {
     }
     const infoAnalyse = results.rows;
 
-    const getInfoFTL = `SELECT ftl.id id_ftl,ftl.id_fiche_technique::integer,ftl.date_ini,ftl.coeff_surface_ou_nombre_animaux::integer,ftl.coeff_main_oeuvre_familiale::integer,
-    (SELECT json_agg(json_build_object('libelle_categorie',cfv.libelle_categorie,'coeff_autoconsommation',cfv.coeff_autoconsommation,
-    'coeff_intraconsommation',cfv.coeff_intraconsommation,'coeff_rendement',cfv.coeff_rendement)) coeff_ventes FROM analyse_fiche.coeff_vente cfv 
-      WHERE cfv.id_fiche_technique_libre=ftl.id) coeff_ventes, 
-        (SELECT json_agg(json_build_object('libelle_categorie',cfd.libelle_categorie,'coeff_intraconsommation',cfd.coeff_intraconsommation)) coeff_depenses 
-        FROM analyse_fiche.coeff_depense cfd WHERE cfd.id_fiche_technique_libre=ftl.id) coeff_depenses
-    FROM analyse_fiche.fiche_technique_libre ftl WHERE ftl.id_analyse=$1 ORDER BY ftl.id`;
+    const getInfoFTL = `
+    SELECT 
+    ftl.id id_fiche_technique_libre,
+    ftl.id_fiche_technique::integer,
+    ftl.date_ini,
+    ftl.coeff_surface_ou_nombre_animaux::integer,
+    ftl.coeff_main_oeuvre_familiale::integer,
+    (SELECT 
+      json_agg(
+        json_build_object(
+          'libelle_categorie',cfv.libelle_categorie,
+          'coeff_autoconsommation',cfv.coeff_autoconsommation,
+          'coeff_intraconsommation',cfv.coeff_intraconsommation,
+          'coeff_rendement',cfv.coeff_rendement)
+          ) coeff_ventes 
+      FROM analyse_fiche.coeff_vente cfv 
+      WHERE cfv.id_fiche_technique_libre=ftl.id
+    ) coeff_ventes, 
+    (SELECT 
+      json_agg(
+        json_build_object(
+          'libelle_categorie',cfd.libelle_categorie,
+          'coeff_intraconsommation',cfd.coeff_intraconsommation
+        )
+      ) coeff_depenses 
+      FROM analyse_fiche.coeff_depense cfd 
+      WHERE cfd.id_fiche_technique_libre=ftl.id
+    ) coeff_depenses
+    FROM analyse_fiche.fiche_technique_libre ftl 
+    WHERE ftl.id_analyse=$1 
+    ORDER BY ftl.id`;
     dbConn.pool.query(getInfoFTL, [id_analyse], (error, results) => {
       if (error) {
         throw error;
