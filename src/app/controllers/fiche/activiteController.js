@@ -7,7 +7,7 @@ const postActivite = (request, response) => {
   const id_fiche_technique = request.params.id_fiche_technique;
 
   // Destructure les données contenues dans la requête
-  const { libelle_activite, mois, mois_relatif, depenses } = request.body;
+  const { libelle, mois, mois_relatif, depenses } = request.body;
 
   // Construction d'une Promise pour l'ajout d'une activité
   const promiseAjoutActivite = () => {
@@ -18,18 +18,15 @@ const postActivite = (request, response) => {
       // Envoi de la requête asynchrone
       dbConn.pool.query(
         postActiviteQuery,
-        [id_fiche_technique, libelle_activite, mois, mois_relatif],
-        (error, results) => {
-          if (error) {
-            // Si la requête échoue, reject la Promise
-            return reject(error);
+        [id_fiche_technique, libelle, mois, mois_relatif],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(err);
           }
 
-          // Récupère l'id de l'activité qui vient d'être créée
-          const id_activite = results.rows[0].id;
-
           // La requête est considérée fullfilled et renvoie l'identifiant de l'activité créée
-          resolve(id_activite);
+          resolve(res.rows[0].id);
         }
       );
     });
@@ -50,6 +47,7 @@ const postActivite = (request, response) => {
         [id_activite, libelle_depense, montant],
         (error, results) => {
           if (error) {
+            console.log(error);
             // Si la requête échoue
             reject(error);
           }
@@ -98,20 +96,20 @@ const postActivite = (request, response) => {
     const id_activite = await promiseAjoutActivite();
 
     // S'il y a des dépenses, les ajouter en tenant compte de l'id_activite qui vient d'être créée
-    if (depenses != undefined) {
+    if (depenses !== undefined) {
       await ajouterDepenses(id_activite);
     }
 
     // Récupérer l'activité avec ses dépenses associées dans la base de données
-    const responseBody = await getActiviteAvecDepenses(id_activite);
-    return responseBody;
+    // const responseBody = await getActiviteAvecDepenses(id_activite);
+    return id_activite;
   };
 
   // Appel de la fonction asynchrone principale
   doAjouterActiviteEtDepenses()
-    .then((result) => {
+    .then((res) => {
       // Si les requêtes ont fonctionné, renvoyée un HTTP 201 avec le détail de l'activité et des dépenses
-      response.status(201).json(result);
+      response.status(200).json({ id: res });
     })
     .catch((e) => console.log(chalk.red.bold(e)));
 };
