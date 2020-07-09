@@ -33,8 +33,35 @@ const getProductions = (request, response) => {
   }
 };
 
-// --- CREER UNE PRODUCTION ET SES PRODUITS ASSOCIES --- //
+// --- CREER UNE PRODUCTION --- //
 const postProduction = (request, response) => {
+  const { libelle, type_production } = request.body;
+
+  const ajouterProduction = (libelle, type_production) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        'INSERT INTO fiche.production(id,libelle,type_production) VALUES (DEFAULT, $1,$2) RETURNING *',
+        [libelle, type_production],
+        (err, res) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(res.rows[0]);
+        }
+      );
+    });
+  };
+
+  ajouterProduction(libelle, type_production)
+    .then((res) => response.status(200).json(res))
+    .catch((e) => {
+      console.log(e);
+      throw e;
+    });
+};
+
+// --- CREER UNE PRODUCTION ET SES PRODUITS ASSOCIES --- //
+const postProductionWithProduits = (request, response) => {
   const { libelle_production, type_production, produits } = request.body;
 
   const ajouterProduction = (libelle_production, type_production) => {
@@ -113,7 +140,15 @@ const postProduction = (request, response) => {
 // ---- RECUPERER UNE PRODUCTION ET SES PRODUITS --- //
 const getProductionById = (request, response) => {
   const id_production = request.params.id;
-  const getProductionByIdQuery = `SELECT production.*, json_agg(json_build_object('id',produit.id,'libelle',produit.libelle,'unite',produit.libelle)) produits FROM fiche.production production LEFT JOIN fiche.produit produit ON produit.id_production = production.id WHERE production.id=$1 GROUP BY production.id`;
+  const getProductionByIdQuery = `
+  SELECT 
+    production.*, 
+    json_agg(json_build_object('id',produit.id,'libelle',produit.libelle,'unite',produit.libelle)) produits 
+  FROM fiche.production production 
+  LEFT JOIN fiche.produit produit 
+    ON produit.id_production = production.id 
+  WHERE production.id=$1 
+  GROUP BY production.id`;
   dbConn.pool.query(
     getProductionByIdQuery,
     [id_production],
@@ -392,6 +427,7 @@ const deleteProduct = (request, response) => {
 export default {
   getProductions,
   postProduction,
+  postProductionWithProduits,
   getProductionById,
   getProduitsByProductionId,
   getProduits,
