@@ -43,7 +43,7 @@ const getFiches = (request, response) => {
 // Faire en sorte que la response ne soit renvoyée que lorsque les query pour créer les ventes et activités sont resolved (à voir si on garde dépenses et activités dans ce endpoint quand même)
 const postFiche = (request, response) => {
   const {
-    libelle_fiche,
+    libelle,
     id_production,
     id_utilisateur,
     ini_debut,
@@ -54,7 +54,7 @@ const postFiche = (request, response) => {
 
   dbConn.pool.query(
     `INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin) VALUES (DEFAULT, $1, $2, $3, $4, $5) RETURNING id`,
-    [id_utilisateur, libelle_fiche, id_production, ini_debut, ini_fin],
+    [id_utilisateur, libelle, id_production, ini_debut, ini_fin],
     (err, res) => {
       if (err) {
         throw err;
@@ -64,81 +64,81 @@ const postFiche = (request, response) => {
       const id_fiche_technique = res.rows[0].id;
 
       // Ajoute les ventes
-      if (ventes) {
-        ventes.map(
-          ({
-            id_marche,
-            rendement_min,
-            rendement,
-            rendement_max,
-            mois_relatif,
-            mois,
-          }) => {
-            // Construction de la requête pour créer une vente
-            const postVenteQuery = `INSERT INTO fiche.vente(id, id_fiche_technique, id_marche, rendement_min, rendement, rendement_max, mois_relatif, mois) 
-            VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7) RETURNING id`;
+      // if (ventes) {
+      //   ventes.map(
+      //     ({
+      //       id_marche,
+      //       rendement_min,
+      //       rendement,
+      //       rendement_max,
+      //       mois_relatif,
+      //       mois,
+      //     }) => {
+      //       // Construction de la requête pour créer une vente
+      //       const postVenteQuery = `INSERT INTO fiche.vente(id, id_fiche_technique, id_marche, rendement_min, rendement, rendement_max, mois_relatif, mois)
+      //       VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7) RETURNING id`;
 
-            // Envoi de la requête
-            dbConn.pool.query(
-              postVenteQuery,
-              [
-                id_fiche_technique,
-                id_marche,
-                rendement_min,
-                rendement,
-                rendement_max,
-                mois_relatif,
-                mois,
-              ],
-              (error, results) => {
-                if (error) {
-                  throw error;
-                }
-              }
-            );
-          }
-        );
-      }
+      //       // Envoi de la requête
+      //       dbConn.pool.query(
+      //         postVenteQuery,
+      //         [
+      //           id_fiche_technique,
+      //           id_marche,
+      //           rendement_min,
+      //           rendement,
+      //           rendement_max,
+      //           mois_relatif,
+      //           mois,
+      //         ],
+      //         (error, results) => {
+      //           if (error) {
+      //             throw error;
+      //           }
+      //         }
+      //       );
+      //     }
+      //   );
+      // }
 
       // Ajoute les activités
-      if (activites) {
-        activites.map(({ libelle_activite, mois_relatif, mois, depenses }) => {
-          // Construction de la requête pour créer une activité
-          const postActiviteQuery = `INSERT INTO fiche.activite(id, id_fiche_technique, libelle, mois_relatif, mois) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING id`;
+      // if (activites) {
+      //   activites.map(({ libelle_activite, mois_relatif, mois, depenses }) => {
+      //     // Construction de la requête pour créer une activité
+      //     const postActiviteQuery = `INSERT INTO fiche.activite(id, id_fiche_technique, libelle, mois_relatif, mois) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING id`;
 
-          // Envoi de la requête
-          dbConn.pool.query(
-            postActiviteQuery,
-            [id_fiche_technique, libelle_activite, mois_relatif, mois],
-            (error, results) => {
-              if (error) {
-                throw error;
-              }
-              // Récupère l'id de la nouvelle activité
-              const id_activite = results.rows[0].id;
+      //     // Envoi de la requête
+      //     dbConn.pool.query(
+      //       postActiviteQuery,
+      //       [id_fiche_technique, libelle_activite, mois_relatif, mois],
+      //       (error, results) => {
+      //         if (error) {
+      //           throw error;
+      //         }
+      //         // Récupère l'id de la nouvelle activité
+      //         const id_activite = results.rows[0].id;
 
-              // Ajoute les dépenses
-              if (depenses) {
-                depenses.map(({ libelle_depense, montant }) => {
-                  // Construction de la requête pour créer une dépense
-                  const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING id`;
+      //         // Ajoute les dépenses
+      //         if (depenses) {
+      //           depenses.map(({ libelle_depense, montant }) => {
+      //             // Construction de la requête pour créer une dépense
+      //             const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING id`;
 
-                  // Envoi de la requête
-                  dbConn.pool.query(
-                    postDepenseQuery,
-                    [id_activite, libelle_depense, montant],
-                    (error, results) => {
-                      if (error) {
-                        throw error;
-                      }
-                    }
-                  );
-                });
-              }
-            }
-          );
-        });
-      }
+      //             // Envoi de la requête
+      //             dbConn.pool.query(
+      //               postDepenseQuery,
+      //               [id_activite, libelle_depense, montant],
+      //               (error, results) => {
+      //                 if (error) {
+      //                   throw error;
+      //                 }
+      //               }
+      //             );
+      //           });
+      //         }
+      //       }
+      //     );
+      //   });
+      // }
 
       // Retourne l'id de la fiche technique pour rediriger l'application cliente vers la fiche technique qui vient d'être créée
       response

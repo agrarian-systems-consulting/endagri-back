@@ -40,6 +40,30 @@ const getProductions = (request, response) => {
 
 const postProduction = (request, response) => {
   const {
+    libelle,
+    type_production
+  } = request.body;
+
+  const ajouterProduction = (libelle, type_production) => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query('INSERT INTO fiche.production(id,libelle,type_production) VALUES (DEFAULT, $1,$2) RETURNING *', [libelle, type_production], (err, res) => {
+        if (err) {
+          reject(err);
+        }
+
+        resolve(res.rows[0]);
+      });
+    });
+  };
+
+  ajouterProduction(libelle, type_production).then(res => response.status(200).json(res)).catch(e => {
+    console.log(e);
+    throw e;
+  });
+};
+
+const postProductionWithProduits = (request, response) => {
+  const {
     libelle_production,
     type_production,
     produits
@@ -109,7 +133,15 @@ const postProduction = (request, response) => {
 
 const getProductionById = (request, response) => {
   const id_production = request.params.id;
-  const getProductionByIdQuery = `SELECT production.*, json_agg(json_build_object('id',produit.id,'libelle',produit.libelle,'unite',produit.libelle)) produits FROM fiche.production production LEFT JOIN fiche.produit produit ON produit.id_production = production.id WHERE production.id=$1 GROUP BY production.id`;
+  const getProductionByIdQuery = `
+  SELECT 
+    production.*, 
+    json_agg(json_build_object('id',produit.id,'libelle',produit.libelle,'unite',produit.libelle)) produits 
+  FROM fiche.production production 
+  LEFT JOIN fiche.produit produit 
+    ON produit.id_production = production.id 
+  WHERE production.id=$1 
+  GROUP BY production.id`;
 
   _pool.default.pool.query(getProductionByIdQuery, [id_production], (error, results) => {
     if (error) {
@@ -117,6 +149,39 @@ const getProductionById = (request, response) => {
     }
 
     response.status(200).send(results.rows[0]);
+  });
+};
+
+const getProduitsByProductionId = (request, response) => {
+  const id_production = request.params.id;
+  const getProduitsByProductionIdQuery = `
+  SELECT 
+    id, libelle, unite
+  FROM fiche.produit
+  WHERE id_production=$1`;
+
+  _pool.default.pool.query(getProduitsByProductionIdQuery, [id_production], (error, results) => {
+    if (error) {
+      throw error;
+    }
+
+    response.status(200).send(results.rows);
+  });
+};
+
+const getProduits = (request, response) => {
+  const getProduitsQuery = `
+  SELECT 
+    id, libelle, unite
+  FROM fiche.produit
+`;
+
+  _pool.default.pool.query(getProduitsQuery, (error, results) => {
+    if (error) {
+      throw error;
+    }
+
+    response.status(200).send(results.rows);
   });
 };
 
@@ -257,25 +322,47 @@ const addProductToProduction = (request, response) => {
 
   const promiseAjouterProduit = (libelle, unite, id_production) => {
     return new Promise((resolve, reject) => {
-      _pool.default.pool.query('INSERT INTO fiche.produit(id,libelle,unite,id_production) VALUES (DEFAULT, $1,$2,$3) RETURNING *', [libelle, unite, id_production], (err, res) => {
+      _pool.default.pool.query('INSERT INTO fiche.produit(id,libelle,unite,id_production) VALUES (DEFAULT, $1, $2, $3) RETURNING id', [libelle, unite, id_production], (err, res) => {
         if (err) {
+          console.log(err);
           reject(err);
         }
 
-        resolve(res.rows[0].id);
+        resolve(res.rows[0]);
       });
     });
   };
 
-  const ajouterProduit = async (libelle, unite, id_production) => {
-    await promiseAjouterProduit(libelle, unite, id_production);
-    return;
+  promiseAjouterProduit(libelle, unite, id_production).then(res => {
+    response.status(200).json(res);
+  }).catch(err => {
+    console.log(err);
+    response.sendStatus(404);
+  });
+};
+
+const deleteProduct = (request, response) => {
+  const {
+    id
+  } = request.params;
+
+  const promiseDeleteProduit = id => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query('DELETE FROM fiche.produit WHERE id=$1 RETURNING *', [id], (err, res) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        }
+
+        resolve(res.rows[0]);
+      });
+    });
   };
 
-  ajouterProduit(libelle, unite, id_production).then(() => {
+  promiseDeleteProduit(id).then(res => {
     response.sendStatus(204);
-  }).catch(e => {
-    console.log(e);
+  }).catch(err => {
+    console.log(err);
     response.sendStatus(404);
   });
 };
@@ -283,9 +370,13 @@ const addProductToProduction = (request, response) => {
 var _default = {
   getProductions,
   postProduction,
+  postProductionWithProduits,
   getProductionById,
+  getProduitsByProductionId,
+  getProduits,
   putProductionById,
   deleteProductionById,
-  addProductToProduction
+  addProductToProduction,
+  deleteProduct
 };
 exports.default = _default;

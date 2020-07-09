@@ -38,7 +38,7 @@ const getFiches = (request, response) => {
 
 const postFiche = (request, response) => {
   const {
-    libelle_fiche,
+    libelle,
     id_production,
     id_utilisateur,
     ini_debut,
@@ -47,67 +47,12 @@ const postFiche = (request, response) => {
     activites
   } = request.body;
 
-  _pool.default.pool.query(`INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin) VALUES (DEFAULT, $1, $2, $3, $4, $5) RETURNING id`, [id_utilisateur, libelle_fiche, id_production, ini_debut, ini_fin], (err, res) => {
+  _pool.default.pool.query(`INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin) VALUES (DEFAULT, $1, $2, $3, $4, $5) RETURNING id`, [id_utilisateur, libelle, id_production, ini_debut, ini_fin], (err, res) => {
     if (err) {
       throw err;
     }
 
     const id_fiche_technique = res.rows[0].id;
-
-    if (ventes) {
-      ventes.map(({
-        id_marche,
-        rendement_min,
-        rendement,
-        rendement_max,
-        mois_relatif,
-        mois
-      }) => {
-        const postVenteQuery = `INSERT INTO fiche.vente(id, id_fiche_technique, id_marche, rendement_min, rendement, rendement_max, mois_relatif, mois) 
-            VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7) RETURNING id`;
-
-        _pool.default.pool.query(postVenteQuery, [id_fiche_technique, id_marche, rendement_min, rendement, rendement_max, mois_relatif, mois], (error, results) => {
-          if (error) {
-            throw error;
-          }
-        });
-      });
-    }
-
-    if (activites) {
-      activites.map(({
-        libelle_activite,
-        mois_relatif,
-        mois,
-        depenses
-      }) => {
-        const postActiviteQuery = `INSERT INTO fiche.activite(id, id_fiche_technique, libelle, mois_relatif, mois) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING id`;
-
-        _pool.default.pool.query(postActiviteQuery, [id_fiche_technique, libelle_activite, mois_relatif, mois], (error, results) => {
-          if (error) {
-            throw error;
-          }
-
-          const id_activite = results.rows[0].id;
-
-          if (depenses) {
-            depenses.map(({
-              libelle_depense,
-              montant
-            }) => {
-              const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING id`;
-
-              _pool.default.pool.query(postDepenseQuery, [id_activite, libelle_depense, montant], (error, results) => {
-                if (error) {
-                  throw error;
-                }
-              });
-            });
-          }
-        });
-      });
-    }
-
     response.set('Content-Type', 'application/json').status(201).json({
       id: id_fiche_technique
     });

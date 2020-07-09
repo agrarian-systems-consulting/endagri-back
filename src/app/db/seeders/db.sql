@@ -16,7 +16,7 @@ CREATE TABLE fiche.fiche_technique -- Table des fiches techniques
 (
   id serial unique NOT NULL, -- Identifiant unique
   id_production bigint NOT NULL, -- 
-  id_utilisateur bigint NOT NULL, -- 
+  id_utilisateur bigint DEFAULT NULL, -- 
   libelle character varying(255) NOT NULL, -- 
   ini_debut integer, -- 
   ini_fin integer, -- 
