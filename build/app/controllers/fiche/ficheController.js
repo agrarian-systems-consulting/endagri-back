@@ -68,12 +68,17 @@ const getFicheById = (request, response) => {
     p.type_production AS type_production,
     f.*, 
     json_agg(
-      CASE a.id WHEN NULL 
-        THEN NULL ELSE json_build_object('id',a.id,'libelle',a.libelle,'mois_relatif', a.mois_relatif,'mois',a.mois,'commentaire',a.commentaire) END) activites,
+      CASE v.id 
+      WHEN NULL 
+        THEN NULL 
+        ELSE json_build_object('id',a.id,'libelle',a.libelle,'mois_relatif', a.mois_relatif,'mois',a.mois,'commentaire',a.commentaire) 
+      END) activites,
     json_agg(
-      CASE v.id WHEN NULL 
-        THEN NULL ELSE json_build_object('id',v.id,'id_marche',v.id_marche,'mois_relatif', v.mois_relatif,'mois',v.mois,'rendement_min',v.rendement_min,'rendement',v.rendement,'rendement_max',v.rendement_max) END) ventes 
-
+      CASE v.id 
+      WHEN NULL 
+        THEN NULL 
+        ELSE json_build_object('id',v.id,'id_marche',v.id_marche,'mois_relatif', v.mois_relatif,'mois',v.mois,'rendement_min',v.rendement_min,'rendement',v.rendement,'rendement_max',v.rendement_max) 
+        END) ventes 
     FROM fiche.fiche_technique f 
       LEFT JOIN fiche.activite a ON a.id_fiche_technique = f.id 
       LEFT JOIN fiche.vente v ON v.id_fiche_technique = f.id
@@ -100,6 +105,7 @@ const putFicheById = (request, response) => {
 
   _pool.default.pool.query(putFicheByIdQuery, [libelle_fiche, ini_debut, ini_fin, commentaire, id_fiche], (err, res) => {
     if (err) {
+      console.log(err);
       throw err;
     }
 
@@ -114,16 +120,58 @@ const putFicheById = (request, response) => {
 const deleteFicheById = (request, response) => {
   const id_fiche = request.params.id;
 
-  _pool.default.pool.query(`DELETE FROM fiche.fiche_technique WHERE id=$1 RETURNING *`, [id_fiche], (err, res) => {
-    if (err) {
-      throw err;
-    }
+  const promiseDeleteFiche = id_fiche => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query('DELETE FROM fiche.fiche_technique WHERE id=$1 RETURNING *', [id_fiche], (err, res) => {
+        if (err) {
+          reject(err);
+        }
 
-    if (res.rows[0] !== undefined) {
-      response.status(200).send(res.rows[0]);
-    } else {
-      response.sendStatus(404);
-    }
+        if (res.rows[0] !== undefined) {
+          resolve(res.rows[0]);
+        } else {
+          reject("La fiche n'existe pas");
+        }
+      });
+    });
+  };
+
+  const promiseDeleteAllActivites = id_fiche => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query(`DELETE FROM fiche.activite WHERE id_fiche_technique=$1 RETURNING *`, [id_fiche], (err, res) => {
+        if (err) {
+          reject(err);
+        }
+
+        resolve();
+      });
+    });
+  };
+
+  const promiseDeleteAllVentes = id_fiche => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query(`DELETE FROM fiche.vente WHERE id_fiche_technique=$1 RETURNING *`, [id_fiche], (err, res) => {
+        if (err) {
+          reject(err);
+        }
+
+        resolve();
+      });
+    });
+  };
+
+  const doWork = async id_fiche => {
+    await promiseDeleteAllVentes(id_fiche);
+    await promiseDeleteAllActivites(id_fiche);
+    const responseBody = await promiseDeleteFiche(id_fiche);
+    return responseBody;
+  };
+
+  doWork(id_fiche).then(res => {
+    response.status(200).json(res);
+  }).catch(err => {
+    console.log(err);
+    response.sendStatus(500);
   });
 };
 

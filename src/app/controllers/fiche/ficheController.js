@@ -151,41 +151,71 @@ const postFiche = (request, response) => {
 
 // ---- RECUPERE LE CONTENU D'UNE FICHE ---- //
 const getFicheById = (request, response) => {
-  const id_fiche = request.params.id;
+  const { id } = request.params;
 
-  // PROBLEME dans cette requête. Tester GET fiche/998 et fiche/1 pour voir les deux problèmes.
-  dbConn.pool.query(
-    `
-    SELECT 
-    p.libelle AS libelle_production,
-    p.type_production AS type_production,
-    f.*, 
-    json_agg(
-      CASE v.id 
-      WHEN NULL 
-        THEN NULL 
-        ELSE json_build_object('id',a.id,'libelle',a.libelle,'mois_relatif', a.mois_relatif,'mois',a.mois,'commentaire',a.commentaire) 
-      END) activites,
-    json_agg(
-      CASE v.id 
-      WHEN NULL 
-        THEN NULL 
-        ELSE json_build_object('id',v.id,'id_marche',v.id_marche,'mois_relatif', v.mois_relatif,'mois',v.mois,'rendement_min',v.rendement_min,'rendement',v.rendement,'rendement_max',v.rendement_max) 
-        END) ventes 
-    FROM fiche.fiche_technique f 
-      LEFT JOIN fiche.activite a ON a.id_fiche_technique = f.id 
-      LEFT JOIN fiche.vente v ON v.id_fiche_technique = f.id
-      LEFT JOIN fiche.production p ON f.id_production = p.id 
-    WHERE f.id = $1 GROUP BY f.id, p.libelle, p.type_production
-    `,
-    [id_fiche],
-    (error, results) => {
-      if (error) {
-        throw error;
-      }
-      response.status(200).send(results.rows[0]);
-    }
-  );
+  const promiseGetFiche = (id) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        'SELECT * FROM fiche.fiche_technique WHERE id=$1',
+        [id],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(err);
+          }
+          resolve(res.rows[0]);
+        }
+      );
+    });
+  };
+
+  // Construction d'une Promise pour récupérer l'activité et ses dépenses associées
+  const promiseActivitesAvecDepenses = (id) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        `SELECT a.*, json_agg(json_build_object('id', d.id,'libelle', d.libelle,'montant', d.montant)) depenses 
+        FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id_fiche_technique=$1 GROUP BY a.id`,
+        [id],
+        (err, res) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(res.rows);
+        }
+      );
+    });
+  };
+
+  // Récupères les ventes
+  const promiseGetVentes = (id) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        'SELECT * FROM fiche.vente WHERE id_fiche_technique=$1',
+        [id],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(err);
+          }
+          resolve(res.rows);
+        }
+      );
+    });
+  };
+
+  const getFicheComplete = async (id) => {
+    const ficheBody = await promiseGetFiche(id);
+    ficheBody.activites = await promiseActivitesAvecDepenses(id);
+    ficheBody.depenses = await promiseGetVentes(id);
+
+    return ficheBody;
+  };
+
+  getFicheComplete(id)
+    .then((res) => {
+      response.status(200).json(res);
+    })
+    .catch((err) => response.sendStatus(500));
 };
 
 // ------ MODIFIER UNE FICHE ------ //

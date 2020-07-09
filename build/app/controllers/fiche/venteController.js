@@ -21,7 +21,7 @@ const postVente = (request, response) => {
   } = request.body;
 
   _pool.default.pool.query(`INSERT INTO fiche.vente(id, id_fiche_technique, id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max) 
-  VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7) RETURNING id, id_marche, mois, mois_relatif, rendement_min::integer, rendement::integer, rendement_max::integer`, [id_fiche_technique, id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max], (err, res) => {
+  VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7) RETURNING id, id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max`, [id_fiche_technique, id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max], (err, res) => {
     if (err) {
       throw err;
     }
@@ -41,7 +41,7 @@ const putVente = (request, response) => {
     rendement,
     rendement_max
   } = request.body;
-  const putVenteQuery = `UPDATE fiche.vente SET id_marche=$1, mois=$2, mois_relatif=$3, rendement_min=$4, rendement=$5, rendement_max=$6 WHERE id=$7 RETURNING id, id_marche, mois, mois_relatif, rendement_min::integer, rendement::integer, rendement_max::integer`;
+  const putVenteQuery = `UPDATE fiche.vente SET id_marche=$1, mois=$2, mois_relatif=$3, rendement_min=$4, rendement=$5, rendement_max=$6 WHERE id=$7 RETURNING id, id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max`;
 
   _pool.default.pool.query(putVenteQuery, [id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max, id_vente], (error, results) => {
     if (error) {

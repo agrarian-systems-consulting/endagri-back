@@ -14,7 +14,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const postActivite = (request, response) => {
   const id_fiche_technique = request.params.id_fiche_technique;
   const {
-    libelle_activite,
+    libelle,
     mois,
     mois_relatif,
     depenses
@@ -24,13 +24,13 @@ const postActivite = (request, response) => {
     return new Promise((resolve, reject) => {
       const postActiviteQuery = `INSERT INTO fiche.activite(id, id_fiche_technique, libelle, mois, mois_relatif) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING *`;
 
-      _pool.default.pool.query(postActiviteQuery, [id_fiche_technique, libelle_activite, mois, mois_relatif], (error, results) => {
-        if (error) {
-          return reject(error);
+      _pool.default.pool.query(postActiviteQuery, [id_fiche_technique, libelle, mois, mois_relatif], (err, res) => {
+        if (err) {
+          console.log(err);
+          reject(err);
         }
 
-        const id_activite = results.rows[0].id;
-        resolve(id_activite);
+        resolve(res.rows[0].id);
       });
     });
   };
@@ -45,6 +45,7 @@ const postActivite = (request, response) => {
 
       _pool.default.pool.query(postDepenseQuery, [id_activite, libelle_depense, montant], (error, results) => {
         if (error) {
+          console.log(error);
           reject(error);
         }
 
@@ -77,16 +78,17 @@ const postActivite = (request, response) => {
   const doAjouterActiviteEtDepenses = async () => {
     const id_activite = await promiseAjoutActivite();
 
-    if (depenses != undefined) {
+    if (depenses !== undefined) {
       await ajouterDepenses(id_activite);
     }
 
-    const responseBody = await getActiviteAvecDepenses(id_activite);
-    return responseBody;
+    return id_activite;
   };
 
-  doAjouterActiviteEtDepenses().then(result => {
-    response.status(201).json(result);
+  doAjouterActiviteEtDepenses().then(res => {
+    response.status(200).json({
+      id: res
+    });
   }).catch(e => console.log(_chalk.default.red.bold(e)));
 };
 
@@ -180,7 +182,6 @@ const putActivite = (request, response) => {
 };
 
 const deleteActivite = (request, response) => {
-  const id_fiche_technique = request.params.id;
   const id_activite = request.params.id_activite;
 
   _pool.default.pool.query(`DELETE FROM fiche.activite WHERE id=$1 RETURNING *`, [id_activite], (err, res) => {
@@ -188,11 +189,15 @@ const deleteActivite = (request, response) => {
       throw err;
     }
 
-    if (res.rows[0] !== undefined) {
-      response.status(200).send(res.rows[0]);
-    } else {
-      response.sendStatus(404);
-    }
+    _pool.default.pool.query(`DELETE FROM fiche.depense WHERE id_activite=$1 RETURNING *`, [id_activite], (err, res) => {
+      if (err) {
+        throw err;
+        console.log(err);
+        response.sendStatus(500);
+      }
+
+      response.sendStatus(200);
+    });
   });
 };
 
