@@ -192,6 +192,7 @@ const putFicheById = (request, response) => {
     [libelle_fiche, ini_debut, ini_fin, commentaire, id_fiche],
     (err, res) => {
       if (err) {
+        console.log(err);
         throw err;
       }
       if (res.rows[0] !== undefined) {
@@ -208,20 +209,78 @@ const putFicheById = (request, response) => {
 const deleteFicheById = (request, response) => {
   const id_fiche = request.params.id;
 
-  dbConn.pool.query(
-    `DELETE FROM fiche.fiche_technique WHERE id=$1 RETURNING *`,
-    [id_fiche],
-    (err, res) => {
-      if (err) {
-        throw err;
-      }
-      if (res.rows[0] !== undefined) {
-        response.status(200).send(res.rows[0]);
-      } else {
-        response.sendStatus(404);
-      }
-    }
-  );
+  // Promise pour supprimer la fiche
+  const promiseDeleteFiche = (id_fiche) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        'DELETE FROM fiche.fiche_technique WHERE id=$1 RETURNING *',
+        [id_fiche],
+        (err, res) => {
+          if (err) {
+            reject(err);
+          }
+
+          if (res.rows[0] !== undefined) {
+            resolve(res.rows[0]);
+          } else {
+            reject("La fiche n'existe pas");
+          }
+        }
+      );
+    });
+  };
+
+  // Promise pour supprimer les activités associées
+  const promiseDeleteAllActivites = (id_fiche) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        `DELETE FROM fiche.activite WHERE id_fiche_technique=$1 RETURNING *`,
+        [id_fiche],
+        (err, res) => {
+          if (err) {
+            reject(err);
+          }
+          resolve();
+        }
+      );
+    });
+  };
+
+  // TODO : Supprimer les dépenses associées aux activités
+
+  // Promise pour supprimer les ventes associées
+  const promiseDeleteAllVentes = (id_fiche) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        `DELETE FROM fiche.vente WHERE id_fiche_technique=$1 RETURNING *`,
+        [id_fiche],
+        (err, res) => {
+          if (err) {
+            reject(err);
+          }
+
+          resolve();
+        }
+      );
+    });
+  };
+
+  // Pourrait être amélioré avec un Promise.all
+  const doWork = async (id_fiche) => {
+    await promiseDeleteAllVentes(id_fiche);
+    await promiseDeleteAllActivites(id_fiche);
+    const responseBody = await promiseDeleteFiche(id_fiche);
+    return responseBody;
+  };
+
+  doWork(id_fiche)
+    .then((res) => {
+      response.status(200).json(res);
+    })
+    .catch((err) => {
+      console.log(err);
+      response.sendStatus(500);
+    });
 };
 
 export default {
