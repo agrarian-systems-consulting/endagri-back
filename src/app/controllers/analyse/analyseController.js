@@ -54,62 +54,146 @@ const postAnalyse = (request, response) => {
 };
 
 // ---- RECUPERER LES INFORMATIONS D'UNE ANALYSE ---- //
-// Modifier la requête parceque ne renvoie rien si l'analyse n'a pas de fiches techniques libres associées ou de dépenses libres associées
-// Problème : Renvoie plusieurs fois la même dépense libre
-// Renvoyer l'id des fiches_techniques libres également
 const getAnalyseById = (request, response) => {
-  const id_analyse = request.params.id;
+  const id = request.params.id;
 
-  const getInfoAnalyse = `SELECT a.id,a.nom_utilisateur,a.nom_client,a.montant_tresorerie_initiale,a.date_debut_analyse,a.date_fin_analyse
-  FROM analyse_fiche.analyse a WHERE a.id=$1`; //a.created,a.modified,
-  dbConn.pool.query(getInfoAnalyse, [id_analyse], (error, results) => {
-    if (error) {
-      throw error;
-    }
-    const infoAnalyse = results.rows;
-
-    const getInfoFTL = `
-    SELECT 
-    ftl.id id_fiche_technique_libre,
-    ftl.id_fiche_technique::integer,
-    ftl.date_ini,
-    ftl.coeff_surface_ou_nombre_animaux::integer,
-    ftl.coeff_main_oeuvre_familiale::integer,
-    (SELECT 
-      json_agg(
-        json_build_object(
-          'libelle_categorie',cfv.libelle_categorie,
-          'coeff_autoconsommation',cfv.coeff_autoconsommation,
-          'coeff_intraconsommation',cfv.coeff_intraconsommation,
-          'coeff_rendement',cfv.coeff_rendement)
-          ) coeff_ventes 
-      FROM analyse_fiche.coeff_vente cfv 
-      WHERE cfv.id_fiche_technique_libre=ftl.id
-    ) coeff_ventes, 
-    (SELECT 
-      json_agg(
-        json_build_object(
-          'libelle_categorie',cfd.libelle_categorie,
-          'coeff_intraconsommation',cfd.coeff_intraconsommation
-        )
-      ) coeff_depenses 
-      FROM analyse_fiche.coeff_depense cfd 
-      WHERE cfd.id_fiche_technique_libre=ftl.id
-    ) coeff_depenses
-    FROM analyse_fiche.fiche_technique_libre ftl 
-    WHERE ftl.id_analyse=$1 
-    ORDER BY ftl.id`;
-    dbConn.pool.query(getInfoFTL, [id_analyse], (error, results) => {
-      if (error) {
-        throw error;
-      }
-      const infoFTL = results.rows;
-      let resultjson = _.extend({}, infoAnalyse, {
-        fiches_techniques_libres: [infoFTL],
-      });
-      response.status(200).send(resultjson);
+  const promiseGetAnalyse = (id) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        ` SELECT a.*
+          FROM analyse_fiche.analyse a
+          WHERE a.id=$1
+         `,
+        [id],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(err);
+          }
+          resolve(res.rows[0]);
+        }
+      );
     });
-  });
+  };
+
+  const promiseGetFichesTechniquesLibres = (id_analyse) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        ` SELECT 
+            f.*,
+            ft.libelle libelle_fiche_technique,
+            json_agg(
+              json_build_object(
+                'libelle_categorie', d.libelle_categorie,
+                'coeff_intraconsommation', d.coeff_intraconsommation
+              )
+            ) coeff_depenses
+            ,
+            json_agg(
+              json_build_object(
+                'libelle_categorie', v.libelle_categorie,
+                'coeff_intraconsommation', v.coeff_intraconsommation
+              )
+            ) coeff_ventes
+           
+          FROM 
+            analyse_fiche.fiche_technique_libre f
+          LEFT JOIN 
+            analyse_fiche.coeff_depense d
+          ON 
+            f.id = d.id_fiche_technique_libre
+          LEFT JOIN 
+            analyse_fiche.coeff_vente as v
+          ON 
+            f.id = v.id_fiche_technique_libre
+          LEFT JOIN 
+            fiche.fiche_technique ft
+          ON 
+            ft.id = f.id_fiche_technique::integer
+          WHERE 
+            f.id_analyse=$1
+          GROUP BY 
+            f.id, ft.id
+         `,
+        [id_analyse],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(err);
+          }
+          resolve(res.rows);
+        }
+      );
+    });
+  };
+
+  const doWork = async (id) => {
+    const analyse = await promiseGetAnalyse(id);
+    analyse.fiches_techniques_libres = await promiseGetFichesTechniquesLibres(
+      analyse.id
+    );
+
+    return analyse;
+  };
+
+  doWork(id)
+    .then((res) => {
+      response.status(200).json(res);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+
+  // const getInfoAnalyse = `SELECT a.id,a.nom_utilisateur,a.nom_client,a.montant_tresorerie_initiale,a.date_debut_analyse,a.date_fin_analyse
+  // FROM analyse_fiche.analyse a WHERE a.id=$1`; //a.created,a.modified,
+  // dbConn.pool.query(getInfoAnalyse, [id_analyse], (error, results) => {
+  //   if (error) {
+  //     throw error;
+  //   }
+  //   const infoAnalyse = results.rows;
+
+  //   const getInfoFTL = `
+  //   SELECT
+  //   ftl.id id_fiche_technique_libre,
+  //   ftl.id_fiche_technique::integer,
+  //   ftl.date_ini,
+  //   ftl.coeff_surface_ou_nombre_animaux::integer,
+  //   ftl.coeff_main_oeuvre_familiale::integer,
+  //   (SELECT
+  //     json_agg(
+  //       json_build_object(
+  //         'libelle_categorie',cfv.libelle_categorie,
+  //         'coeff_autoconsommation',cfv.coeff_autoconsommation,
+  //         'coeff_intraconsommation',cfv.coeff_intraconsommation,
+  //         'coeff_rendement',cfv.coeff_rendement)
+  //         ) coeff_ventes
+  //     FROM analyse_fiche.coeff_vente cfv
+  //     WHERE cfv.id_fiche_technique_libre=ftl.id
+  //   ) coeff_ventes,
+  //   (SELECT
+  //     json_agg(
+  //       json_build_object(
+  //         'libelle_categorie',cfd.libelle_categorie,
+  //         'coeff_intraconsommation',cfd.coeff_intraconsommation
+  //       )
+  //     ) coeff_depenses
+  //     FROM analyse_fiche.coeff_depense cfd
+  //     WHERE cfd.id_fiche_technique_libre=ftl.id
+  //   ) coeff_depenses
+  //   FROM analyse_fiche.fiche_technique_libre ftl
+  //   WHERE ftl.id_analyse=$1
+  //   ORDER BY ftl.id`;
+  //   dbConn.pool.query(getInfoFTL, [id_analyse], (error, results) => {
+  //     if (error) {
+  //       throw error;
+  //     }
+  //     const infoFTL = results.rows;
+  //     let resultjson = _.extend({}, infoAnalyse, {
+  //       fiches_techniques_libres: [infoFTL],
+  //     });
+  //     response.status(200).send(resultjson);
+  //   });
+  // });
 };
 
 // ---- CREER MODIFIER UNE ANALYSE ---- //
