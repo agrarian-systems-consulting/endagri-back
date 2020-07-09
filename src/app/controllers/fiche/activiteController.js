@@ -225,7 +225,6 @@ const putActivite = (request, response) => {
 
 // ------ SUPPRIME UNE ACTIVITE ------ //
 const deleteActivite = (request, response) => {
-  const id_fiche_technique = request.params.id; // A utiliser plus tard pour vérifier les droits de l'utilisateur
   const id_activite = request.params.id_activite;
   dbConn.pool.query(
     `DELETE FROM fiche.activite WHERE id=$1 RETURNING *`,
@@ -234,11 +233,22 @@ const deleteActivite = (request, response) => {
       if (err) {
         throw err;
       }
-      if (res.rows[0] !== undefined) {
-        response.status(200).send(res.rows[0]);
-      } else {
-        response.sendStatus(404);
-      }
+      // Supprimer les dépenses associées. A améliorer avec des Promises
+      dbConn.pool.query(
+        `DELETE FROM fiche.depenses WHERE id_activite=$1 RETURNING *`,
+        [id_activite],
+        (err, res) => {
+          if (err) {
+            throw err;
+          }
+
+          if (res.rows[0] !== undefined) {
+            response.sendStatus(200);
+          } else {
+            response.sendStatus(404);
+          }
+        }
+      );
     }
   );
 };

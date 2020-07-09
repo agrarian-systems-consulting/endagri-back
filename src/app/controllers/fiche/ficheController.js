@@ -160,17 +160,22 @@ const getFicheById = (request, response) => {
     p.type_production AS type_production,
     f.*, 
     json_agg(
-      CASE a.id WHEN NULL 
-        THEN NULL ELSE json_build_object('id',a.id,'libelle',a.libelle,'mois_relatif', a.mois_relatif,'mois',a.mois,'commentaire',a.commentaire) END) activites,
+      CASE a.id 
+      WHEN NULL 
+        THEN NULL 
+        ELSE json_build_object('id',a.id,'libelle',a.libelle,'mois_relatif', a.mois_relatif,'mois',a.mois,'commentaire',a.commentaire) 
+      END) activites,
     json_agg(
-      CASE v.id WHEN NULL 
-        THEN NULL ELSE json_build_object('id',v.id,'id_marche',v.id_marche,'mois_relatif', v.mois_relatif,'mois',v.mois,'rendement_min',v.rendement_min,'rendement',v.rendement,'rendement_max',v.rendement_max) END) ventes 
-
+      CASE v.id 
+      WHEN NULL 
+        THEN NULL 
+        ELSE json_build_object('id',v.id,'id_marche',v.id_marche,'mois_relatif', v.mois_relatif,'mois',v.mois,'rendement_min',v.rendement_min,'rendement',v.rendement,'rendement_max',v.rendement_max) 
+        END) ventes 
     FROM fiche.fiche_technique f 
       LEFT JOIN fiche.activite a ON a.id_fiche_technique = f.id 
       LEFT JOIN fiche.vente v ON v.id_fiche_technique = f.id
       LEFT JOIN fiche.production p ON f.id_production = p.id 
-    WHERE f.id = $1 GROUP BY f.id, p.libelle, p.type_production
+    WHERE f.id = $1 GROUP BY f.id, a.id, p.libelle, p.type_production
     `,
     [id_fiche],
     (error, results) => {
