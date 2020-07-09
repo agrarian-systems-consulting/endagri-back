@@ -197,7 +197,7 @@ const getFicheById = (request, response) => {
     });
   };
 
-  //promises de dépenses
+  // Récupère les ventes séparèment pour un éventuel graphique
   const promiseGetDepenses = (id) => {
     return new Promise((resolve, reject) => {
       dbConn.pool.query(
@@ -219,7 +219,26 @@ const getFicheById = (request, response) => {
   const promiseGetVentes = (id) => {
     return new Promise((resolve, reject) => {
       dbConn.pool.query(
-        'SELECT * FROM fiche.vente WHERE id_fiche_technique=$1',
+        ` SELECT 
+            v.id,
+            v.id_fiche_technique,
+            v.mois,
+            v.mois_relatif,
+            v.rendement,
+            v.rendement_min, 
+            v.rendement_max,
+            m.type_marche,
+            m.localisation,
+            m.id id_marche,
+            p.libelle libelle_produit
+          FROM 
+            fiche.vente v
+          LEFT JOIN fiche.marche m  
+            ON v.id_marche = m.id
+          LEFT JOIN fiche.produit p  
+            ON m.id_produit = p.id
+          WHERE v.id_fiche_technique=$1
+          GROUP BY v.id, m.id, p.id`,
         [id],
         (err, res) => {
           if (err) {
