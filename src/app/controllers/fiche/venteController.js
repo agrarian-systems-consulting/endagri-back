@@ -15,7 +15,7 @@ const postVente = (request, response) => {
 
   dbConn.pool.query(
     `INSERT INTO fiche.vente(id, id_fiche_technique, id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max) 
-  VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7) RETURNING id, id_marche, mois, mois_relatif, rendement_min::integer, rendement::integer, rendement_max::integer`,
+  VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7) RETURNING id, id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max`,
     [
       id_fiche_technique,
       id_marche,
@@ -48,7 +48,7 @@ const putVente = (request, response) => {
     rendement_max,
   } = request.body;
 
-  const putVenteQuery = `UPDATE fiche.vente SET id_marche=$1, mois=$2, mois_relatif=$3, rendement_min=$4, rendement=$5, rendement_max=$6 WHERE id=$7 RETURNING id, id_marche, mois, mois_relatif, rendement_min::integer, rendement::integer, rendement_max::integer`;
+  const putVenteQuery = `UPDATE fiche.vente SET id_marche=$1, mois=$2, mois_relatif=$3, rendement_min=$4, rendement=$5, rendement_max=$6 WHERE id=$7 RETURNING id, id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max`;
   dbConn.pool.query(
     putVenteQuery,
     [
