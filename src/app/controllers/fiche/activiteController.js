@@ -233,18 +233,16 @@ const deleteActivite = (request, response) => {
       }
       // Supprimer les dépenses associées. A améliorer avec des Promises
       dbConn.pool.query(
-        `DELETE FROM fiche.depenses WHERE id_activite=$1 RETURNING *`,
+        `DELETE FROM fiche.depense WHERE id_activite=$1 RETURNING *`,
         [id_activite],
         (err, res) => {
           if (err) {
             throw err;
+            console.log(err);
+            response.sendStatus(500);
           }
 
-          if (res.rows[0] !== undefined) {
-            response.sendStatus(200);
-          } else {
-            response.sendStatus(404);
-          }
+          response.sendStatus(200);
         }
       );
     }

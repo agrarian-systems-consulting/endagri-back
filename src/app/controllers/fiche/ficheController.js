@@ -153,6 +153,7 @@ const postFiche = (request, response) => {
 const getFicheById = (request, response) => {
   const id_fiche = request.params.id;
 
+  // PROBLEME dans cette requête. Tester GET fiche/998 et fiche/1 pour voir les deux problèmes.
   dbConn.pool.query(
     `
     SELECT 
@@ -160,7 +161,7 @@ const getFicheById = (request, response) => {
     p.type_production AS type_production,
     f.*, 
     json_agg(
-      CASE a.id 
+      CASE v.id 
       WHEN NULL 
         THEN NULL 
         ELSE json_build_object('id',a.id,'libelle',a.libelle,'mois_relatif', a.mois_relatif,'mois',a.mois,'commentaire',a.commentaire) 
@@ -175,7 +176,7 @@ const getFicheById = (request, response) => {
       LEFT JOIN fiche.activite a ON a.id_fiche_technique = f.id 
       LEFT JOIN fiche.vente v ON v.id_fiche_technique = f.id
       LEFT JOIN fiche.production p ON f.id_production = p.id 
-    WHERE f.id = $1 GROUP BY f.id, a.id, p.libelle, p.type_production
+    WHERE f.id = $1 GROUP BY f.id, p.libelle, p.type_production
     `,
     [id_fiche],
     (error, results) => {
