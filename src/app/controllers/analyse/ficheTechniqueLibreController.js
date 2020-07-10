@@ -208,10 +208,10 @@ const postFicheTechniqueLibre = (request, response) => {
 };
 
 // --- LIRE UNE FICHE TECHNIQUE LIBRE --- //
-const deleteFicheTechniqueLibre = (request, response) => {
+const getFicheTechniqueLibre = (request, response) => {
   const { id_ftl } = request.params;
 
-  const promiseGetFicheComplete = (id_fiche_technique_libre) => {
+  const promiseGetFicheComplete = (id_ftl) => {
     return new Promise((resolve, reject) => {
       dbConn.pool.query(
         ` SELECT 
@@ -249,21 +249,22 @@ const deleteFicheTechniqueLibre = (request, response) => {
         f.id=$1
       GROUP BY 
         f.id, ft.id, p.id`,
-        [id_fiche_technique_libre],
-        (error, results) => {
-          if (error) {
+        [id_ftl],
+        (err, res) => {
+          if (err) {
+            console.log(err);
             reject(error);
           }
-          resolve(results.rows[0]);
+          resolve(res.rows[0]);
         }
       );
     });
   };
 
   // Fonction pour enchaîner les requêtes asynchrones
-  const doWork = async (id) => {
-    const res = await promiseGetFicheComplete(id);
-    return res.data;
+  const doWork = async (id_ftl) => {
+    const ficheComplete = await promiseGetFicheComplete(id_ftl);
+    return ficheComplete;
   };
 
   // Appel de la fonction asynchrone principale
@@ -355,5 +356,6 @@ const deleteFicheTechniqueLibre = (request, response) => {
 
 export default {
   postFicheTechniqueLibre,
+  getFicheTechniqueLibre,
   deleteFicheTechniqueLibre,
 };

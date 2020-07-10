@@ -6,6 +6,10 @@ router.post(
   '/analyse/:id/fiche-technique-libre',
   ficheTechniqueLibreController.postFicheTechniqueLibre
 );
+router.get(
+  '/analyse/:id/fiche-technique-libre/:id_ftl',
+  ficheTechniqueLibreController.getFicheTechniqueLibre
+);
 router.delete(
   '/analyse/:id_analyse/fiche-technique-libre/:id',
   ficheTechniqueLibreController.deleteFicheTechniqueLibre
