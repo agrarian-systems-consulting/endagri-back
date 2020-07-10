@@ -460,10 +460,131 @@ const deleteCoeffDepense = (request, response) => {
     });
 };
 
+// --- AJOUTER UN COEFF VENTE A UNE FICHE TECHNIQUE LIBRE --- //
+const postCoeffVente = (request, response) => {
+  const {
+    id_fiche_technique_libre,
+    libelle_categorie,
+    coeff_intraconsommation,
+    coeff_autoconsommation,
+    coeff_rendement,
+  } = request.body;
+
+  const promisePostCoeffDepense = (
+    id_fiche_technique_libre,
+    libelle_categorie,
+    coeff_intraconsommation,
+    coeff_autoconsommation,
+    coeff_rendement
+  ) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        `INSERT INTO analyse_fiche.coeff_depense(
+          id,
+          id_fiche_technique_libre,
+          libelle_categorie,
+          coeff_intraconsommation,
+          coeff_autoconsommation,
+          coeff_rendement
+          )
+        VALUES (DEFAULT, $1, $2, $3)
+        RETURNING *`,
+        [
+          id_fiche_technique_libre,
+          libelle_categorie,
+          coeff_intraconsommation,
+          coeff_autoconsommation,
+          coeff_rendement,
+        ],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(error);
+          }
+          resolve(res.rows[0]);
+        }
+      );
+    });
+  };
+
+  // Fonction pour enchaîner les requêtes asynchrones
+  const doWork = async (
+    id_fiche_technique_libre,
+    libelle_categorie,
+    coeff_intraconsommation,
+    coeff_autoconsommation,
+    coeff_rendement
+  ) => {
+    let coeff_depense = await promisePostCoeffDepense(
+      id_fiche_technique_libre,
+      libelle_categorie,
+      coeff_intraconsommation,
+      coeff_autoconsommation,
+      coeff_rendement
+    );
+    return coeff_depense;
+  };
+
+  // Appel de la fonction asynchrone principale
+  doWork(
+    id_fiche_technique_libre,
+    libelle_categorie,
+    coeff_intraconsommation,
+    coeff_autoconsommation,
+    coeff_rendement
+  )
+    .then((res) => {
+      response.status(200).json(res);
+    })
+    .catch((err) => {
+      console.log(err);
+      response.sendStatus(500);
+    });
+};
+
+// --- SUPPRIMER UN COEFF VENTE --- //
+const deleteCoeffVente = (request, response) => {
+  const { id } = request.params;
+
+  const promiseDeleteCoeffVente = (id) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        `DELETE FROM analyse_fiche.coeff_vente WHERE id=$1 RETURNING *`,
+        [id],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(error);
+          }
+          resolve(res.rows[0]);
+        }
+      );
+    });
+  };
+
+  // Fonction pour enchaîner les requêtes asynchrones
+  const doWork = async (id) => {
+    await promiseDeleteCoeffVente(id);
+    return;
+  };
+
+  // Appel de la fonction asynchrone principale
+  doWork(id)
+    .then((res) => {
+      response.sendStatus(200);
+    })
+    .catch((err) => {
+      console.log(err);
+      response.sendStatus(500);
+    });
+};
+
 export default {
   postFicheTechniqueLibre,
   getFicheTechniqueLibre,
   deleteFicheTechniqueLibre,
   postCoeffDepense,
   deleteCoeffDepense,
+  postCoeffVente,
+  deleteCoeffVente,
 };
