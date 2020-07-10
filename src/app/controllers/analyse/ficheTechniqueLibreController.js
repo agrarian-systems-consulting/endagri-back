@@ -136,7 +136,6 @@ const postFicheTechniqueLibre = (request, response) => {
     // Ajouter la Fiche Technique Libre
     const fiche_technique_libre = await promiseAjoutFicheTechniqueLibre();
 
-    // S'il y a des coeff ventes, les ajouter en tenant compte de l'id_fiche_technique_libre qui vient d'être créée
     // if (coeff_ventes != undefined) {
     //   await ajouterCoeffVentes(id_fiche_technique_libre);
     // }
