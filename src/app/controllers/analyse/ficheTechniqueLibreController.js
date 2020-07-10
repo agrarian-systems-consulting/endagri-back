@@ -207,10 +207,79 @@ const postFicheTechniqueLibre = (request, response) => {
     .catch((e) => console.log(chalk.red.bold(e)));
 };
 
+// --- LIRE UNE FICHE TECHNIQUE LIBRE --- //
+const deleteFicheTechniqueLibre = (request, response) => {
+  const { id_ftl } = request.params;
+
+  const promiseGetFicheComplete = (id_fiche_technique_libre) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        ` SELECT 
+        f.*,
+        ft.libelle libelle_fiche_technique,
+        p.libelle libelle_production,
+        p.type_production type_production,
+        json_agg(
+          json_build_object(
+            'id', d.id,
+            'libelle_categorie', d.libelle_categorie,
+            'coeff_intraconsommation', d.coeff_intraconsommation
+          )
+        ) coeff_depenses
+        ,
+        json_agg(
+          json_build_object(
+            'id', v.id,
+            'libelle_categorie', v.libelle_categorie,
+            'coeff_intraconsommation', v.coeff_intraconsommation
+          )
+        ) coeff_ventes
+       
+      FROM 
+        analyse_fiche.fiche_technique_libre f
+      LEFT JOIN analyse_fiche.coeff_depense d
+        ON f.id = d.id_fiche_technique_libre
+      LEFT JOIN analyse_fiche.coeff_vente as v
+        ON f.id = v.id_fiche_technique_libre
+      LEFT JOIN fiche.fiche_technique ft
+        ON ft.id = f.id_fiche_technique::integer
+      LEFT JOIN fiche.production p
+        ON ft.id_production::integer = p.id
+      WHERE 
+        f.id=$1
+      GROUP BY 
+        f.id, ft.id, p.id`,
+        [id_fiche_technique_libre],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(results.rows[0]);
+        }
+      );
+    });
+  };
+
+  // Fonction pour enchaîner les requêtes asynchrones
+  const doWork = async (id) => {
+    const res = await promiseGetFicheComplete(id);
+    return res.data;
+  };
+
+  // Appel de la fonction asynchrone principale
+  doWork(id_ftl)
+    .then((res) => {
+      response.status(200).json(res);
+    })
+    .catch((err) => {
+      console.log(err);
+      response.sendStatus(500);
+    });
+};
+
 // --- SUPPRIMER UNE FICHE TECHNIQUE LIBRE --- //
 const deleteFicheTechniqueLibre = (request, response) => {
   const id = request.params.id;
-  // Destructure les données contenus dans la requête
 
   const promiseDeleteFicheTechniqueLibre = (id) => {
     return new Promise((resolve, reject) => {
