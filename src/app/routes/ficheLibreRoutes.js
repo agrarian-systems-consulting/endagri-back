@@ -16,5 +16,9 @@ router.delete(
   ficheTechniqueLibreController.deleteFicheTechniqueLibre
 );
 router.post('/coeff_depense', ficheTechniqueLibreController.postCoeffDepense);
+router.delete(
+  '/coeff_depense/:id',
+  ficheTechniqueLibreController.deleteCoeffDepense
+);
 
 export default router;

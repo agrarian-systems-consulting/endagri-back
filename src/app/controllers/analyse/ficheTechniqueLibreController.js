@@ -423,9 +423,47 @@ const postCoeffDepense = (request, response) => {
     });
 };
 
+// --- SUPPRIMER UN COEFF DEPENSE --- //
+const deleteCoeffDepense = (request, response) => {
+  const { id } = request.params;
+
+  const promiseDeleteCoeffDepense = (id) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        `DELETE FROM analyse_fiche.coeff_depense WHERE id=$1 RETURNING *`,
+        [id],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(error);
+          }
+          resolve(res.rows[0]);
+        }
+      );
+    });
+  };
+
+  // Fonction pour enchaîner les requêtes asynchrones
+  const doWork = async (id) => {
+    await promiseDeleteCoeffDepense(id);
+    return;
+  };
+
+  // Appel de la fonction asynchrone principale
+  doWork(id)
+    .then((res) => {
+      response.sendStatus(200);
+    })
+    .catch((err) => {
+      console.log(err);
+      response.sendStatus(500);
+    });
+};
+
 export default {
   postFicheTechniqueLibre,
   getFicheTechniqueLibre,
   deleteFicheTechniqueLibre,
   postCoeffDepense,
+  deleteCoeffDepense,
 };
