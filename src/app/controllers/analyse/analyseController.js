@@ -82,6 +82,8 @@ const getAnalyseById = (request, response) => {
         ` SELECT 
             f.*,
             ft.libelle libelle_fiche_technique,
+            p.libelle libelle_production,
+            p.type_production type_production,
             json_agg(
               json_build_object(
                 'id', d.id,
@@ -100,22 +102,18 @@ const getAnalyseById = (request, response) => {
            
           FROM 
             analyse_fiche.fiche_technique_libre f
-          LEFT JOIN 
-            analyse_fiche.coeff_depense d
-          ON 
-            f.id = d.id_fiche_technique_libre
-          LEFT JOIN 
-            analyse_fiche.coeff_vente as v
-          ON 
-            f.id = v.id_fiche_technique_libre
-          LEFT JOIN 
-            fiche.fiche_technique ft
-          ON 
-            ft.id = f.id_fiche_technique::integer
+          LEFT JOIN analyse_fiche.coeff_depense d
+            ON f.id = d.id_fiche_technique_libre
+          LEFT JOIN analyse_fiche.coeff_vente as v
+            ON f.id = v.id_fiche_technique_libre
+          LEFT JOIN fiche.fiche_technique ft
+            ON ft.id = f.id_fiche_technique::integer
+          LEFT JOIN fiche.production p
+            ON ft.id_production::integer = p.id
           WHERE 
             f.id_analyse=$1
           GROUP BY 
-            f.id, ft.id
+            f.id, ft.id, p.id
          `,
         [id_analyse],
         (err, res) => {
