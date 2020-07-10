@@ -1,5 +1,5 @@
 import dbConn from '../../db/pool';
-
+import _ from 'lodash';
 // ---- CREER UNE NOUVELLE FICHE TECHNIQUE LIBRE DANS UNE ANALYSE ---- //
 
 const postFicheTechniqueLibre = (request, response) => {
@@ -579,6 +579,65 @@ const deleteCoeffVente = (request, response) => {
     });
 };
 
+// --- LIRE LES PRODUITS FICHE TECHNIQUE LIBRE --- //
+const getProduitsFromFicheTechniqueLibre = (request, response) => {
+  const { id, id_ftl } = request.params;
+
+  const promiseGetProduitsFromFicheComplete = (id_ftl) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        ` 
+      SELECT
+      m.type_marche,
+      m.localisation,
+      p.libelle libelle_produit,
+      m.id id_marche
+      FROM 
+        analyse_fiche.fiche_technique_libre f
+      LEFT JOIN 
+        fiche.fiche_technique ft
+        ON ft.id = f.id_fiche_technique::integer
+      LEFT JOIN fiche.vente v
+        ON v.id_fiche_technique::integer = ft.id
+      LEFT JOIN fiche.marche m
+        ON v.id_marche::integer = m.id
+      LEFT JOIN fiche.produit p
+        ON m.id_produit::integer = p.id
+      WHERE 
+        f.id=$1
+      GROUP BY 
+        v.id, m.id, p.id`,
+        [id_ftl],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(error);
+          }
+          // Remove duplicates before resolving
+          resolve(_.uniqBy(res.rows, 'id_marche'));
+        }
+      );
+    });
+  };
+
+  // Fonction pour enchaîner les requêtes asynchrones
+  const doWork = async (id_ftl) => {
+    let produits = await promiseGetProduitsFromFicheComplete(id_ftl);
+
+    return produits;
+  };
+
+  // Appel de la fonction asynchrone principale
+  doWork(id_ftl)
+    .then((res) => {
+      response.status(200).json(res);
+    })
+    .catch((err) => {
+      console.log(err);
+      response.sendStatus(500);
+    });
+};
+
 export default {
   postFicheTechniqueLibre,
   getFicheTechniqueLibre,
@@ -587,4 +646,5 @@ export default {
   deleteCoeffDepense,
   postCoeffVente,
   deleteCoeffVente,
+  getProduitsFromFicheTechniqueLibre,
 };

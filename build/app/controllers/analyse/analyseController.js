@@ -37,7 +37,8 @@ const postAnalyse = (request, response) => {
     nom_client,
     montant_tresorerie_initiale,
     date_debut_analyse,
-    date_fin_analyse
+    date_fin_analyse,
+    created
   } = request.body;
 
   _pool.default.pool.query(`INSERT INTO analyse_fiche.analyse(
@@ -46,8 +47,8 @@ const postAnalyse = (request, response) => {
       nom_client,
       montant_tresorerie_initiale,
       date_debut_analyse,
-      date_fin_analyse) 
-      VALUES (DEFAULT, $1, $2, $3, $4, $5) RETURNING *`, [nom_utilisateur, nom_client, montant_tresorerie_initiale, date_debut_analyse, date_fin_analyse], (error, results) => {
+      date_fin_analyse,created) 
+      VALUES (DEFAULT, $1, $2, $3, $4, $5,$6) RETURNING *`, [nom_utilisateur, nom_client, montant_tresorerie_initiale, date_debut_analyse, date_fin_analyse, created], (error, results) => {
     if (error) {
       throw error;
     }
@@ -57,37 +58,82 @@ const postAnalyse = (request, response) => {
 };
 
 const getAnalyseById = (request, response) => {
-  const id_analyse = request.params.id;
-  const getInfoAnalyse = `SELECT a.id,a.nom_utilisateur,a.nom_client,a.montant_tresorerie_initiale,a.date_debut_analyse,a.date_fin_analyse
-  FROM analyse_fiche.analyse a WHERE a.id=$1`;
+  const id = request.params.id;
 
-  _pool.default.pool.query(getInfoAnalyse, [id_analyse], (error, results) => {
-    if (error) {
-      throw error;
-    }
+  const promiseGetAnalyse = id => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query(` SELECT a.*
+          FROM analyse_fiche.analyse a
+          WHERE a.id=$1
+         `, [id], (err, res) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        }
 
-    const infoAnalyse = results.rows;
-    const getInfoFTL = `SELECT ftl.id id_ftl,ftl.id_fiche_technique::integer,ftl.date_ini,ftl.coeff_surface_ou_nombre_animaux::integer,ftl.coeff_main_oeuvre_familiale::integer,
-    (SELECT json_agg(json_build_object('libelle_categorie',cfv.libelle_categorie,'coeff_autoconsommation',cfv.coeff_autoconsommation,
-    'coeff_intraconsommation',cfv.coeff_intraconsommation,'coeff_rendement',cfv.coeff_rendement)) coeff_ventes FROM analyse_fiche.coeff_vente cfv 
-      WHERE cfv.id_fiche_technique_libre=ftl.id) coeff_ventes, 
-        (SELECT json_agg(json_build_object('libelle_categorie',cfd.libelle_categorie,'coeff_intraconsommation',cfd.coeff_intraconsommation)) coeff_depenses 
-        FROM analyse_fiche.coeff_depense cfd WHERE cfd.id_fiche_technique_libre=ftl.id) coeff_depenses
-    FROM analyse_fiche.fiche_technique_libre ftl WHERE ftl.id_analyse=$1 ORDER BY ftl.id`;
-
-    _pool.default.pool.query(getInfoFTL, [id_analyse], (error, results) => {
-      if (error) {
-        throw error;
-      }
-
-      const infoFTL = results.rows;
-
-      let resultjson = _.extend({}, infoAnalyse, {
-        fiches_techniques_libres: [infoFTL]
+        resolve(res.rows[0]);
       });
-
-      response.status(200).send(resultjson);
     });
+  };
+
+  const promiseGetFichesTechniquesLibres = id_analyse => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query(` SELECT 
+            f.*,
+            ft.libelle libelle_fiche_technique,
+            p.libelle libelle_production,
+            p.type_production type_production,
+            json_agg(
+              json_build_object(
+                'id', d.id,
+                'libelle_categorie', d.libelle_categorie,
+                'coeff_intraconsommation', d.coeff_intraconsommation
+              )
+            ) coeff_depenses
+            ,
+            json_agg(
+              json_build_object(
+                'id', v.id,
+                'libelle_categorie', v.libelle_categorie,
+                'coeff_intraconsommation', v.coeff_intraconsommation
+              )
+            ) coeff_ventes
+           
+          FROM 
+            analyse_fiche.fiche_technique_libre f
+          LEFT JOIN analyse_fiche.coeff_depense d
+            ON f.id = d.id_fiche_technique_libre
+          LEFT JOIN analyse_fiche.coeff_vente as v
+            ON f.id = v.id_fiche_technique_libre
+          LEFT JOIN fiche.fiche_technique ft
+            ON ft.id = f.id_fiche_technique::integer
+          LEFT JOIN fiche.production p
+            ON ft.id_production::integer = p.id
+          WHERE 
+            f.id_analyse=$1
+          GROUP BY 
+            f.id, ft.id, p.id
+         `, [id_analyse], (err, res) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        }
+
+        resolve(res.rows);
+      });
+    });
+  };
+
+  const doWork = async id => {
+    const analyse = await promiseGetAnalyse(id);
+    analyse.fiches_techniques_libres = await promiseGetFichesTechniquesLibres(analyse.id);
+    return analyse;
+  };
+
+  doWork(id).then(res => {
+    response.status(200).json(res);
+  }).catch(err => {
+    console.log(err);
   });
 };
 

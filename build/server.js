@@ -25,6 +25,8 @@ var _analyseRoutes = _interopRequireDefault(require("./app/routes/analyseRoutes"
 
 var _depenseLibreRoutes = _interopRequireDefault(require("./app/routes/depenseLibreRoutes"));
 
+var _ficheLibreRoutes = _interopRequireDefault(require("./app/routes/ficheLibreRoutes"));
+
 var _cors = _interopRequireDefault(require("cors"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -52,5 +54,6 @@ app.use(_marcheRoutes.default);
 app.use(_fluxTempRoutes.default);
 app.use(_analyseRoutes.default);
 app.use(_depenseLibreRoutes.default);
+app.use(_ficheLibreRoutes.default);
 var _default = app;
 exports.default = _default;

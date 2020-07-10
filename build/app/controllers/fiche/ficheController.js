@@ -43,11 +43,12 @@ const postFiche = (request, response) => {
     id_utilisateur,
     ini_debut,
     ini_fin,
+    commentaire,
     ventes,
     activites
   } = request.body;
 
-  _pool.default.pool.query(`INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin) VALUES (DEFAULT, $1, $2, $3, $4, $5) RETURNING id`, [id_utilisateur, libelle, id_production, ini_debut, ini_fin], (err, res) => {
+  _pool.default.pool.query(`INSERT INTO fiche.fiche_technique(id, id_utilisateur, libelle, id_production, ini_debut, ini_fin,commentaire) VALUES (DEFAULT, $1, $2, $3, $4, $5,$6) RETURNING id`, [id_utilisateur, libelle, id_production, ini_debut, ini_fin, commentaire], (err, res) => {
     if (err) {
       throw err;
     }
@@ -60,37 +61,105 @@ const postFiche = (request, response) => {
 };
 
 const getFicheById = (request, response) => {
-  const id_fiche = request.params.id;
+  const {
+    id
+  } = request.params;
 
-  _pool.default.pool.query(`
-    SELECT 
-    p.libelle AS libelle_production,
-    p.type_production AS type_production,
-    f.*, 
-    json_agg(
-      CASE v.id 
-      WHEN NULL 
-        THEN NULL 
-        ELSE json_build_object('id',a.id,'libelle',a.libelle,'mois_relatif', a.mois_relatif,'mois',a.mois,'commentaire',a.commentaire) 
-      END) activites,
-    json_agg(
-      CASE v.id 
-      WHEN NULL 
-        THEN NULL 
-        ELSE json_build_object('id',v.id,'id_marche',v.id_marche,'mois_relatif', v.mois_relatif,'mois',v.mois,'rendement_min',v.rendement_min,'rendement',v.rendement,'rendement_max',v.rendement_max) 
-        END) ventes 
-    FROM fiche.fiche_technique f 
-      LEFT JOIN fiche.activite a ON a.id_fiche_technique = f.id 
-      LEFT JOIN fiche.vente v ON v.id_fiche_technique = f.id
-      LEFT JOIN fiche.production p ON f.id_production = p.id 
-    WHERE f.id = $1 GROUP BY f.id, p.libelle, p.type_production
-    `, [id_fiche], (error, results) => {
-    if (error) {
-      throw error;
-    }
+  const promiseGetFiche = id => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query(` SELECT 
+            f.*,
+            p.id id_production,
+            p.libelle libelle_production,
+            p.type_production type_production
+          FROM 
+            fiche.fiche_technique f 
+          LEFT JOIN
+            fiche.production p
+            ON f.id_production = p.id
+          WHERE f.id=$1
+          GROUP BY f.id, p.id`, [id], (err, res) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        }
 
-    response.status(200).send(results.rows[0]);
-  });
+        resolve(res.rows[0]);
+      });
+    });
+  };
+
+  const promiseActivitesAvecDepenses = id => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query(`SELECT a.*, json_agg(json_build_object('id', d.id,'libelle', d.libelle,'montant', d.montant)) depenses 
+        FROM fiche.activite a LEFT JOIN fiche.depense d ON a.id = d.id_activite WHERE a.id_fiche_technique=$1 GROUP BY a.id`, [id], (err, res) => {
+        if (err) {
+          reject(err);
+        }
+
+        resolve(res.rows);
+      });
+    });
+  };
+
+  const promiseGetDepenses = id => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query(`SELECT d.*, a.mois mois, a.mois_relatif mois_relatif
+        FROM fiche.depense d LEFT JOIN fiche.activite a ON a.id = d.id_activite WHERE a.id_fiche_technique=$1 GROUP BY d.id,a.id ORDER BY a.mois_relatif ASC `, [id], (err, res) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        }
+
+        resolve(res.rows);
+      });
+    });
+  };
+
+  const promiseGetVentes = id => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query(` SELECT 
+            v.id,
+            v.id_fiche_technique,
+            v.mois,
+            v.mois_relatif,
+            v.rendement,
+            v.rendement_min, 
+            v.rendement_max,
+            m.type_marche,
+            m.localisation,
+            m.id id_marche,
+            p.libelle libelle_produit,
+            p.unite unite
+          FROM 
+            fiche.vente v
+          LEFT JOIN fiche.marche m  
+            ON v.id_marche = m.id
+          LEFT JOIN fiche.produit p  
+            ON m.id_produit = p.id
+          WHERE v.id_fiche_technique=$1
+          GROUP BY v.id, m.id, p.id`, [id], (err, res) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        }
+
+        resolve(res.rows);
+      });
+    });
+  };
+
+  const getFicheComplete = async id => {
+    const ficheBody = await promiseGetFiche(id);
+    ficheBody.activites = await promiseActivitesAvecDepenses(id);
+    ficheBody.ventes = await promiseGetVentes(id);
+    ficheBody.depenses = await promiseGetDepenses(id);
+    return ficheBody;
+  };
+
+  getFicheComplete(id).then(res => {
+    response.status(200).json(res);
+  }).catch(err => response.sendStatus(500));
 };
 
 const putFicheById = (request, response) => {

@@ -26,7 +26,31 @@ const postVente = (request, response) => {
       throw err;
     }
 
-    response.status(201).send(res.rows[0]);
+    _pool.default.pool.query(`SELECT 
+          v.id, 
+          v.id_marche, 
+          v.mois, 
+          v.mois_relatif, 
+          v.rendement_min, 
+          v.rendement, 
+          v.rendement_max,
+          m.localisation,
+          m.type_marche,
+          p.libelle libelle_produit,
+          p.unite
+        FROM fiche.vente v
+        LEFT JOIN fiche.marche m ON v.id_marche = m.id
+        LEFT JOIN fiche.produit p ON m.id_produit = p.id
+        WHERE v.id=$1
+        GROUP BY v.id, m.id, p.id`, [res.rows[0].id], (err, res) => {
+      if (err) {
+        console.log(err);
+        throw err;
+      }
+
+      console.log(res.rows[0]);
+      response.status(201).send(res.rows[0]);
+    });
   });
 };
 
