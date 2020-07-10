@@ -218,38 +218,9 @@ const getFicheTechniqueLibre = (request, response) => {
         ftl.*,
         ft.libelle libelle_fiche_technique,
         p.libelle libelle_production,
-        p.type_production type_production,
-        json_agg(
-          json_build_object(
-            'id', d.id,
-            'libelle_categorie', d.libelle_categorie,
-            'coeff_intraconsommation', d.coeff_intraconsommation
-          )
-        ) coeff_depenses
-        ,
-        json_agg(
-          json_build_object(
-            'id', ven.id,
-            'libelle_categorie', ven.libelle_categorie,
-            'coeff_intraconsommation', ven.coeff_intraconsommation,
-            'coeff_autoconsommation', ven.coeff_autoconsommation,
-            'coeff_rendement', ven.coeff_rendement,
-            'localisation', m.localisation,
-            'type_marche', m.type_marche,
-            'libelle_produit', prod.libelle
-          )
-        ) coeff_ventes
-       
+        p.type_production type_production
       FROM 
         analyse_fiche.fiche_technique_libre ftl
-      LEFT JOIN analyse_fiche.coeff_depense d
-        ON ftl.id = d.id_fiche_technique_libre::integer
-      LEFT JOIN analyse_fiche.coeff_vente ven
-        ON ftl.id = ven.id_fiche_technique_libre::integer
-      LEFT JOIN fiche.marche m
-        ON ven.libelle_categorie::integer = m.id
-      LEFT JOIN fiche.produit prod
-        ON m.id_produit::integer = prod.id
       LEFT JOIN fiche.fiche_technique ft
         ON ft.id = ftl.id_fiche_technique::integer
       LEFT JOIN fiche.production p
@@ -257,7 +228,7 @@ const getFicheTechniqueLibre = (request, response) => {
       WHERE 
         ftl.id=$1
       GROUP BY 
-        ftl.id, ft.id, p.id,ven.id,m.id, prod.id`,
+        ftl.id, ft.id, p.id`,
         [id_ftl],
         (err, res) => {
           if (err) {
@@ -270,19 +241,80 @@ const getFicheTechniqueLibre = (request, response) => {
     });
   };
 
+  const promiseGetCoeffVentes = (id_ftl) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        ` SELECT 
+            ven.id,
+            ven.libelle_categorie,
+            ven.coeff_intraconsommation,
+            ven.coeff_autoconsommation,
+            ven.coeff_rendement,
+             m.localisation,
+             m.type_marche,
+            prod.libelle
+          FROM 
+            analyse_fiche.fiche_technique_libre ftl
+          LEFT JOIN analyse_fiche.coeff_vente ven
+            ON ftl.id = ven.id_fiche_technique_libre::integer
+          LEFT JOIN fiche.marche m
+            ON ven.libelle_categorie::integer = m.id
+          LEFT JOIN fiche.produit prod
+            ON m.id_produit::integer = prod.id
+          LEFT JOIN fiche.fiche_technique ft
+            ON ft.id = ftl.id_fiche_technique::integer
+          WHERE 
+            ftl.id=$1
+          GROUP BY 
+            ftl.id, prod.id, m.id,ven.id`,
+        [id_ftl],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(error);
+          }
+
+          res.rows = res.rows.filter((c) => {
+            return c.id !== null;
+          });
+
+          resolve(res.rows);
+        }
+      );
+    });
+  };
+
+  const promiseGetCoeffDepenses = (id_ftl) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        ` SELECT 
+            cd.id,
+            cd.libelle_categorie,
+            cd.coeff_intraconsommation
+          FROM 
+            analyse_fiche.coeff_depense cd
+          WHERE 
+            cd.id_fiche_technique_libre=$1
+ `,
+        [id_ftl],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(error);
+          }
+          resolve(res.rows);
+        }
+      );
+    });
+  };
+
   // Fonction pour enchaîner les requêtes asynchrones
   const doWork = async (id_ftl) => {
-    let ficheComplete = await promiseGetFicheComplete(id_ftl);
+    let ftl = await promiseGetFicheComplete(id_ftl);
+    ftl.coeff_depenses = await promiseGetCoeffDepenses(ftl.id);
+    ftl.coeff_ventes = await promiseGetCoeffVentes(ftl.id);
 
-    // Supprimer les valeurs nulles
-    ficheComplete.coeff_depenses = ficheComplete.coeff_depenses.filter(
-      (c) => c.id !== null
-    );
-    ficheComplete.coeff_ventes = ficheComplete.coeff_ventes.filter(
-      (c) => c.id !== null
-    );
-
-    return ficheComplete;
+    return ftl;
   };
 
   // Appel de la fonction asynchrone principale
