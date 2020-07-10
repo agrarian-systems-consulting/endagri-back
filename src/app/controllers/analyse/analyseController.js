@@ -84,6 +84,7 @@ const getAnalyseById = (request, response) => {
             ft.libelle libelle_fiche_technique,
             json_agg(
               json_build_object(
+                'id', d.id,
                 'libelle_categorie', d.libelle_categorie,
                 'coeff_intraconsommation', d.coeff_intraconsommation
               )
@@ -91,6 +92,7 @@ const getAnalyseById = (request, response) => {
             ,
             json_agg(
               json_build_object(
+                'id', v.id,
                 'libelle_categorie', v.libelle_categorie,
                 'coeff_intraconsommation', v.coeff_intraconsommation
               )

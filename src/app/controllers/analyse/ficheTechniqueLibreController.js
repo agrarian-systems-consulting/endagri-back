@@ -157,6 +157,85 @@ const postFicheTechniqueLibre = (request, response) => {
     .catch((e) => console.log(chalk.red.bold(e)));
 };
 
+// --- SUPPRIMER UNE FICHE TECHNIQUE LIBRE --- //
+const deleteFicheTechniqueLibre = (request, response) => {
+  const id = request.params.id;
+  // Destructure les données contenus dans la requête
+
+  const promiseDeleteFicheTechniqueLibre = (id) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        `
+      DELETE FROM
+      analyse_fiche.fiche_technique_libre WHERE id=$1 RETURNING *`,
+        [id],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(err);
+          }
+
+          resolve(res.rows[0]);
+        }
+      );
+    });
+  };
+
+  const promiseDeleteCoeffVente = (id_fiche_technique_libre) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        `DELETE FROM
+        analyse_fiche.coeff_vente WHERE id_fiche_technique_libre=$1
+        RETURNING *`,
+        [id_fiche_technique_libre],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(results.rows[0]);
+        }
+      );
+    });
+  };
+
+  const promiseDeleteCoeffDepense = (id_fiche_technique_libre) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        `DELETE FROM
+        analyse_fiche.coeff_depense WHERE id_fiche_technique_libre=$1
+        RETURNING *`,
+        [id_fiche_technique_libre],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(results.rows[0]);
+        }
+      );
+    });
+  };
+
+  // Fonction pour enchaîner les requêtes asynchrones
+  const doWork = async (id) => {
+    await promiseDeleteFicheTechniqueLibre(id);
+    await promiseDeleteCoeffDepense(id);
+    await promiseDeleteCoeffVente(id);
+
+    return;
+  };
+
+  // Appel de la fonction asynchrone principale
+  doWork(id)
+    .then((result) => {
+      response.sendStatus(200);
+    })
+    .catch((e) => {
+      console.log(e);
+      response.sendStatus(500);
+    });
+};
+
 export default {
   postFicheTechniqueLibre,
+  deleteFicheTechniqueLibre,
 };

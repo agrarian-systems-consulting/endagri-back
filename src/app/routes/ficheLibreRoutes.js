@@ -6,5 +6,9 @@ router.post(
   '/analyse/:id/fiche-technique-libre',
   ficheTechniqueLibreController.postFicheTechniqueLibre
 );
+router.delete(
+  '/analyse/:id_analyse/fiche-technique-libre/:id',
+  ficheTechniqueLibreController.deleteFicheTechniqueLibre
+);
 
 export default router;
