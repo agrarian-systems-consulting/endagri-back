@@ -193,8 +193,15 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
   const getAnalyse = (id_analyse) => {
     return new Promise((resolve, reject) => {
       dbConn.pool.query(
-        `SELECT a.id,a.nom_utilisateur,a.nom_client,a.montant_tresorerie_initiale,a.date_debut_analyse,a.date_fin_analyse
-  FROM analyse_fiche.analyse a WHERE a.id=$1`,
+        ` SELECT 
+            a.id,
+            a.nom_utilisateur,
+            a.nom_client,
+            a.montant_tresorerie_initiale,
+            a.date_debut_analyse,
+            a.date_fin_analyse
+          FROM analyse_fiche.analyse a 
+          WHERE a.id=$1`,
         [id_analyse],
         (err, res) => {
           if (err) {
