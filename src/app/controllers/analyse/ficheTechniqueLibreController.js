@@ -263,7 +263,16 @@ const getFicheTechniqueLibre = (request, response) => {
 
   // Fonction pour enchaîner les requêtes asynchrones
   const doWork = async (id_ftl) => {
-    const ficheComplete = await promiseGetFicheComplete(id_ftl);
+    let ficheComplete = await promiseGetFicheComplete(id_ftl);
+
+    // Supprimer les valeurs nulles
+    ficheComplete.coeff_depenses = ficheComplete.coeff_depenses.filter(
+      (c) => c.id !== null
+    );
+    ficheComplete.coeff_ventes = ficheComplete.coeff_ventes.filter(
+      (c) => c.id !== null
+    );
+
     return ficheComplete;
   };
 
@@ -354,8 +363,69 @@ const deleteFicheTechniqueLibre = (request, response) => {
     });
 };
 
+// --- AJOUTER UN COEFF DEPENSE A UNE FICHE TECHNIQUE LIBRE --- //
+const postCoeffDepense = (request, response) => {
+  const {
+    id_fiche_technique_libre,
+    libelle_categorie,
+    coeff_intraconsommation,
+  } = request.body;
+
+  const promisePostCoeffDepense = (
+    id_fiche_technique_libre,
+    libelle_categorie,
+    coeff_intraconsommation
+  ) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        `INSERT INTO analyse_fiche.coeff_depense(
+          id,
+          id_fiche_technique_libre,
+          libelle_categorie,
+          coeff_intraconsommation
+          )
+        VALUES (DEFAULT, $1, $2, $3)
+        RETURNING *`,
+        [id_fiche_technique_libre, libelle_categorie, coeff_intraconsommation],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(error);
+          }
+          resolve(res.rows[0]);
+        }
+      );
+    });
+  };
+
+  // Fonction pour enchaîner les requêtes asynchrones
+  const doWork = async (
+    id_fiche_technique_libre,
+    libelle_categorie,
+    coeff_intraconsommation
+  ) => {
+    let coeff_depense = await promisePostCoeffDepense(
+      id_fiche_technique_libre,
+      libelle_categorie,
+      coeff_intraconsommation
+    );
+    return coeff_depense;
+  };
+
+  // Appel de la fonction asynchrone principale
+  doWork(id_fiche_technique_libre, libelle_categorie, coeff_intraconsommation)
+    .then((res) => {
+      response.status(200).json(res);
+    })
+    .catch((err) => {
+      console.log(err);
+      response.sendStatus(500);
+    });
+};
+
 export default {
   postFicheTechniqueLibre,
   getFicheTechniqueLibre,
   deleteFicheTechniqueLibre,
+  postCoeffDepense,
 };
