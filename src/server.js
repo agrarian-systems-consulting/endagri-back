@@ -8,6 +8,7 @@ import marcheRoutes from './app/routes/marcheRoutes';
 import fluxTempRoutes from './app/routes/fluxTempRoutes';
 import analyseRoutes from './app/routes/analyseRoutes';
 import depenseLibreRoutes from './app/routes/depenseLibreRoutes';
+import ficheLibreRoutes from './app/routes/ficheLibreRoutes';
 import cors from 'cors';
 // Crée le serveur Express
 const app = express();
@@ -35,6 +36,7 @@ app.use(marcheRoutes);
 app.use(fluxTempRoutes);
 app.use(analyseRoutes);
 app.use(depenseLibreRoutes);
+app.use(ficheLibreRoutes);
 
 // L'application est lancée depuis le fichier index.js pour permettre à Jest de faire fonctionner les tests
 export default app;

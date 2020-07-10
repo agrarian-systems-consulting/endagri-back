@@ -143,60 +143,9 @@ const getAnalyseById = (request, response) => {
     .catch((err) => {
       console.log(err);
     });
-
-  // const getInfoAnalyse = `SELECT a.id,a.nom_utilisateur,a.nom_client,a.montant_tresorerie_initiale,a.date_debut_analyse,a.date_fin_analyse
-  // FROM analyse_fiche.analyse a WHERE a.id=$1`; //a.created,a.modified,
-  // dbConn.pool.query(getInfoAnalyse, [id_analyse], (error, results) => {
-  //   if (error) {
-  //     throw error;
-  //   }
-  //   const infoAnalyse = results.rows;
-
-  //   const getInfoFTL = `
-  //   SELECT
-  //   ftl.id id_fiche_technique_libre,
-  //   ftl.id_fiche_technique::integer,
-  //   ftl.date_ini,
-  //   ftl.coeff_surface_ou_nombre_animaux::integer,
-  //   ftl.coeff_main_oeuvre_familiale::integer,
-  //   (SELECT
-  //     json_agg(
-  //       json_build_object(
-  //         'libelle_categorie',cfv.libelle_categorie,
-  //         'coeff_autoconsommation',cfv.coeff_autoconsommation,
-  //         'coeff_intraconsommation',cfv.coeff_intraconsommation,
-  //         'coeff_rendement',cfv.coeff_rendement)
-  //         ) coeff_ventes
-  //     FROM analyse_fiche.coeff_vente cfv
-  //     WHERE cfv.id_fiche_technique_libre=ftl.id
-  //   ) coeff_ventes,
-  //   (SELECT
-  //     json_agg(
-  //       json_build_object(
-  //         'libelle_categorie',cfd.libelle_categorie,
-  //         'coeff_intraconsommation',cfd.coeff_intraconsommation
-  //       )
-  //     ) coeff_depenses
-  //     FROM analyse_fiche.coeff_depense cfd
-  //     WHERE cfd.id_fiche_technique_libre=ftl.id
-  //   ) coeff_depenses
-  //   FROM analyse_fiche.fiche_technique_libre ftl
-  //   WHERE ftl.id_analyse=$1
-  //   ORDER BY ftl.id`;
-  //   dbConn.pool.query(getInfoFTL, [id_analyse], (error, results) => {
-  //     if (error) {
-  //       throw error;
-  //     }
-  //     const infoFTL = results.rows;
-  //     let resultjson = _.extend({}, infoAnalyse, {
-  //       fiches_techniques_libres: [infoFTL],
-  //     });
-  //     response.status(200).send(resultjson);
-  //   });
-  // });
 };
 
-// ---- CREER MODIFIER UNE ANALYSE ---- //
+// ----  MODIFIER UNE ANALYSE ---- //
 const putAnalyseById = (request, response) => {
   const id_analyse = request.params.id;
 
@@ -233,7 +182,7 @@ const putAnalyseById = (request, response) => {
   );
 };
 
-// ---- CREER MODIFIER UNE ANALYSE ---- //
+// ---- SUPPRIMER UNE ANALYSE ---- //
 const deleteAnalyseById = (request, response) => {
   const id_analyse = request.params.id;
 
@@ -254,7 +203,7 @@ const deleteAnalyseById = (request, response) => {
   );
 };
 
-//
+// --- RECUPERER LE FLUX FINANCIER --- //
 const getAnalyseFluxFichesLibresById = async (request, response) => {
   const id_analyse = request.params.id;
 
