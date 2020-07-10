@@ -479,7 +479,7 @@ const postCoeffVente = (request, response) => {
     coeff_rendement,
   } = request.body;
 
-  const promisePostCoeffDepense = (
+  const promisePostCoeffVente = (
     id_fiche_technique_libre,
     libelle_categorie,
     coeff_intraconsommation,
@@ -516,6 +516,39 @@ const postCoeffVente = (request, response) => {
     });
   };
 
+  const getCoeffVenteComplete = (id_coeff_vente) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        ` SELECT 
+            cv.*,
+            m.localisation,
+            m.type_marche,
+            p.libelle libelle_produit
+          FROM analyse_fiche.coeff_vente cv
+          LEFT JOIN analyse_fiche.fiche_technique_libre ftl
+            ON ftl.id = cv.id_fiche_technique_libre::integer
+          LEFT JOIN fiche.fiche_technique ft
+            ON ft.id = ftl.id_fiche_technique::integer
+          LEFT JOIN fiche.vente v
+            ON ft.id = v.id_fiche_technique::integer
+          LEFT JOIN fiche.marche m
+            ON m.id = v.id_marche::integer
+          LEFT JOIN fiche.produit p
+            ON p.id = m.id_produit::integer
+          WHERE cv.id=$1
+          GROUP BY cv.id, ftl.id, ft.id, v.id, m.id, p.id`,
+        [id_coeff_vente],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(error);
+          }
+          resolve(res.rows[0]);
+        }
+      );
+    });
+  };
+
   // Fonction pour enchaîner les requêtes asynchrones
   const doWork = async (
     id_fiche_technique_libre,
@@ -524,14 +557,16 @@ const postCoeffVente = (request, response) => {
     coeff_autoconsommation,
     coeff_rendement
   ) => {
-    let coeff_depense = await promisePostCoeffDepense(
+    let coeff_vente = await promisePostCoeffVente(
       id_fiche_technique_libre,
       libelle_categorie,
       coeff_intraconsommation,
       coeff_autoconsommation,
       coeff_rendement
     );
-    return coeff_depense;
+
+    const coeff_vente_complet = await getCoeffVenteComplete(coeff_vente.id);
+    return coeff_vente_complet;
   };
 
   // Appel de la fonction asynchrone principale
