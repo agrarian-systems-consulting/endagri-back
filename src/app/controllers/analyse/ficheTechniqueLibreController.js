@@ -215,7 +215,7 @@ const getFicheTechniqueLibre = (request, response) => {
     return new Promise((resolve, reject) => {
       dbConn.pool.query(
         ` SELECT 
-        f.*,
+        ftl.*,
         ft.libelle libelle_fiche_technique,
         p.libelle libelle_production,
         p.type_production type_production,
@@ -229,26 +229,35 @@ const getFicheTechniqueLibre = (request, response) => {
         ,
         json_agg(
           json_build_object(
-            'id', v.id,
-            'libelle_categorie', v.libelle_categorie,
-            'coeff_intraconsommation', v.coeff_intraconsommation
+            'id', ven.id,
+            'libelle_categorie', ven.libelle_categorie,
+            'coeff_intraconsommation', ven.coeff_intraconsommation,
+            'coeff_autoconsommation', ven.coeff_autoconsommation,
+            'coeff_rendement', ven.coeff_rendement,
+            'localisation', m.localisation,
+            'type_marche', m.type_marche,
+            'libelle_produit', prod.libelle
           )
         ) coeff_ventes
        
       FROM 
-        analyse_fiche.fiche_technique_libre f
+        analyse_fiche.fiche_technique_libre ftl
       LEFT JOIN analyse_fiche.coeff_depense d
-        ON f.id = d.id_fiche_technique_libre
-      LEFT JOIN analyse_fiche.coeff_vente as v
-        ON f.id = v.id_fiche_technique_libre
+        ON ftl.id = d.id_fiche_technique_libre::integer
+      LEFT JOIN analyse_fiche.coeff_vente ven
+        ON ftl.id = ven.id_fiche_technique_libre::integer
+      LEFT JOIN fiche.marche m
+        ON ven.libelle_categorie::integer = m.id
+      LEFT JOIN fiche.produit prod
+        ON m.id_produit::integer = prod.id
       LEFT JOIN fiche.fiche_technique ft
-        ON ft.id = f.id_fiche_technique::integer
+        ON ft.id = ftl.id_fiche_technique::integer
       LEFT JOIN fiche.production p
         ON ft.id_production::integer = p.id
       WHERE 
-        f.id=$1
+        ftl.id=$1
       GROUP BY 
-        f.id, ft.id, p.id`,
+        ftl.id, ft.id, p.id,ven.id,m.id, prod.id`,
         [id_ftl],
         (err, res) => {
           if (err) {
@@ -479,7 +488,7 @@ const postCoeffVente = (request, response) => {
   ) => {
     return new Promise((resolve, reject) => {
       dbConn.pool.query(
-        `INSERT INTO analyse_fiche.coeff_depense(
+        `INSERT INTO analyse_fiche.coeff_vente(
           id,
           id_fiche_technique_libre,
           libelle_categorie,
@@ -487,7 +496,7 @@ const postCoeffVente = (request, response) => {
           coeff_autoconsommation,
           coeff_rendement
           )
-        VALUES (DEFAULT, $1, $2, $3)
+        VALUES (DEFAULT, $1, $2, $3,$4,$5)
         RETURNING *`,
         [
           id_fiche_technique_libre,
