@@ -131,6 +131,55 @@ const postFicheTechniqueLibre = (request, response) => {
     );
   };
 
+  const promiseGetFicheComplete = (id_fiche_technique_libre) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        ` SELECT 
+        f.*,
+        ft.libelle libelle_fiche_technique,
+        p.libelle libelle_production,
+        p.type_production type_production,
+        json_agg(
+          json_build_object(
+            'id', d.id,
+            'libelle_categorie', d.libelle_categorie,
+            'coeff_intraconsommation', d.coeff_intraconsommation
+          )
+        ) coeff_depenses
+        ,
+        json_agg(
+          json_build_object(
+            'id', v.id,
+            'libelle_categorie', v.libelle_categorie,
+            'coeff_intraconsommation', v.coeff_intraconsommation
+          )
+        ) coeff_ventes
+       
+      FROM 
+        analyse_fiche.fiche_technique_libre f
+      LEFT JOIN analyse_fiche.coeff_depense d
+        ON f.id = d.id_fiche_technique_libre
+      LEFT JOIN analyse_fiche.coeff_vente as v
+        ON f.id = v.id_fiche_technique_libre
+      LEFT JOIN fiche.fiche_technique ft
+        ON ft.id = f.id_fiche_technique::integer
+      LEFT JOIN fiche.production p
+        ON ft.id_production::integer = p.id
+      WHERE 
+        f.id=$1
+      GROUP BY 
+        f.id, ft.id, p.id`,
+        [id_fiche_technique_libre],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(results.rows[0]);
+        }
+      );
+    });
+  };
+
   // Fonction pour enchaîner les requêtes asynchrones
   const doWork = async () => {
     // Ajouter la Fiche Technique Libre
@@ -144,9 +193,10 @@ const postFicheTechniqueLibre = (request, response) => {
     //   await ajouterCoeffDepenses(id_fiche_technique_libre);
     // }
 
-    // Récupérer...
-    // const responseBody = await getAnalyse(id_fiche_technique_libre);
-    return fiche_technique_libre;
+    const ficheComplete = await promiseGetFicheComplete(
+      fiche_technique_libre.id
+    );
+    return ficheComplete;
   };
 
   // Appel de la fonction asynchrone principale
@@ -220,17 +270,16 @@ const deleteFicheTechniqueLibre = (request, response) => {
     await promiseDeleteFicheTechniqueLibre(id);
     await promiseDeleteCoeffDepense(id);
     await promiseDeleteCoeffVente(id);
-
     return;
   };
 
   // Appel de la fonction asynchrone principale
   doWork(id)
-    .then((result) => {
+    .then((res) => {
       response.sendStatus(200);
     })
-    .catch((e) => {
-      console.log(e);
+    .catch((err) => {
+      console.log(err);
       response.sendStatus(500);
     });
 };
