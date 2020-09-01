@@ -15,6 +15,7 @@ const router = _express.default.Router();
 
 router.post('/analyse/:id/fiche-technique-libre', _ficheTechniqueLibreController.default.postFicheTechniqueLibre);
 router.get('/analyse/:id/fiche-technique-libre/:id_ftl', _ficheTechniqueLibreController.default.getFicheTechniqueLibre);
+router.get('/analyse/:id/fiche-technique-libre/:id_ftl/produits', _ficheTechniqueLibreController.default.getProduitsFromFicheTechniqueLibre);
 router.delete('/analyse/:id_analyse/fiche-technique-libre/:id', _ficheTechniqueLibreController.default.deleteFicheTechniqueLibre);
 router.post('/coeff_depense', _ficheTechniqueLibreController.default.postCoeffDepense);
 router.post('/coeff_vente', _ficheTechniqueLibreController.default.postCoeffVente);

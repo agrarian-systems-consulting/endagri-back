@@ -7,6 +7,8 @@ exports.default = void 0;
 
 var _pool = _interopRequireDefault(require("../../db/pool"));
 
+var _lodash = _interopRequireDefault(require("lodash"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const postFicheTechniqueLibre = (request, response) => {
@@ -166,40 +168,20 @@ const getFicheTechniqueLibre = (request, response) => {
   const promiseGetFicheComplete = id_ftl => {
     return new Promise((resolve, reject) => {
       _pool.default.pool.query(` SELECT 
-        f.*,
+        ftl.*,
         ft.libelle libelle_fiche_technique,
         p.libelle libelle_production,
-        p.type_production type_production,
-        json_agg(
-          json_build_object(
-            'id', d.id,
-            'libelle_categorie', d.libelle_categorie,
-            'coeff_intraconsommation', d.coeff_intraconsommation
-          )
-        ) coeff_depenses
-        ,
-        json_agg(
-          json_build_object(
-            'id', v.id,
-            'libelle_categorie', v.libelle_categorie,
-            'coeff_intraconsommation', v.coeff_intraconsommation
-          )
-        ) coeff_ventes
-       
+        p.type_production type_production
       FROM 
-        analyse_fiche.fiche_technique_libre f
-      LEFT JOIN analyse_fiche.coeff_depense d
-        ON f.id = d.id_fiche_technique_libre
-      LEFT JOIN analyse_fiche.coeff_vente as v
-        ON f.id = v.id_fiche_technique_libre
+        analyse_fiche.fiche_technique_libre ftl
       LEFT JOIN fiche.fiche_technique ft
-        ON ft.id = f.id_fiche_technique::integer
+        ON ft.id = ftl.id_fiche_technique::integer
       LEFT JOIN fiche.production p
         ON ft.id_production::integer = p.id
       WHERE 
-        f.id=$1
+        ftl.id=$1
       GROUP BY 
-        f.id, ft.id, p.id`, [id_ftl], (err, res) => {
+        ftl.id, ft.id, p.id`, [id_ftl], (err, res) => {
         if (err) {
           console.log(err);
           reject(error);
@@ -210,11 +192,70 @@ const getFicheTechniqueLibre = (request, response) => {
     });
   };
 
+  const promiseGetCoeffVentes = id_ftl => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query(` SELECT 
+            ven.id,
+            ven.libelle_categorie,
+            ven.coeff_intraconsommation,
+            ven.coeff_autoconsommation,
+            ven.coeff_rendement,
+             m.localisation,
+             m.type_marche,
+            prod.libelle
+          FROM 
+            analyse_fiche.fiche_technique_libre ftl
+          LEFT JOIN analyse_fiche.coeff_vente ven
+            ON ftl.id = ven.id_fiche_technique_libre::integer
+          LEFT JOIN fiche.marche m
+            ON ven.libelle_categorie::integer = m.id
+          LEFT JOIN fiche.produit prod
+            ON m.id_produit::integer = prod.id
+          LEFT JOIN fiche.fiche_technique ft
+            ON ft.id = ftl.id_fiche_technique::integer
+          WHERE 
+            ftl.id=$1
+          GROUP BY 
+            ftl.id, prod.id, m.id,ven.id`, [id_ftl], (err, res) => {
+        if (err) {
+          console.log(err);
+          reject(error);
+        }
+
+        res.rows = res.rows.filter(c => {
+          return c.id !== null;
+        });
+        resolve(res.rows);
+      });
+    });
+  };
+
+  const promiseGetCoeffDepenses = id_ftl => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query(` SELECT 
+            cd.id,
+            cd.libelle_categorie,
+            cd.coeff_intraconsommation
+          FROM 
+            analyse_fiche.coeff_depense cd
+          WHERE 
+            cd.id_fiche_technique_libre=$1
+ `, [id_ftl], (err, res) => {
+        if (err) {
+          console.log(err);
+          reject(error);
+        }
+
+        resolve(res.rows);
+      });
+    });
+  };
+
   const doWork = async id_ftl => {
-    let ficheComplete = await promiseGetFicheComplete(id_ftl);
-    ficheComplete.coeff_depenses = ficheComplete.coeff_depenses.filter(c => c.id !== null);
-    ficheComplete.coeff_ventes = ficheComplete.coeff_ventes.filter(c => c.id !== null);
-    return ficheComplete;
+    let ftl = await promiseGetFicheComplete(id_ftl);
+    ftl.coeff_depenses = await promiseGetCoeffDepenses(ftl.id);
+    ftl.coeff_ventes = await promiseGetCoeffVentes(ftl.id);
+    return ftl;
   };
 
   doWork(id_ftl).then(res => {
@@ -366,9 +407,9 @@ const postCoeffVente = (request, response) => {
     coeff_rendement
   } = request.body;
 
-  const promisePostCoeffDepense = (id_fiche_technique_libre, libelle_categorie, coeff_intraconsommation, coeff_autoconsommation, coeff_rendement) => {
+  const promisePostCoeffVente = (id_fiche_technique_libre, libelle_categorie, coeff_intraconsommation, coeff_autoconsommation, coeff_rendement) => {
     return new Promise((resolve, reject) => {
-      _pool.default.pool.query(`INSERT INTO analyse_fiche.coeff_depense(
+      _pool.default.pool.query(`INSERT INTO analyse_fiche.coeff_vente(
           id,
           id_fiche_technique_libre,
           libelle_categorie,
@@ -376,7 +417,7 @@ const postCoeffVente = (request, response) => {
           coeff_autoconsommation,
           coeff_rendement
           )
-        VALUES (DEFAULT, $1, $2, $3)
+        VALUES (DEFAULT, $1, $2, $3,$4,$5)
         RETURNING *`, [id_fiche_technique_libre, libelle_categorie, coeff_intraconsommation, coeff_autoconsommation, coeff_rendement], (err, res) => {
         if (err) {
           console.log(err);
@@ -388,9 +429,40 @@ const postCoeffVente = (request, response) => {
     });
   };
 
+  const getCoeffVenteComplete = id_coeff_vente => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query(` SELECT 
+            cv.*,
+            m.localisation,
+            m.type_marche,
+            p.libelle libelle_produit
+          FROM analyse_fiche.coeff_vente cv
+          LEFT JOIN analyse_fiche.fiche_technique_libre ftl
+            ON ftl.id = cv.id_fiche_technique_libre::integer
+          LEFT JOIN fiche.fiche_technique ft
+            ON ft.id = ftl.id_fiche_technique::integer
+          LEFT JOIN fiche.vente v
+            ON ft.id = v.id_fiche_technique::integer
+          LEFT JOIN fiche.marche m
+            ON m.id = v.id_marche::integer
+          LEFT JOIN fiche.produit p
+            ON p.id = m.id_produit::integer
+          WHERE cv.id=$1
+          GROUP BY cv.id, ftl.id, ft.id, v.id, m.id, p.id`, [id_coeff_vente], (err, res) => {
+        if (err) {
+          console.log(err);
+          reject(error);
+        }
+
+        resolve(res.rows[0]);
+      });
+    });
+  };
+
   const doWork = async (id_fiche_technique_libre, libelle_categorie, coeff_intraconsommation, coeff_autoconsommation, coeff_rendement) => {
-    let coeff_depense = await promisePostCoeffDepense(id_fiche_technique_libre, libelle_categorie, coeff_intraconsommation, coeff_autoconsommation, coeff_rendement);
-    return coeff_depense;
+    let coeff_vente = await promisePostCoeffVente(id_fiche_technique_libre, libelle_categorie, coeff_intraconsommation, coeff_autoconsommation, coeff_rendement);
+    const coeff_vente_complet = await getCoeffVenteComplete(coeff_vente.id);
+    return coeff_vente_complet;
   };
 
   doWork(id_fiche_technique_libre, libelle_categorie, coeff_intraconsommation, coeff_autoconsommation, coeff_rendement).then(res => {
@@ -432,6 +504,58 @@ const deleteCoeffVente = (request, response) => {
   });
 };
 
+const getProduitsFromFicheTechniqueLibre = (request, response) => {
+  const {
+    id,
+    id_ftl
+  } = request.params;
+
+  const promiseGetProduitsFromFicheComplete = id_ftl => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query(` 
+      SELECT
+      m.type_marche,
+      m.localisation,
+      p.libelle libelle_produit,
+      m.id id_marche
+      FROM 
+        analyse_fiche.fiche_technique_libre f
+      LEFT JOIN 
+        fiche.fiche_technique ft
+        ON ft.id = f.id_fiche_technique::integer
+      LEFT JOIN fiche.vente v
+        ON v.id_fiche_technique::integer = ft.id
+      LEFT JOIN fiche.marche m
+        ON v.id_marche::integer = m.id
+      LEFT JOIN fiche.produit p
+        ON m.id_produit::integer = p.id
+      WHERE 
+        f.id=$1
+      GROUP BY 
+        v.id, m.id, p.id`, [id_ftl], (err, res) => {
+        if (err) {
+          console.log(err);
+          reject(error);
+        }
+
+        resolve(_lodash.default.uniqBy(res.rows, 'id_marche'));
+      });
+    });
+  };
+
+  const doWork = async id_ftl => {
+    let produits = await promiseGetProduitsFromFicheComplete(id_ftl);
+    return produits;
+  };
+
+  doWork(id_ftl).then(res => {
+    response.status(200).json(res);
+  }).catch(err => {
+    console.log(err);
+    response.sendStatus(500);
+  });
+};
+
 var _default = {
   postFicheTechniqueLibre,
   getFicheTechniqueLibre,
@@ -439,6 +563,7 @@ var _default = {
   postCoeffDepense,
   deleteCoeffDepense,
   postCoeffVente,
-  deleteCoeffVente
+  deleteCoeffVente,
+  getProduitsFromFicheTechniqueLibre
 };
 exports.default = _default;

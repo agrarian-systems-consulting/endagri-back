@@ -82,29 +82,11 @@ const getAnalyseById = (request, response) => {
             f.*,
             ft.libelle libelle_fiche_technique,
             p.libelle libelle_production,
-            p.type_production type_production,
-            json_agg(
-              json_build_object(
-                'id', d.id,
-                'libelle_categorie', d.libelle_categorie,
-                'coeff_intraconsommation', d.coeff_intraconsommation
-              )
-            ) coeff_depenses
-            ,
-            json_agg(
-              json_build_object(
-                'id', v.id,
-                'libelle_categorie', v.libelle_categorie,
-                'coeff_intraconsommation', v.coeff_intraconsommation
-              )
-            ) coeff_ventes
+            p.type_production type_production
            
           FROM 
             analyse_fiche.fiche_technique_libre f
-          LEFT JOIN analyse_fiche.coeff_depense d
-            ON f.id = d.id_fiche_technique_libre
-          LEFT JOIN analyse_fiche.coeff_vente as v
-            ON f.id = v.id_fiche_technique_libre
+
           LEFT JOIN fiche.fiche_technique ft
             ON ft.id = f.id_fiche_technique::integer
           LEFT JOIN fiche.production p
@@ -184,8 +166,15 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
 
   const getAnalyse = id_analyse => {
     return new Promise((resolve, reject) => {
-      _pool.default.pool.query(`SELECT a.id,a.nom_utilisateur,a.nom_client,a.montant_tresorerie_initiale,a.date_debut_analyse,a.date_fin_analyse
-  FROM analyse_fiche.analyse a WHERE a.id=$1`, [id_analyse], (err, res) => {
+      _pool.default.pool.query(` SELECT 
+            a.id,
+            a.nom_utilisateur,
+            a.nom_client,
+            a.montant_tresorerie_initiale,
+            a.date_debut_analyse,
+            a.date_fin_analyse
+          FROM analyse_fiche.analyse a 
+          WHERE a.id=$1`, [id_analyse], (err, res) => {
         if (err) {
           reject(err);
         }
