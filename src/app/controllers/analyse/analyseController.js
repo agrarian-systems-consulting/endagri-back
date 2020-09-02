@@ -11,6 +11,7 @@ const getAnalyses = (request, response) => {
   dbConn.pool.query(getAnalysesQuery, (error, results) => {
     if (error) {
       throw error;
+      response.sendStatus(500);
     }
     response.status(200).send(results.rows);
   });
@@ -47,6 +48,7 @@ const postAnalyse = (request, response) => {
     (error, results) => {
       if (error) {
         throw error;
+        response.sendStatus(500);
       }
       response.status(200).send(results.rows[0]);
     }
