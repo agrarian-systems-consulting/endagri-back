@@ -54,8 +54,46 @@ const getDepenseLibreById = (request, response) => {
   );
 };
 
+// ---- SUPPRIMER UNE DEPENSE LIBRE ---- //
+const deleteDepenseLibre = (request, response) => {
+  const { id_depense_libre } = request.params;
+
+  const promiseDeleteDepenseLibre = (id_depense_libre) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        `DELETE FROM analyse_fiche.depense_libre WHERE id=$1 RETURNING *`,
+        [id_depense_libre],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(error);
+          }
+          resolve(res.rows[0]);
+        }
+      );
+    });
+  };
+
+  // Fonction pour enchaîner les requêtes asynchrones
+  const doWork = async (id_depense_libre) => {
+    await promiseDeleteDepenseLibre(id_depense_libre);
+    return;
+  };
+
+  // Appel de la fonction asynchrone principale
+  doWork(id_depense_libre)
+    .then((res) => {
+      response.sendStatus(200);
+    })
+    .catch((err) => {
+      console.log(err);
+      response.sendStatus(500);
+    });
+};
+
 export default {
   getAllDepensesLibres,
   postDepenseLibre,
   getDepenseLibreById,
+  deleteDepenseLibre,
 };

@@ -25,6 +25,7 @@ const getAnalyses = (request, response) => {
   _pool.default.pool.query(getAnalysesQuery, (error, results) => {
     if (error) {
       throw error;
+      response.sendStatus(500);
     }
 
     response.status(200).send(results.rows);
@@ -51,6 +52,7 @@ const postAnalyse = (request, response) => {
       VALUES (DEFAULT, $1, $2, $3, $4, $5,$6) RETURNING *`, [nom_utilisateur, nom_client, montant_tresorerie_initiale, date_debut_analyse, date_fin_analyse, created], (error, results) => {
     if (error) {
       throw error;
+      response.sendStatus(500);
     }
 
     response.status(200).send(results.rows[0]);
@@ -106,9 +108,33 @@ const getAnalyseById = (request, response) => {
     });
   };
 
+  const promiseGetDepensesLibres = id_analyse => {
+    return new Promise((resolve, reject) => {
+      _pool.default.pool.query(` SELECT 
+          id, 
+          libelle, 
+          mois_reel, 
+          montant 
+        FROM 
+          analyse_fiche.depense_libre 
+        WHERE 
+          id_analyse=$1 
+        ORDER BY id ASC
+         `, [id_analyse], (err, res) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        }
+
+        resolve(res.rows);
+      });
+    });
+  };
+
   const doWork = async id => {
     const analyse = await promiseGetAnalyse(id);
     analyse.fiches_techniques_libres = await promiseGetFichesTechniquesLibres(analyse.id);
+    analyse.depenses_libres = await promiseGetDepensesLibres(analyse.id);
     return analyse;
   };
 
@@ -116,6 +142,7 @@ const getAnalyseById = (request, response) => {
     response.status(200).json(res);
   }).catch(err => {
     console.log(err);
+    response.sendStatus(404);
   });
 };
 

@@ -37,13 +37,13 @@ const postActivite = (request, response) => {
 
   const promiseDepense = (depense, id_activite) => {
     const {
-      libelle_depense,
+      libelle,
       montant
     } = depense;
     return new Promise((resolve, reject) => {
       const postDepenseQuery = `INSERT INTO fiche.depense(id, id_activite, libelle, montant) VALUES (DEFAULT, $1, $2, $3) RETURNING *`;
 
-      _pool.default.pool.query(postDepenseQuery, [id_activite, libelle_depense, montant], (error, results) => {
+      _pool.default.pool.query(postDepenseQuery, [id_activite, libelle, montant], (error, results) => {
         if (error) {
           console.log(error);
           reject(error);

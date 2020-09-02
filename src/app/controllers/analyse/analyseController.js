@@ -78,6 +78,7 @@ const getAnalyseById = (request, response) => {
     });
   };
 
+  // Récupérer les fiches techniques libres associées à l'analyse
   const promiseGetFichesTechniquesLibres = (id_analyse) => {
     return new Promise((resolve, reject) => {
       dbConn.pool.query(
@@ -111,11 +112,41 @@ const getAnalyseById = (request, response) => {
     });
   };
 
+  // Récupérer toutes les dépenses libres associées à l'analyse
+  const promiseGetDepensesLibres = (id_analyse) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        ` SELECT 
+          id, 
+          libelle, 
+          mois_reel, 
+          montant 
+        FROM 
+          analyse_fiche.depense_libre 
+        WHERE 
+          id_analyse=$1 
+        ORDER BY id ASC
+         `,
+        [id_analyse],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(err);
+          }
+          resolve(res.rows);
+        }
+      );
+    });
+  };
+
+  // Fonction pour enchaîner les promises
   const doWork = async (id) => {
     const analyse = await promiseGetAnalyse(id);
     analyse.fiches_techniques_libres = await promiseGetFichesTechniquesLibres(
       analyse.id
     );
+
+    analyse.depenses_libres = await promiseGetDepensesLibres(analyse.id);
 
     return analyse;
   };
