@@ -35,7 +35,7 @@ const postActivite = (request, response) => {
   // Création d'une fonction qui retourne une Promise pour l'ajout d'une dépense
   const promiseDepense = (depense, id_activite) => {
     // Desctructure les données contenues dans la dépense
-    const { libelle_depense, montant } = depense;
+    const { libelle, montant } = depense;
 
     return new Promise((resolve, reject) => {
       // Construction de la requête pour créer la dépense
@@ -44,7 +44,7 @@ const postActivite = (request, response) => {
       // Envoi de la requête asynchrone
       dbConn.pool.query(
         postDepenseQuery,
-        [id_activite, libelle_depense, montant],
+        [id_activite, libelle, montant],
         (error, results) => {
           if (error) {
             console.log(error);
