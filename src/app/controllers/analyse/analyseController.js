@@ -124,6 +124,7 @@ const getAnalyseById = (request, response) => {
     })
     .catch((err) => {
       console.log(err);
+      response.sendStatus(404);
     });
 };
 
