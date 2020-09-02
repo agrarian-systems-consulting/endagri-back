@@ -10,6 +10,7 @@ const getAllDepensesLibres = (request, response) => {
     (err, res) => {
       if (err) {
         throw err;
+        console.log(err);
       }
       response.status(200).send(res.rows);
     }
@@ -26,8 +27,10 @@ const postDepenseLibre = (request, response) => {
     [id_analyse, libelle, mois_reel, montant],
     (err, res) => {
       if (err) {
+        console.log(err);
         throw err;
       }
+      // console.log(res.rows[0]);
       response.status(200).send(res.rows[0]);
     }
   );
