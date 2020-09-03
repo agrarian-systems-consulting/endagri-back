@@ -143,7 +143,7 @@ const getProductionById = (request, response) => {
   const getProductionByIdQuery = `
   SELECT 
     production.*, 
-    json_agg(json_build_object('id',produit.id,'libelle',produit.libelle,'unite',produit.libelle)) produits 
+    json_agg(json_build_object('id',produit.id,'libelle',produit.libelle,'unite',produit.unite)) produits 
   FROM fiche.production production 
   LEFT JOIN fiche.produit produit 
     ON produit.id_production = production.id 
