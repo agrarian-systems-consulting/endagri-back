@@ -251,13 +251,43 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
   const getFichesTechniquesLibres = (id_analyse) => {
     return new Promise((resolve, reject) => {
       dbConn.pool.query(
-        `SELECT ftl.id id_ftl,ftl.id_fiche_technique::integer,ftl.date_ini,ftl.coeff_surface_ou_nombre_animaux::integer,ftl.coeff_main_oeuvre_familiale::integer,
-        (SELECT json_agg(json_build_object('libelle_categorie',cfv.libelle_categorie,'coeff_autoconsommation',cfv.coeff_autoconsommation,
-        'coeff_intraconsommation',cfv.coeff_intraconsommation,'coeff_rendement',cfv.coeff_rendement)) coeff_ventes FROM analyse_fiche.coeff_vente cfv 
-          WHERE cfv.id_fiche_technique_libre=ftl.id) coeff_ventes, 
-            (SELECT json_agg(json_build_object('libelle_categorie',cfd.libelle_categorie,'coeff_intraconsommation',cfd.coeff_intraconsommation)) coeff_depenses 
-            FROM analyse_fiche.coeff_depense cfd WHERE cfd.id_fiche_technique_libre=ftl.id) coeff_depenses
-        FROM analyse_fiche.fiche_technique_libre ftl WHERE ftl.id_analyse=$1 ORDER BY ftl.id`,
+        `SELECT 
+        ftl.id id_ftl,
+        ftl.id_fiche_technique::integer,
+        ftl.date_ini,
+        ftl.coeff_surface_ou_nombre_animaux::real,
+        ftl.coeff_main_oeuvre_familiale::real,
+        (SELECT 
+          json_agg(
+            json_build_object(
+              'libelle_categorie',cfv.libelle_categorie,
+              'coeff_autoconsommation',cfv.coeff_autoconsommation,
+              'coeff_intraconsommation',cfv.coeff_intraconsommation,
+              'coeff_rendement',cfv.coeff_rendement
+              )
+            ) coeff_ventes 
+          FROM 
+            analyse_fiche.coeff_vente cfv 
+          WHERE 
+            cfv.id_fiche_technique_libre=ftl.id) coeff_ventes, 
+            (SELECT 
+              json_agg(
+                json_build_object(
+                  'libelle_categorie',cfd.libelle_categorie,
+                  'coeff_intraconsommation',cfd.coeff_intraconsommation
+                  )
+                ) coeff_depenses 
+            FROM 
+              analyse_fiche.coeff_depense cfd 
+            WHERE 
+              cfd.id_fiche_technique_libre=ftl.id
+            ) coeff_depenses
+        FROM 
+          analyse_fiche.fiche_technique_libre ftl 
+        WHERE 
+          ftl.id_analyse=$1 
+        ORDER BY 
+          ftl.id`,
         [id_analyse],
         (err, res) => {
           if (err) {
@@ -270,6 +300,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
   };
 
   // Construction d'une Promise pour récupérer les dépenses associées à une fiche technique
+  // TODO : Erreur, ne prend pas en compte les dépenses de mois relatifs si dépenses mois absolus apparemment... Pas vérifié encore.
   const promiseGetDepensesMoisReelsFicheTechnique = (
     id_fiche,
     date_ini_formatted
@@ -319,6 +350,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
   };
 
   // Construction d'une Promise pour récupérer les ventes associées à une fiche technique
+  // TODO : On doit avoir la même erreur ici probablement
   const promiseGetVentesMoisReelsFicheTechnique = (
     id_fiche,
     date_ini_formatted
@@ -338,47 +370,56 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
             console.log(err);
             reject(err);
           }
-          const prix_marche = res.rows[0].col_prix_marche;
 
-          // TODO : Ajouter l'id fiche technique dans le requête.
-
-          const getVenteMoisReelsByIdQuery = `
-          WITH subquery AS(
-            SELECT 
-              CASE
-                WHEN v.mois IS NOT NULL THEN to_date(CONCAT(to_char($2::timestamp,'YYYY'), '-', v.mois), 'YYYY-MM')
-                ELSE $2::timestamp + interval '1 month' * v.mois_relatif::integer
-              END mois_reel,
-              v.id_fiche_technique id_fiche_technique,
-              SUM(m.${prix_marche}*v.rendement) total_ventes_categorie,
-              CONCAT((SELECT p.libelle FROM fiche.produit p WHERE id=m.id_produit ),' ', m.type_marche, ' ', m.localisation) libelle_marche
-            FROM 
-              fiche.vente v 
-            JOIN 
-              fiche.marche m ON v.id_marche = m.id
-            WHERE 
-              v.id_fiche_technique=$1 
-            GROUP BY 
-              id_fiche_technique, 
-              libelle_marche,
-              mois_reel 
-            ORDER BY 
-              mois_reel
-          )
-          SELECT id_fiche_technique::integer, mois_reel ,SUM(total_ventes_categorie)::integer montant,libelle_marche as libelle_categorie FROM subquery
-          GROUP BY id_fiche_technique, mois_reel, libelle_marche ORDER BY mois_reel`;
-
-          dbConn.pool.query(
-            getVenteMoisReelsByIdQuery,
-            [id_fiche, date_ini_formatted],
-            (error, res) => {
-              if (error) {
-                console.log(err);
-                reject(err);
-              }
-              resolve(res.rows);
+          // S'il n'y a pas de ventes associées, renvoyer un tableau vide
+          if (res.rows[0] === undefined) {
+            resolve(res.rows);
+          } else {
+            // Si aucun prix n'est défini, il pourrait y avoir une erreur qui renverrait col_prix_marche === null, on lui donne la valeur de 0 pour ne faire buguer l'application
+            if (res.rows[0].col_prix_marche === undefined) {
+              res.rows[0].col_prix_marche = 0;
             }
-          );
+
+            const prix_marche = res.rows[0].col_prix_marche;
+
+            const getVenteMoisReelsByIdQuery = `
+            WITH subquery AS(
+              SELECT 
+                CASE
+                  WHEN v.mois IS NOT NULL THEN to_date(CONCAT(to_char($2::timestamp,'YYYY'), '-', v.mois), 'YYYY-MM')
+                  ELSE $2::timestamp + interval '1 month' * v.mois_relatif::integer
+                END mois_reel,
+                v.id_fiche_technique id_fiche_technique,
+                SUM(m.${prix_marche}*v.rendement) total_ventes_categorie,
+                CONCAT((SELECT p.libelle FROM fiche.produit p WHERE id=m.id_produit ),' ', m.type_marche, ' ', m.localisation) libelle_marche
+              FROM 
+                fiche.vente v 
+              JOIN 
+                fiche.marche m ON v.id_marche = m.id
+              WHERE 
+                v.id_fiche_technique=$1 
+              GROUP BY 
+                id_fiche_technique, 
+                libelle_marche,
+                mois_reel 
+              ORDER BY 
+                mois_reel
+            )
+            SELECT id_fiche_technique::integer, mois_reel ,SUM(total_ventes_categorie)::integer montant,libelle_marche as libelle_categorie FROM subquery
+            GROUP BY id_fiche_technique, mois_reel, libelle_marche ORDER BY mois_reel`;
+
+            dbConn.pool.query(
+              getVenteMoisReelsByIdQuery,
+              [id_fiche, date_ini_formatted],
+              (error, res) => {
+                if (error) {
+                  console.log(err);
+                  reject(err);
+                }
+                resolve(res.rows);
+              }
+            );
+          }
         }
       );
     });
@@ -395,6 +436,33 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         );
       })
     );
+  };
+
+  // Récupérer toutes les dépenses libres associées à l'analyse
+  const promiseGetDepensesLibres = (id_analyse) => {
+    return new Promise((resolve, reject) => {
+      dbConn.pool.query(
+        ` SELECT 
+            id, 
+            libelle, 
+            mois_reel, 
+            montant 
+          FROM 
+            analyse_fiche.depense_libre 
+          WHERE 
+            id_analyse=$1 
+          ORDER BY id ASC
+           `,
+        [id_analyse],
+        (err, res) => {
+          if (err) {
+            console.log(err);
+            reject(err);
+          }
+          resolve(res.rows);
+        }
+      );
+    });
   };
 
   const doWork = async () => {
@@ -463,6 +531,22 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         (1 - dep.coeff_main_oeuvre_familiale) *
         (1 - dep.coeff_intraconsommation);
       return Object.assign(dep, { montant_total });
+    });
+
+    console.log(fluxDepenses);
+
+    // -- DEPENSES LIBRES
+    const depensesLibres = await promiseGetDepensesLibres(id_analyse);
+
+    // Ajouter les dépenses libres au flux des dépenses
+
+    depensesLibres.map((dep) => {
+      fluxDepenses.push({
+        mois_reel: dep.mois_reel,
+        id: dep.id,
+        montant_total: dep.montant,
+        libelle: dep.libelle,
+      });
     });
 
     // -- VENTES
@@ -543,7 +627,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         total_ventes: 0,
         solde: 0,
         solde_cumule: 0,
-        depenses: [], // On pourra utiliser ces arrays si ils veulent du détail sur l'origine des flux de dépenses et ventes
+        depenses: [], // On pourra utiliser ces arrays si on souhaite du détail sur l'origine des flux de dépenses et ventes
         ventes: [],
       };
     });
