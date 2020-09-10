@@ -533,13 +533,10 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       return Object.assign(dep, { montant_total });
     });
 
-    console.log(fluxDepenses);
-
     // -- DEPENSES LIBRES
     const depensesLibres = await promiseGetDepensesLibres(id_analyse);
 
     // Ajouter les dépenses libres au flux des dépenses
-
     depensesLibres.map((dep) => {
       fluxDepenses.push({
         mois_reel: dep.mois_reel,
