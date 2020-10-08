@@ -10,13 +10,13 @@ import analyseRoutes from './app/routes/analyseRoutes';
 import depenseLibreRoutes from './app/routes/depenseLibreRoutes';
 import ficheLibreRoutes from './app/routes/ficheLibreRoutes';
 import cors from 'cors';
-// Crée le serveur Express
-const app = express();
+import morgan from 'morgan';
 
-// Nécessaire pour accepter les CORS
-app.use(cors());
+const app = express(); // Créé le serveur Express
+app.use(cors()); // Nécessaire pour accepter les CORS
+app.use(morgan('tiny')); // Activation de Morgan, pour les logs en console
 
-// Nécessaire pour parser le contenu des requêtes en json
+// Nécessaire pour parser le contenu des requêtes en json (JE crois que c'est inclu dans express désormais, on pourrait donc écrire express.json())
 const urlencodedParser = bodyParser.urlencoded({
   extended: true,
 });
