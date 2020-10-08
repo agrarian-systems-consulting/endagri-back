@@ -9,26 +9,25 @@ import fluxTempRoutes from './app/routes/fluxTempRoutes';
 import analyseRoutes from './app/routes/analyseRoutes';
 import depenseLibreRoutes from './app/routes/depenseLibreRoutes';
 import ficheLibreRoutes from './app/routes/ficheLibreRoutes';
+import utilisateurRoutes from './app/routes/utilisateurRoutes';
 import cors from 'cors';
 import morgan from 'morgan';
-
+import authenticate from '../src/app/middlewares/authentication';
+import permit from '../src/app/middlewares/authorization';
 const app = express(); // Créé le serveur Express
 app.use(cors()); // Nécessaire pour accepter les CORS
-app.use(morgan('tiny')); // Activation de Morgan, pour les logs en console
+app.use(morgan('tiny')); // Activation de Morgan
 
 // Nécessaire pour parser le contenu des requêtes en json (JE crois que c'est inclu dans express désormais, on pourrait donc écrire express.json())
-const urlencodedParser = bodyParser.urlencoded({
-  extended: true,
-});
 app.use(bodyParser.json({ limit: '50mb', extended: true }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-// Autres middlewares (authentification etc.)
-// TODO :
-// - Gérer l'authentification des utilisateurs
+// Autres middlewares
+app.use(authenticate); // Gérer l'authentification pour chaque requête, va crééer un `request.user`
 
-// Endpoints
-app.use(ficheRoutes);
+// API Endpoints
+app.use(utilisateurRoutes);
+app.use(permit('ADMIN'), ficheRoutes);
 app.use(activiteRoutes);
 app.use(venteRoutes);
 app.use(productionRoutes);
