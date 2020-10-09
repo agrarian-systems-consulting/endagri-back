@@ -1,8 +1,8 @@
 import dbConn from '../../db/pool';
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
+
 dotenv.config();
 const SECRET = process.env.JWT_SECRET;
 

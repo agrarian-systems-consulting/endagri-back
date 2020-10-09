@@ -10,7 +10,7 @@ import analyseRoutes from './app/routes/analyseRoutes';
 import depenseLibreRoutes from './app/routes/depenseLibreRoutes';
 import ficheLibreRoutes from './app/routes/ficheLibreRoutes';
 import loginRoutes from './app/routes/loginRoutes';
-import registerRoutes from './app/routes/registerRoutes';
+import userManagementRoutes from './app/routes/userManagementRoutes';
 import cors from 'cors';
 import morgan from 'morgan';
 import authenticate from '../src/app/middlewares/authentication';
@@ -28,7 +28,11 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 // API Endpoints
 app.use(loginRoutes);
-app.use(registerRoutes);
+app.use(
+  authenticate,
+  permit('ADMINISTRATEUR_ENDAGRI', 'SUPER_ADMIN'),
+  userManagementRoutes
+);
 app.use(authenticate, permit('ADMIN'), ficheRoutes);
 app.use(authenticate, permit('ADMIN'), activiteRoutes);
 app.use(authenticate, permit('ADMIN'), venteRoutes);
