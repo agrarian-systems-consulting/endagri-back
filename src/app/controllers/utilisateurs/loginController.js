@@ -4,28 +4,28 @@ import dotenv from 'dotenv';
 dotenv.config();
 const SECRET = process.env.JWT_SECRET;
 
-// ---- Liste des utilisateurs ---- //
-const getUtilisateurs = (request, response) => {
-  const getUsersQuery = `SELECT * FROM  utilisateurs.utilisateurs
-  ORDER BY matricule ASC `;
-  dbConn.pool.query(getUsersQuery, (error, results) => {
-    if (error) {
-      throw error;
-    }
-    response.status(200).send(results.rows);
-  });
-};
-
-// ---- Liste des utilisateurs ---- //
+// ---- LOGIN ---- //
 const login = (request, response) => {
+  // Read matricule et mot de passe
+  const { matricule, password } = request.body;
+
+  // TODO : Chiffrer le mot de passe pour comparaison
+
+  //TODO Utiliser les données du formulaire
+
   const getUsersQuery = `SELECT * FROM  utilisateurs.utilisateurs
   WHERE matricule = $1 `;
   dbConn.pool.query(getUsersQuery, ['1234'], (error, results) => {
     if (error) {
+      // TODO : Gérer les erreurs d'athentification
+
       throw error;
     }
 
-    const token = jwt.sign(
+    //TODO : Vérifier le mot de passe
+
+    // Construction du Json web token
+    const accessToken = jwt.sign(
       {
         matricule: results.rows[0].matricule,
         role: results.rows[0].role,
@@ -34,11 +34,11 @@ const login = (request, response) => {
       { expiresIn: '3 hours' }
     );
 
-    response.status(200).send(token);
+    // Renvoyer le token
+    response.status(200).send({ accessToken });
   });
 };
 
 export default {
-  getUtilisateurs,
   login,
 };

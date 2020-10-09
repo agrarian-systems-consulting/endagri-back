@@ -7,12 +7,15 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // Middleware pour l'authentication des utilisateurs
 export default function authenticate(request, response, next) {
   // Récupère le token depuis le header de la requête
-  const token = request.headers['x-api-token'];
+  const token =
+    request.headers.authorization &&
+    extractBearerToken(request.headers.authorization);
 
   // Teste la présence d'un token
   if (!token) {
     return response.status(401).json({
-      message: "Cette requête nécessite l'envoi d'un token",
+      message:
+        "Cette requête nécessite l'envoi d'un token Authorization au format 'Bearer header.payload.signature'",
     });
   }
 
@@ -21,31 +24,24 @@ export default function authenticate(request, response, next) {
     // Si le token est incorrect
     if (err) {
       return response.status(401).json({
-        message: `Il y a un problème avec le token fourni : ${err}`,
+        message: `Le token fourni n'est pas valide : ${err}`,
       });
     } else {
-      // S'il est correct, récupérer l'utilisateur associé au token
-      const getUserByMatriculeQuery = `
-      SELECT * 
-      FROM  utilisateurs.utilisateurs
-      WHERE matricule = $1 `;
-      dbConn.pool.query(
-        getUserByMatriculeQuery,
-        [decodedToken.matricule],
-        (error, results) => {
-          if (error) {
-            return _response.status(401).json({ message: error });
-            throw error;
-          }
+      //S'il est correct on ajoute le matricule et le rôle à la requête
+      request.user = decodedToken; // Ajoute la propriété user à la requête
 
-          const { password, ...userWithoutPassword } = results.rows[0]; // Permet d'enlever le mot de passe
-
-          request.user = userWithoutPassword; // Ajoute la propriété user à la requête
-
-          // Passe au middleware suivant
-          next();
-        }
-      );
+      next(); // Passe au middleware suivant
     }
   });
 }
+
+// Fonction pour extraire le token dans le header de la requête
+const extractBearerToken = (headerValue) => {
+  if (typeof headerValue !== 'string') {
+    return false;
+  }
+
+  // S'assure de la bonne structure du token, au format 'Bearer header.payload.signature'
+  const matches = headerValue.match(/(bearer)\s+(\S+)/i);
+  return matches && matches[2];
+};
