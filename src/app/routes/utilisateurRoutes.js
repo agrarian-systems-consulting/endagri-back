@@ -7,6 +7,6 @@ import permit from '../../app/middlewares/authorization';
 // router.post('/login', activiteController.postActivite);
 // router.get('/me', activiteController.postActivite);
 router.get('/utilisateurs', utilisateursController.getUtilisateurs);
-router.get('/me', utilisateursController.getToken);
+router.get('/login', utilisateursController.login);
 
 export default router;

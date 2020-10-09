@@ -17,7 +17,7 @@ const getUtilisateurs = (request, response) => {
 };
 
 // ---- Liste des utilisateurs ---- //
-const getToken = (request, response) => {
+const login = (request, response) => {
   const getUsersQuery = `SELECT * FROM  utilisateurs.utilisateurs
   WHERE matricule = $1 `;
   dbConn.pool.query(getUsersQuery, ['1234'], (error, results) => {
@@ -40,5 +40,5 @@ const getToken = (request, response) => {
 
 export default {
   getUtilisateurs,
-  getToken,
+  login,
 };
