@@ -1,5 +1,7 @@
 import dbConn from '../../db/pool';
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+
 import dotenv from 'dotenv';
 dotenv.config();
 const SECRET = process.env.JWT_SECRET;
@@ -7,35 +9,50 @@ const SECRET = process.env.JWT_SECRET;
 // ---- LOGIN ---- //
 const login = (request, response) => {
   // Read matricule et mot de passe
-  const { matricule, password } = request.body;
+  const { matricule } = request.body;
+  const PlaintextPassword = request.body.password;
 
-  // TODO : Chiffrer le mot de passe pour comparaison
-
-  //TODO Utiliser les données du formulaire
-
-  const getUsersQuery = `SELECT * FROM  utilisateurs.utilisateurs
+  // Requête SQL pour récupérer les informations de l'utilisateur en base de données
+  const getUserQuery = `
+  SELECT * 
+  FROM  utilisateurs.utilisateurs
   WHERE matricule = $1 `;
-  dbConn.pool.query(getUsersQuery, ['1234'], (error, results) => {
+  dbConn.pool.query(getUserQuery, [matricule], (error, results) => {
     if (error) {
-      // TODO : Gérer les erreurs d'athentification
-
+      console.log(error);
       throw error;
     }
 
-    //TODO : Vérifier le mot de passe
+    console.log(results.rows[0]);
+    // Récupère le mot de passe chiffré dans la base de données
+    const hashedPassword = results.rows[0].password;
 
-    // Construction du Json web token
-    const accessToken = jwt.sign(
-      {
-        matricule: results.rows[0].matricule,
-        role: results.rows[0].role,
-      },
-      SECRET,
-      { expiresIn: '3 hours' }
-    );
+    // Compare le mot de passe envoyé avec celui chiffré en base de données
+    bcrypt.compare(PlaintextPassword, hashedPassword, function (err, result) {
+      if (err) {
+        console.log(err);
+        response.sendStatus(500);
+        throw err;
+      }
 
-    // Renvoyer le token
-    response.status(200).send({ accessToken });
+      // Si tout est validé, renvoie un token valide
+      if (result == true) {
+        // Construction du Json web token
+        const accessToken = jwt.sign(
+          {
+            matricule: results.rows[0].matricule,
+            role: results.rows[0].role,
+          },
+          SECRET,
+          { expiresIn: '3 hours' }
+        );
+
+        // Renvoyer le token
+        response.status(200).send({ accessToken });
+      } else {
+        response.sendStatus(401);
+      }
+    });
   });
 };
 
