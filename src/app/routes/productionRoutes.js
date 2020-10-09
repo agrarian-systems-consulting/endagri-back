@@ -1,19 +1,117 @@
 import express from 'express';
 const router = express.Router();
 import productionController from '../controllers/fiche/productionController';
+import authenticate from '../../app/middlewares/authentication';
+import permit from '../../app/middlewares/authorization';
 
-router.get('/productions', productionController.getProductions);
-router.post('/production', productionController.postProduction);
+router.get(
+  '/productions',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
+  productionController.getProductions
+);
+router.post(
+  '/production',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
+  productionController.postProduction
+);
 router.get(
   '/production/:id/produits',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
   productionController.getProduitsByProductionId
 );
-router.get('/production/:id', productionController.getProductionById);
+router.get(
+  '/production/:id',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
+  productionController.getProductionById
+);
 
-router.put('/production/:id', productionController.putProductionById);
-router.delete('/production/:id', productionController.deleteProductionById);
-router.get('/produits', productionController.getProduits);
-router.post('/produit', productionController.addProductToProduction);
-router.delete('/produit/:id', productionController.deleteProduct);
+router.put(
+  '/production/:id',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
+  productionController.putProductionById
+);
+router.delete(
+  '/production/:id',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
+  productionController.deleteProductionById
+);
+router.get(
+  '/produits',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
+  productionController.getProduits
+);
+router.post(
+  '/produit',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
+  productionController.addProductToProduction
+);
+router.delete(
+  '/produit/:id',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
+  productionController.deleteProduct
+);
 
 export default router;

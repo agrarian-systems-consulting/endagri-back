@@ -1,32 +1,104 @@
 import express from 'express';
 import ficheTechniqueLibreController from '../controllers/analyse/ficheTechniqueLibreController';
 const router = express.Router();
+import authenticate from '../../app/middlewares/authentication';
+import permit from '../../app/middlewares/authorization';
 
 router.post(
   '/analyse/:id/fiche-technique-libre',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
   ficheTechniqueLibreController.postFicheTechniqueLibre
 );
 
 router.get(
   '/analyse/:id/fiche-technique-libre/:id_ftl',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
   ficheTechniqueLibreController.getFicheTechniqueLibre
 );
 router.get(
   '/analyse/:id/fiche-technique-libre/:id_ftl/produits',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
   ficheTechniqueLibreController.getProduitsFromFicheTechniqueLibre
 );
 router.delete(
   '/analyse/:id_analyse/fiche-technique-libre/:id',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
   ficheTechniqueLibreController.deleteFicheTechniqueLibre
 );
-router.post('/coeff_depense', ficheTechniqueLibreController.postCoeffDepense);
-router.post('/coeff_vente', ficheTechniqueLibreController.postCoeffVente);
+router.post(
+  '/coeff_depense',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
+  ficheTechniqueLibreController.postCoeffDepense
+);
+router.post(
+  '/coeff_vente',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
+  ficheTechniqueLibreController.postCoeffVente
+);
 router.delete(
   '/coeff_depense/:id',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
   ficheTechniqueLibreController.deleteCoeffDepense
 );
 router.delete(
   '/coeff_vente/:id',
+  authenticate,
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
   ficheTechniqueLibreController.deleteCoeffVente
 );
 

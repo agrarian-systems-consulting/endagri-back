@@ -23,7 +23,7 @@ export default function authenticate(request, response, next) {
   jwt.verify(token, JWT_SECRET, (err, decodedToken) => {
     // Si le token est incorrect
     if (err) {
-      return response.status(401).json({
+      return response.status(403).json({
         message: `Le token fourni n'est pas valide : ${err}`,
       });
     } else {

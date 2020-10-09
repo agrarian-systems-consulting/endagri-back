@@ -23,39 +23,20 @@ app.use(morgan('tiny')); // Activation de Morgan
 app.use(bodyParser.json({ limit: '50mb', extended: true }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-// Autres middlewares
-// app.use(authenticate); // Gérer l'authentification pour chaque requête, va crééer un `request.user`
-
 // API Endpoints
+
 app.use(loginRoutes);
-app.use(
-  authenticate,
-  permit('ADMINISTRATEUR_ENDAGRI', 'SUPER_ADMIN'),
-  userManagementRoutes
-);
-app.use(authenticate, permit('ADMIN'), ficheRoutes);
-app.use(authenticate, permit('ADMIN'), activiteRoutes);
-app.use(authenticate, permit('ADMIN'), venteRoutes);
-app.use(authenticate, permit('ADMIN'), productionRoutes);
-app.use(authenticate, permit('ADMIN'), marcheRoutes);
-app.use(authenticate, permit('ADMIN'), fluxTempRoutes);
-app.use(authenticate, permit('ADMIN'), analyseRoutes);
-app.use(authenticate, permit('ADMIN'), depenseLibreRoutes);
-app.use(
-  authenticate,
-  permit(
-    'SUPER_ADMIN',
-    'ADMINISTRATEUR_ENDAGRI',
-    'AGRONOME_REGIONAL',
-    'ANALYSTE_REGIONAL',
-    'DIRECTEUR_REGIONAL',
-    'COORDINATEUR_OPERATIONNEL',
-    'CHEF_D_AGENCE',
-    'SUPERVISEUR_DE_PROTEFEUILLE',
-    'GESTIONNAIRE_DE_PORTEFEUILLE'
-  ),
-  ficheLibreRoutes
-);
+
+app.use(userManagementRoutes);
+app.use(ficheRoutes);
+app.use(activiteRoutes);
+app.use(venteRoutes);
+app.use(productionRoutes);
+app.use(marcheRoutes);
+app.use(fluxTempRoutes);
+app.use(analyseRoutes);
+app.use(depenseLibreRoutes);
+app.use(ficheLibreRoutes);
 
 // L'application est lancée depuis le fichier index.js pour permettre à Jest de faire fonctionner les tests
 export default app;
