@@ -23,7 +23,6 @@ const login = (request, response) => {
       response.sendStatus(500);
     }
 
-    console.log(results.rows[0]);
     // Récupère le mot de passe chiffré dans la base de données
     const hashedPassword = results.rows[0].password;
 
