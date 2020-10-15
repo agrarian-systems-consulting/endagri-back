@@ -3,8 +3,6 @@ const router = express.Router();
 import userManagementController from '../controllers/utilisateurs/userManagementController';
 import authenticate from '../../app/middlewares/authentication';
 import permit from '../../app/middlewares/authorization';
-import authenticate from '../../app/middlewares/authentication';
-import permit from '../../app/middlewares/authorization';
 
 // -- AJOUTER UN UTILISATEUR D'ENDAGRI -- //
 router.post(

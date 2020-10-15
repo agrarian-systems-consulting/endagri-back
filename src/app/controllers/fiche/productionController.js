@@ -10,7 +10,8 @@ const getProductions = (request, response) => {
       [type_production],
       (err, res) => {
         if (err) {
-          throw err;
+          console.error(err);
+          response.sendStatus(500);
         }
         response.status(200).send(res.rows);
       }
@@ -25,7 +26,8 @@ const getProductions = (request, response) => {
       ORDER BY p.libelle ASC`,
       (err, res) => {
         if (err) {
-          throw err;
+          console.error(err);
+          response.sendStatus(500);
         }
         response.status(200).send(res.rows);
       }
@@ -44,6 +46,7 @@ const postProduction = (request, response) => {
         [libelle, type_production],
         (err, res) => {
           if (err) {
+            console.error(err);
             reject(err);
           }
           resolve(res.rows[0]);
@@ -55,8 +58,8 @@ const postProduction = (request, response) => {
   ajouterProduction(libelle, type_production)
     .then((res) => response.status(200).json(res))
     .catch((e) => {
-      console.log(e);
-      throw e;
+      console.error(e);
+      response.sendStatus(500);
     });
 };
 
@@ -71,6 +74,7 @@ const postProductionWithProduits = (request, response) => {
         [libelle_production, type_production],
         (err, res) => {
           if (err) {
+            console.error(err);
             reject(err);
           }
           resolve(res.rows[0].id);
@@ -86,6 +90,7 @@ const postProductionWithProduits = (request, response) => {
         [id_production, libelle_produit, unite],
         (err, res) => {
           if (err) {
+            console.error(err);
             reject(err);
           }
           resolve();
@@ -109,6 +114,7 @@ const postProductionWithProduits = (request, response) => {
         [id_production],
         (err, res) => {
           if (err) {
+            console.error(err);
             reject(err);
           }
           resolve(res.rows[0]);
@@ -132,8 +138,8 @@ const postProductionWithProduits = (request, response) => {
   doWork(libelle_production, type_production, produits)
     .then((responseBody) => response.status(200).send(responseBody))
     .catch((e) => {
-      console.log(e);
-      throw e;
+      console.error(e);
+      response.sendStatus(500);
     });
 };
 
@@ -154,7 +160,8 @@ const getProductionById = (request, response) => {
     [id_production],
     (error, results) => {
       if (error) {
-        throw error;
+        console.error(error);
+        response.sendStatus(500);
       }
       response.status(200).send(results.rows[0]);
     }
@@ -175,7 +182,8 @@ const getProduitsByProductionId = (request, response) => {
     [id_production],
     (error, results) => {
       if (error) {
-        throw error;
+        console.error(error);
+        response.sendStatus(500);
       }
       response.status(200).send(results.rows);
     }
@@ -191,7 +199,8 @@ const getProduits = (request, response) => {
 `;
   dbConn.pool.query(getProduitsQuery, (error, results) => {
     if (error) {
-      throw error;
+      console.error(error);
+      response.sendStatus(500);
     }
     response.status(200).send(results.rows);
   });
@@ -209,6 +218,7 @@ const putProductionById = (request, response) => {
         [id_production],
         (err, res) => {
           if (err) {
+            console.error(err)
             reject(err);
           }
           resolve(res.rows);
@@ -228,6 +238,7 @@ const putProductionById = (request, response) => {
         [libelle_production, type_production, id_production],
         (err, res) => {
           if (err) {
+            console.error(err)
             reject(err);
           }
           resolve(res.rows[0]);
@@ -243,6 +254,7 @@ const putProductionById = (request, response) => {
         [id_production, libelle_produit, unite],
         (err, res) => {
           if (err) {
+            console.error(err)
             reject(err);
           }
           resolve();
@@ -266,6 +278,7 @@ const putProductionById = (request, response) => {
         [id_production],
         (err, res) => {
           if (err) {
+            console.error(err);
             reject(err);
           }
           resolve(res.rows[0]);
@@ -303,8 +316,8 @@ const putProductionById = (request, response) => {
   )
     .then((responseBody) => response.status(200).send(responseBody))
     .catch((e) => {
-      console.log(e);
-      throw e;
+      console.error(e);
+      response.sendStatus(500);
     });
 };
 
@@ -319,6 +332,7 @@ const deleteProductionById = (request, response) => {
         [id_production],
         (err, res) => {
           if (err) {
+            console.error(err)
             reject(err);
           }
 
@@ -339,6 +353,7 @@ const deleteProductionById = (request, response) => {
         [id_production],
         (err, res) => {
           if (err) {
+            console.error(err);
             reject(err);
           }
           resolve();
@@ -358,9 +373,8 @@ const deleteProductionById = (request, response) => {
       response.sendStatus(204);
     })
     .catch((e) => {
-      console.log(e);
-
-      response.sendStatus(404);
+      console.error(e);
+      response.sendStatus(500);
     });
 };
 
@@ -375,7 +389,7 @@ const addProductToProduction = (request, response) => {
         [libelle, unite, id_production],
         (err, res) => {
           if (err) {
-            console.log(err);
+            console.error(err);
             reject(err);
           }
           resolve(res.rows[0]);
@@ -389,8 +403,8 @@ const addProductToProduction = (request, response) => {
       response.status(200).json(res);
     })
     .catch((err) => {
-      console.log(err);
-      response.sendStatus(404);
+      console.error(err);
+      response.sendStatus(500);
     });
 };
 
@@ -405,7 +419,7 @@ const deleteProduct = (request, response) => {
         [id],
         (err, res) => {
           if (err) {
-            console.log(err);
+            console.error(err);
             reject(err);
           }
           resolve(res.rows[0]);
@@ -419,7 +433,7 @@ const deleteProduct = (request, response) => {
       response.sendStatus(204);
     })
     .catch((err) => {
-      console.log(err);
+      console.error(err);
       response.sendStatus(404);
     });
 };

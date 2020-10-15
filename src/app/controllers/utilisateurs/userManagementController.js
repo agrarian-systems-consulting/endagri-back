@@ -13,7 +13,7 @@ const registerUser = (request, response) => {
   bcrypt.genSalt(saltRounds, function (err, salt) {
     bcrypt.hash(password, salt, function (err, hashedPassword) {
       if (err) {
-        console.log(err);
+        console.error(error);
         return response.status(500).json({ err });
       }
 
@@ -26,7 +26,7 @@ const registerUser = (request, response) => {
         [matricule, hashedPassword, role],
         (err, res) => {
           if (err) {
-            console.log(err);
+            console.error(err);
             return response.status(404).json({ err });
           }
 
@@ -53,7 +53,7 @@ const deleteUser = (request, response) => {
     [matricule],
     (err, res) => {
       if (err) {
-        console.log(err);
+        console.error(err);
         return response.status(404).json({ err });
       }
 

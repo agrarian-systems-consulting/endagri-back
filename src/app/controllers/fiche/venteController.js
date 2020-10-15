@@ -27,7 +27,8 @@ const postVente = (request, response) => {
     ],
     (err, res) => {
       if (err) {
-        throw err;
+        console.error(err);
+        response.sendStatus(500);
       }
       dbConn.pool.query(
         `SELECT 
@@ -50,8 +51,8 @@ const postVente = (request, response) => {
         [res.rows[0].id],
         (err, res) => {
           if (err) {
-            console.log(err);
-            throw err;
+            console.error(err);
+            response.sendStatus(500);
           }
           console.log(res.rows[0]);
           response.status(201).send(res.rows[0]);
@@ -89,7 +90,8 @@ const putVente = (request, response) => {
     ],
     (error, results) => {
       if (error) {
-        throw error;
+        console.error(error);
+        response.sendStatus(500);
       }
 
       response.status(200).send(results.rows[0]);
@@ -105,7 +107,8 @@ const deleteVente = (request, response) => {
   const deleteVenteQuery = 'DELETE FROM fiche.vente WHERE id=$1 RETURNING *';
   dbConn.pool.query(deleteVenteQuery, [id_vente], (error, results) => {
     if (error) {
-      throw error;
+      console.error(error);
+      response.sendStatus(500);
     }
 
     if (results.rows[0] !== undefined) {

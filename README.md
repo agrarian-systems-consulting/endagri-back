@@ -64,7 +64,9 @@ Il est ensuite possible de lancer la version prod grâce à la commande suivante
 npm run start
 ```
 
-Si vous souhaiutez comprendre exactement ce que font les commande,s il suffit d'ouvrir le package.json
+Si vous souhaitez comprendre exactement ce que font les commande,s il suffit d'ouvrir le package.json
+
+Il est également possible d'utiliser nodem
 
 ## Built With
 

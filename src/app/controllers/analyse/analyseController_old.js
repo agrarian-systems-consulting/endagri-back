@@ -9,7 +9,9 @@ const getAnalyses = (request, response) => {
   const getAnalysesQuery = `SELECT * FROM analyse_fiche.analyse ORDER BY id ASC`;
   dbConn.pool.query(getAnalysesQuery, (error, results) => {
     if (error) {
-      throw error;
+      console.error(error);
+      response.sendStatus(500);
+
     }
     response.status(200).send(results.rows);
   });
@@ -43,7 +45,8 @@ const postAnalyse = (request, response) => {
     ],
     (error, results) => {
       if (error) {
-        throw error;
+        console.error(error);
+        response.sendStatus(500);
       }
       response.status(200).send(results.rows[0]);
     }
@@ -61,7 +64,8 @@ const getAnalyseById = (request, response) => {
   FROM analyse_fiche.analyse a WHERE a.id=$1`; //a.created,a.modified,
   dbConn.pool.query(getInfoAnalyse, [id_analyse], (error, results) => {
     if (error) {
-      throw error;
+      console.error(error);
+      response.sendStatus(500);
     }
     const infoAnalyse = results.rows;
 
@@ -74,7 +78,8 @@ const getAnalyseById = (request, response) => {
     FROM analyse_fiche.fiche_technique_libre ftl WHERE ftl.id_analyse=$1 ORDER BY ftl.id`;
     dbConn.pool.query(getInfoFTL, [id_analyse], (error, results) => {
       if (error) {
-        throw error;
+        console.error(error);
+        response.sendStatus(500);
       }
       const infoFTL = results.rows;
       let resultjson = _.extend({}, infoAnalyse, {
@@ -115,7 +120,8 @@ const putAnalyseById = (request, response) => {
     ],
     (error, results) => {
       if (error) {
-        throw error;
+        console.error(error);
+        response.sendStatus(500);
       }
       response.status(200).send(results.rows[0]);
     }
@@ -132,7 +138,8 @@ const deleteAnalyseById = (request, response) => {
     [id_analyse],
     (err, res) => {
       if (err) {
-        throw err;
+        console.error(err);
+        response.sendStatus(500);
       }
       if (res.rows[0] !== undefined) {
         response.status(200).send(res.rows[0]);
@@ -156,6 +163,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         [id_analyse],
         (err, res) => {
           if (err) {
+            console.error(err);
             reject(err);
           }
           resolve(res.rows[0]);
@@ -178,6 +186,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         [id_analyse],
         (err, res) => {
           if (err) {
+            console.error(err);
             reject(err);
           }
           resolve(res.rows);
@@ -212,7 +221,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         [id_fiche, date_ini_formatted],
         (err, res) => {
           if (err) {
-            console.log(err);
+            console.error(err);
             reject(err);
           }
 

@@ -19,8 +19,8 @@ const login = (request, response) => {
   WHERE matricule = $1 `;
   dbConn.pool.query(getUserQuery, [matricule], (error, results) => {
     if (error) {
-      console.log(error);
-      throw error;
+      console.error(error);
+      response.sendStatus(500);
     }
 
     console.log(results.rows[0]);
@@ -30,9 +30,8 @@ const login = (request, response) => {
     // Compare le mot de passe envoyé avec celui chiffré en base de données
     bcrypt.compare(PlaintextPassword, hashedPassword, function (err, result) {
       if (err) {
-        console.log(err);
+        console.error(error);
         response.sendStatus(500);
-        throw err;
       }
 
       // Si tout est validé, renvoie un token valide
