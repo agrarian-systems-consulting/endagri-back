@@ -46,7 +46,11 @@ const login = (request, response) => {
         );
 
         // Renvoyer le token
-        response.status(200).send({ accessToken });
+        response.status(200).send({
+          accessToken,
+          matricule: results.rows[0].matricule,
+          role: results.rows[0].role,
+        });
       } else {
         response.sendStatus(401);
       }

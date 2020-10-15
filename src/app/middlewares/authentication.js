@@ -29,7 +29,9 @@ export default function authenticate(request, response, next) {
     } else {
       //S'il est correct on ajoute le matricule et le rôle à la requête
       request.user = decodedToken; // Ajoute la propriété user à la requête
-
+      console.log(
+        `\nRequête faîte avec le matricule ${decodedToken.matricule} loggué en tant que  ${decodedToken.role} :`
+      );
       next(); // Passe au middleware suivant
     }
   });
