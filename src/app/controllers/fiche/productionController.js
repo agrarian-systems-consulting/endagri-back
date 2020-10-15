@@ -218,7 +218,7 @@ const putProductionById = (request, response) => {
         [id_production],
         (err, res) => {
           if (err) {
-            console.error(err)
+            console.error(err);
             reject(err);
           }
           resolve(res.rows);
@@ -238,7 +238,7 @@ const putProductionById = (request, response) => {
         [libelle_production, type_production, id_production],
         (err, res) => {
           if (err) {
-            console.error(err)
+            console.error(err);
             reject(err);
           }
           resolve(res.rows[0]);
@@ -254,7 +254,7 @@ const putProductionById = (request, response) => {
         [id_production, libelle_produit, unite],
         (err, res) => {
           if (err) {
-            console.error(err)
+            console.error(err);
             reject(err);
           }
           resolve();
@@ -332,7 +332,7 @@ const deleteProductionById = (request, response) => {
         [id_production],
         (err, res) => {
           if (err) {
-            console.error(err)
+            console.error(err);
             reject(err);
           }
 
