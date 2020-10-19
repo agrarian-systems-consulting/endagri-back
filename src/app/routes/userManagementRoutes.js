@@ -5,14 +5,20 @@ import authenticate from '../../app/middlewares/authentication';
 import permit from '../../app/middlewares/authorization';
 
 // -- AJOUTER UN UTILISATEUR D'ENDAGRI -- //
-router.post(
-  '/register',
+router.get(
+  '/utilisateurs',
   authenticate,
   permit('SUPER_ADMIN'),
-  userManagementController.registerUser
+  userManagementController.getUtilisateurs
+);
+router.post(
+  '/utilisateur/create',
+  authenticate,
+  permit('SUPER_ADMIN'),
+  userManagementController.postUtilisateur
 );
 router.delete(
-  '/user/:matricule/delete',
+  '/utilisateur/:matricule',
   authenticate,
   permit('SUPER_ADMIN'),
   userManagementController.deleteUser

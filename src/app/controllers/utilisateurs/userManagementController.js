@@ -2,8 +2,22 @@ import dbConn from '../../db/pool';
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
+// ---- LISTER DES UTILISATEURS ---- //
+const getUtilisateurs = (request, response) => {
+  dbConn.pool.query(
+    'SELECT * FROM utilisateurs.utilisateurs ORDER BY matricule ASC',
+    (err, res) => {
+      if (err) {
+        console.error(err);
+        response.sendStatus(500);
+      }
+      response.status(200).send(res.rows);
+    }
+  );
+};
+
 // ---- REGISTER ---- //
-const registerUser = (request, response) => {
+const postUtilisateur = (request, response) => {
   // Récupère le matricule, le mot de passe et le rôle assigné
   const { matricule, password, role } = request.body;
 
@@ -63,6 +77,7 @@ const deleteUser = (request, response) => {
 };
 
 export default {
-  registerUser,
+  getUtilisateurs,
+  postUtilisateur,
   deleteUser,
 };

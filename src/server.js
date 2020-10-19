@@ -13,11 +13,13 @@ import loginRoutes from './app/routes/loginRoutes';
 import userManagementRoutes from './app/routes/userManagementRoutes';
 import cors from 'cors';
 import morgan from 'morgan';
-import authenticate from '../src/app/middlewares/authentication';
-import permit from '../src/app/middlewares/authorization';
 const app = express(); // Créé le serveur Express
 app.use(cors()); // Nécessaire pour accepter les CORS
-app.use(morgan(':method :url :status - :res[content-length] - :response-time ms - :date')); // Activation de Morgan
+app.use(
+  morgan(
+    ':method :url :status - :res[content-length] - :response-time ms - :date'
+  )
+); // Activation de Morgan
 
 // Nécessaire pour parser le contenu des requêtes en json (JE crois que c'est inclu dans express désormais, on pourrait donc écrire express.json())
 app.use(bodyParser.json({ limit: '50mb', extended: true }));
