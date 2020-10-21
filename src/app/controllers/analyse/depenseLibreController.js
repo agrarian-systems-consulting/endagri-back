@@ -9,8 +9,8 @@ const getAllDepensesLibres = (request, response) => {
     [id_analyse],
     (err, res) => {
       if (err) {
-        throw err;
-        console.log(err);
+        console.error(err);
+        response.sendStatus(500);
       }
       response.status(200).send(res.rows);
     }
@@ -27,8 +27,8 @@ const postDepenseLibre = (request, response) => {
     [id_analyse, libelle, mois_reel, montant],
     (err, res) => {
       if (err) {
-        console.log(err);
-        throw err;
+        console.error(err);
+        response.sendStatus(500);
       }
       // console.log(res.rows[0]);
       response.status(200).send(res.rows[0]);
@@ -47,7 +47,8 @@ const getDepenseLibreById = (request, response) => {
     [id_depense_libre],
     (err, res) => {
       if (err) {
-        throw err;
+        console.error(err);
+        response.sendStatus(500);
       }
       response.status(200).send(res.rows[0]);
     }
@@ -65,8 +66,8 @@ const deleteDepenseLibre = (request, response) => {
         [id_depense_libre],
         (err, res) => {
           if (err) {
-            console.log(err);
-            reject(error);
+            console.error(err);
+            reject(err);
           }
           resolve(res.rows[0]);
         }

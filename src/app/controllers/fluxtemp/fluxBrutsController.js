@@ -15,7 +15,8 @@ const getFluxBrutsById = (request, response) => {
    FROM subquery GROUP BY id_fiche_technique,libelle_production,ini_debut,ini_fin,type_production`;
   dbConn.pool.query(getFluxBrutsByIdQuery, [id_fiche], (error, results) => {
     if (error) {
-      throw error
+      console.error(error);
+      response.sendStatus(500);
     }
     response.status(200).send(results.rows)
   });

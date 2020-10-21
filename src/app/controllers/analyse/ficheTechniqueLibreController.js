@@ -39,7 +39,7 @@ const postFicheTechniqueLibre = (request, response) => {
         ],
         (err, res) => {
           if (err) {
-            console.log(err);
+            console.error(err);
             reject(err);
           }
 
@@ -80,6 +80,7 @@ const postFicheTechniqueLibre = (request, response) => {
         ],
         (error, results) => {
           if (error) {
+            console.error(error)
             reject(error);
           }
           resolve(results.rows[0]);
@@ -113,7 +114,7 @@ const postFicheTechniqueLibre = (request, response) => {
         [libelle_categorie, coeff_intraconsommation],
         (error, results) => {
           if (error) {
-            // Si la requête échoue
+            console.error(error)
             reject(error);
           }
           resolve('Coeff Dépense ajoutée', results.rows[0]);
@@ -172,6 +173,7 @@ const postFicheTechniqueLibre = (request, response) => {
         [id_fiche_technique_libre],
         (error, results) => {
           if (error) {
+            console.error(error)
             reject(error);
           }
           resolve(results.rows[0]);
@@ -204,7 +206,7 @@ const postFicheTechniqueLibre = (request, response) => {
     .then((result) => {
       response.status(200).json(result);
     })
-    .catch((e) => console.log(chalk.red.bold(e)));
+    .catch((e) => console.error(chalk.red.bold(e)));
 };
 
 // --- LIRE UNE FICHE TECHNIQUE LIBRE --- //
@@ -232,7 +234,7 @@ const getFicheTechniqueLibre = (request, response) => {
         [id_ftl],
         (err, res) => {
           if (err) {
-            console.log(err);
+            console.error(err);
             reject(error);
           }
           resolve(res.rows[0]);
@@ -270,7 +272,7 @@ const getFicheTechniqueLibre = (request, response) => {
         [id_ftl],
         (err, res) => {
           if (err) {
-            console.log(err);
+            console.error(err);
             reject(error);
           }
 
@@ -299,8 +301,8 @@ const getFicheTechniqueLibre = (request, response) => {
         [id_ftl],
         (err, res) => {
           if (err) {
-            console.log(err);
-            reject(error);
+            console.error(err);
+            reject(err);
           }
           resolve(res.rows);
         }
@@ -323,7 +325,7 @@ const getFicheTechniqueLibre = (request, response) => {
       response.status(200).json(res);
     })
     .catch((err) => {
-      console.log(err);
+      console.error(err);
       response.sendStatus(500);
     });
 };
@@ -341,7 +343,7 @@ const deleteFicheTechniqueLibre = (request, response) => {
         [id],
         (err, res) => {
           if (err) {
-            console.log(err);
+            console.error(err);
             reject(err);
           }
 
@@ -360,6 +362,7 @@ const deleteFicheTechniqueLibre = (request, response) => {
         [id_fiche_technique_libre],
         (error, results) => {
           if (error) {
+            console.error(error)
             reject(error);
           }
           resolve(results.rows[0]);
@@ -377,6 +380,7 @@ const deleteFicheTechniqueLibre = (request, response) => {
         [id_fiche_technique_libre],
         (error, results) => {
           if (error) {
+            console.error(error)
             reject(error);
           }
           resolve(results.rows[0]);
@@ -399,7 +403,7 @@ const deleteFicheTechniqueLibre = (request, response) => {
       response.sendStatus(200);
     })
     .catch((err) => {
-      console.log(err);
+      console.error(err);
       response.sendStatus(500);
     });
 };
@@ -430,8 +434,8 @@ const postCoeffDepense = (request, response) => {
         [id_fiche_technique_libre, libelle_categorie, coeff_intraconsommation],
         (err, res) => {
           if (err) {
-            console.log(err);
-            reject(error);
+            console.error(err);
+            reject(err);
           }
           resolve(res.rows[0]);
         }
@@ -459,7 +463,7 @@ const postCoeffDepense = (request, response) => {
       response.status(200).json(res);
     })
     .catch((err) => {
-      console.log(err);
+      console.error(err);
       response.sendStatus(500);
     });
 };
@@ -475,8 +479,8 @@ const deleteCoeffDepense = (request, response) => {
         [id],
         (err, res) => {
           if (err) {
-            console.log(err);
-            reject(error);
+            console.error(err);
+            reject(err);
           }
           resolve(res.rows[0]);
         }
@@ -496,7 +500,7 @@ const deleteCoeffDepense = (request, response) => {
       response.sendStatus(200);
     })
     .catch((err) => {
-      console.log(err);
+      console.error(err);
       response.sendStatus(500);
     });
 };
@@ -539,8 +543,8 @@ const postCoeffVente = (request, response) => {
         ],
         (err, res) => {
           if (err) {
-            console.log(err);
-            reject(error);
+            console.error(err);
+            reject(err);
           }
           resolve(res.rows[0]);
         }
@@ -572,8 +576,8 @@ const postCoeffVente = (request, response) => {
         [id_coeff_vente],
         (err, res) => {
           if (err) {
-            console.log(err);
-            reject(error);
+            console.error(err);
+            reject(err);
           }
           resolve(res.rows[0]);
         }
@@ -613,7 +617,7 @@ const postCoeffVente = (request, response) => {
       response.status(200).json(res);
     })
     .catch((err) => {
-      console.log(err);
+      console.error(err);
       response.sendStatus(500);
     });
 };
@@ -629,8 +633,8 @@ const deleteCoeffVente = (request, response) => {
         [id],
         (err, res) => {
           if (err) {
-            console.log(err);
-            reject(error);
+            console.error(err);
+            reject(err);
           }
           resolve(res.rows[0]);
         }
@@ -686,8 +690,8 @@ const getProduitsFromFicheTechniqueLibre = (request, response) => {
         [id_ftl],
         (err, res) => {
           if (err) {
-            console.log(err);
-            reject(error);
+            console.error(err);
+            reject(err);
           }
           // Remove duplicates before resolving
           resolve(_.uniqBy(res.rows, 'id_marche'));
@@ -709,7 +713,7 @@ const getProduitsFromFicheTechniqueLibre = (request, response) => {
       response.status(200).json(res);
     })
     .catch((err) => {
-      console.log(err);
+      console.error(err);
       response.sendStatus(500);
     });
 };

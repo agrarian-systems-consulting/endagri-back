@@ -25,7 +25,8 @@ const getFluxMoisReelsById = (request, response) => {
    FROM subquery GROUP BY id_fiche_technique,libelle_production,ini_debut,ini_fin,type_production,date_ini`;
   dbConn.pool.query(getFluxBrutsByIdQuery, [id_fiche,date_ini], (error, results) => {
     if (error) {
-      throw error
+      console.error(error);
+      response.sendStatus(500);
     }
     const depense = results.rows;
 
@@ -37,7 +38,8 @@ const getFluxMoisReelsById = (request, response) => {
     FROM fiche.vente v JOIN fiche.marche m ON v.id_marche = m.id WHERE v.id_fiche_technique=$1`;
     dbConn.pool.query(getVenteFicheQuery, [id_fiche,date_ini], (error, results) => {
       if (error) {
-        throw error;
+        console.error(error);
+        response.sendStatus(500);
       }
       const prix_marche = results.rows[0].col_prix_marche;
       const getVentePrixByFiche = `SELECT JSON_AGG(JSON_BUILD_OBJECT('prix_marche',m.${prix_marche},
@@ -53,7 +55,8 @@ const getFluxMoisReelsById = (request, response) => {
       WHERE v.id_fiche_technique=$1`;
       dbConn.pool.query(getVentePrixByFiche, [id_fiche,date_ini], (error, results) => {
         if (error) {
-          throw error;
+          console.error(error);
+          response.sendStatus(500);
         }
         const vente = results.rows;
         let resultjson = _.merge(depense,vente);
@@ -76,7 +79,8 @@ const getVenteByIdFiche = (request, response) => {
   FROM fiche.vente v JOIN fiche.marche m ON v.id_marche = m.id WHERE v.id_fiche_technique=$1`;
   dbConn.pool.query(getVenteFicheQuery, [id_fiche,date_ini], (error, results) => {
     if (error) {
-      throw error;
+      console.error(error);
+      response.sendStatus(500);
     }
     //const prix_marche = results.rows[0].col_prix_marche;
     const prix_marche = results.rows[0].col_prix_marche;
@@ -89,7 +93,8 @@ const getVenteByIdFiche = (request, response) => {
     WHERE v.id_fiche_technique=$1`;
     dbConn.pool.query(getVentePrixByFiche, [id_fiche,date_ini], (error, results) => {
       if (error) {
-        throw error;
+        console.error(error);
+        response.sendStatus(500);
       }
       response.status(200).send(results.rows);
     });
@@ -107,7 +112,8 @@ const getVenteById = (request, response) => {
   FROM fiche.vente v JOIN fiche.marche m ON v.id_marche = m.id WHERE v.id=$1`;
   dbConn.pool.query(getVenteQuery, [id_vente], (error, results) => {
     if (error) {
-      throw error;
+      console.error(error);
+      response.sendStatus(500);
     }
     //const prix_marche = results.rows[0].col_prix_marche;
     const prix_marche = results.rows[0].col_prix_marche;
@@ -120,7 +126,8 @@ const getVenteById = (request, response) => {
     WHERE v.id=$1`;
     dbConn.pool.query(getTestPrix, [id_vente], (error, results) => {
       if (error) {
-        throw error;
+        console.error(error);
+        response.sendStatus(500);
       }
       response.status(200).send(results.rows);
     });

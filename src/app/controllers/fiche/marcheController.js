@@ -18,7 +18,8 @@ const getMarches = (request, response) => {
       [id_production],
       (error, results) => {
         if (error) {
-          throw error;
+          console.error(error)
+          response.sendStatus(500);
         }
         response.status(200).send(results.rows);
       }
@@ -32,7 +33,8 @@ const getMarches = (request, response) => {
     ORDER BY m.id ASC`;
     dbConn.pool.query(getMarchesQuery, (error, results) => {
       if (error) {
-        throw error;
+        console.error(error)
+        response.sendStatus(500);
       }
       response.status(200).send(results.rows);
     });
@@ -84,7 +86,8 @@ const postMarche = (request, response) => {
     ],
     (err, res) => {
       if (err) {
-        throw err;
+        console.error(err)
+        response.sendStatus(500);
       }
 
       response.status(201).send(res.rows[0]);
@@ -127,7 +130,8 @@ const getMarcheById = (request, response) => {
     [id_marche],
     (err, res) => {
       if (err) {
-        throw err;
+        console.error(err)
+        response.sendStatus(500);
       }
       response.status(200).send(res.rows[0]);
     }
@@ -154,6 +158,7 @@ const putMarcheById = (request, response) => {
     prix_december,
     commentaire,
   } = request.body;
+
   const putMarcheByIdQuery = `UPDATE fiche.marche SET localisation = $2,
     type_marche = $3,
     prix_january = $4,
@@ -193,7 +198,8 @@ const putMarcheById = (request, response) => {
     ],
     (err, res) => {
       if (err) {
-        throw err;
+        console.error(err)
+        response.sendStatus(500);
       }
       response.status(200).send(res.rows[0]);
     }
@@ -208,7 +214,8 @@ const deleteMarcheById = (request, response) => {
     [id_marche],
     (err, res) => {
       if (err) {
-        throw err;
+        console.error(err)
+        response.sendStatus(500);
       }
       if (res.rows[0] !== undefined) {
         response.status(200).send(res.rows[0]);

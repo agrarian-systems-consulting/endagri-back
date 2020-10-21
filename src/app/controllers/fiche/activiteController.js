@@ -21,7 +21,7 @@ const postActivite = (request, response) => {
         [id_fiche_technique, libelle, mois, mois_relatif],
         (err, res) => {
           if (err) {
-            console.log(err);
+            console.error(err);
             reject(err);
           }
 
@@ -47,7 +47,7 @@ const postActivite = (request, response) => {
         [id_activite, libelle, montant],
         (error, results) => {
           if (error) {
-            console.log(error);
+            console.error(error);
             // Si la requête échoue
             reject(error);
           }
@@ -80,6 +80,7 @@ const postActivite = (request, response) => {
         [id_activite],
         (error, results) => {
           if (error) {
+            console.error(error)
             reject(error);
           }
 
@@ -111,7 +112,7 @@ const postActivite = (request, response) => {
       // Si les requêtes ont fonctionné, renvoyée un HTTP 201 avec le détail de l'activité et des dépenses
       response.status(200).json({ id: res });
     })
-    .catch((e) => console.log(chalk.red.bold(e)));
+    .catch((e) => console.error(chalk.red.bold(e)));
 };
 
 // ------ MODIFIER UNE ACTIVITE ------ //
@@ -129,6 +130,7 @@ const putActivite = (request, response) => {
         [libelle_activite, mois_relatif, mois, id_activite],
         (err, res) => {
           if (err) {
+            console.error(err)
             reject(err);
           }
           resolve(res.rows[0]);
@@ -145,6 +147,7 @@ const putActivite = (request, response) => {
         [id_activite],
         (err, res) => {
           if (err) {
+            console.error(err)
             reject(err);
           }
           resolve(res.rows);
@@ -162,6 +165,7 @@ const putActivite = (request, response) => {
         [id_activite, libelle_depense, montant],
         (err, res) => {
           if (err) {
+            console.error(err)
             reject(err);
           }
           resolve(res.rows[0]);
@@ -188,6 +192,7 @@ const putActivite = (request, response) => {
         [id_activite],
         (err, res) => {
           if (err) {
+            console.error(err)
             reject(err);
           }
           resolve(res.rows[0]);
@@ -216,7 +221,7 @@ const putActivite = (request, response) => {
       response.status(200).json(responseBody);
     })
     .catch((e) => {
-      console.log(chalk.red.bold(e));
+      console.error(chalk.red.bold(e));
       response.sendStatus(500);
     });
 };
@@ -229,7 +234,8 @@ const deleteActivite = (request, response) => {
     [id_activite],
     (err, res) => {
       if (err) {
-        throw err;
+        console.error(err)
+        response.sendStatus(500);
       }
       // Supprimer les dépenses associées. A améliorer avec des Promises
       dbConn.pool.query(
@@ -237,11 +243,9 @@ const deleteActivite = (request, response) => {
         [id_activite],
         (err, res) => {
           if (err) {
-            throw err;
-            console.log(err);
+            console.error(err);
             response.sendStatus(500);
           }
-
           response.sendStatus(200);
         }
       );
