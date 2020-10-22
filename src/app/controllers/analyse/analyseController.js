@@ -221,7 +221,7 @@ const deleteAnalyseById = (request, response) => {
   );
 };
 
-// --- RECUPERER LE FLUX FINANCIER --- //
+// --- RECUPERER LE FLUX FINANCIER DE L'ANALYSE DE TRESORERIE --- //
 const getAnalyseFluxFichesLibresById = async (request, response) => {
   const id_analyse = request.params.id;
 
@@ -373,6 +373,8 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
             console.log(err);
             reject(err);
           }
+          // TODO : Fixer l'erreur
+          console.log(res.rows);
 
           // S'il n'y a pas de ventes associées, renvoyer un tableau vide
           if (res.rows[0] === undefined) {

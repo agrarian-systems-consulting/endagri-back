@@ -38,7 +38,7 @@ router.get(
 router.get(
   '/production/:id',
   authenticate,
-  permit('SUPER_ADMIN', 'ADMINISTRATEUR_ENDAGRI'),
+  permit('SUPER_ADMIN', 'ADMINISTRATEUR_ENDAGRI', 'AGRONOME_REGIONAL'),
   productionController.getProductionById
 );
 
