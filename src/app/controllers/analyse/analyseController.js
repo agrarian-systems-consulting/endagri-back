@@ -385,20 +385,17 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
           if (res.rows[0] === undefined) {
             resolve(res.rows);
           } else {
-            // TODO : Modifier ça en dessous pour le boucler sur chaque vente
-            // Si aucun prix n'est défini, il pourrait y avoir une erreur qui renverrait col_prix_marche === null, on lui donne la valeur de 0 pour ne faire buguer l'application
-            if (res.rows[0].mois_prix === undefined) {
-              res.rows[0].mois_prix = 0;
-            }
-
-            // TODO : Boucler pour calculer le montant
             let ventes = res.rows;
+
             ventes.map((v) => {
+              // Si aucun prix n'est défini, on lui donne la valeur de 0 pour ne faire buguer l'application (probablement inutile mais par précaution)
+              if (v.mois_prix === undefined) {
+                v.mois_prix = 0;
+              }
+              // Calculer le montant de la vente
               v.montant = v[v.mois_prix.trim()] * v.rendement;
-              // TODO Ajouter le coeff rendement ?
             });
 
-            console.log(res.rows);
             resolve(res.rows);
           }
         }
