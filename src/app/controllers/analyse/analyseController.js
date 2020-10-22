@@ -303,7 +303,6 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
   };
 
   // Construction d'une Promise pour récupérer les dépenses associées à une fiche technique
-  // TODO : Erreur, ne prend pas en compte les dépenses de mois relatifs si dépenses mois absolus apparemment... Pas vérifié encore.
   const promiseGetDepensesMoisReelsFicheTechnique = (
     id_fiche,
     date_ini_formatted
@@ -353,7 +352,6 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
   };
 
   // Construction d'une Promise pour récupérer les ventes associées à une fiche technique
-  // TODO : On doit avoir la même erreur ici probablement
   const promiseGetVentesMoisReelsFicheTechnique = (
     id_fiche,
     date_ini_formatted
@@ -373,8 +371,6 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
             console.log(err);
             reject(err);
           }
-          // TODO : Fixer l'erreur
-          console.log(res.rows);
 
           // S'il n'y a pas de ventes associées, renvoyer un tableau vide
           if (res.rows[0] === undefined) {
@@ -385,6 +381,8 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
               res.rows[0].col_prix_marche = 0;
             }
 
+            // TODO : Le problème se trouve ici, ça prend le premier seulement
+            // Il faut créer une Promise et faire des Promise all
             const prix_marche = res.rows[0].col_prix_marche;
 
             const getVenteMoisReelsByIdQuery = `
