@@ -1,5 +1,5 @@
 import dbConn from '../../db/pool';
-
+import _, { filter } from 'lodash';
 // ---- LISTER TOUTES LES PRODUCTIONS ---- //
 const getProductions = (request, response) => {
   const { type_production } = request.query;
@@ -163,7 +163,16 @@ const getProductionById = (request, response) => {
         console.error(error);
         response.sendStatus(500);
       }
-      response.status(200).send(results.rows[0]);
+      // Si aucune production n'est trouvée n'est trouvé
+      if (results.rows[0] === undefined) {
+        return response.sendStatus(404);
+      }
+      // Filter les valeurs nulles (problème qui vient de json_agg)
+      let product = results.rows[0];
+      const produits = product.produits;
+      const filteredProducts = produits.filter((p) => p.id !== null);
+      product.produits = filteredProducts;
+      response.status(200).send(product);
     }
   );
 };
