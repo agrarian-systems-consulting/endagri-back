@@ -363,8 +363,9 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         WHEN v.mois IS NOT NULL THEN CONCAT('prix_',TO_char(to_date(CONCAT(to_char($2::timestamp,'YYYY'), '-', LPAD(v.mois::text,2, '0')), 'YYYY-MM')::timestamp,'month')) 
         ELSE CONCAT('prix_',TO_CHAR($2::timestamp + interval '1 month' * v.mois_relatif::integer,'month'))
       END as mois_prix, 
-      v.*, 
-      m.*,              
+       
+      m.*,
+      v.*,              
       CASE
         WHEN v.mois IS NOT NULL THEN to_date(CONCAT(to_char($2::timestamp,'YYYY'), '-', v.mois), 'YYYY-MM')
         ELSE $2::timestamp + interval '1 month' * v.mois_relatif::integer
@@ -478,16 +479,18 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       // Insérer les coefficients surface et main d'oeuvre familiale
       fiches_techniques_libres.forEach((ftl) => {
         if (ftl.id_fiche_technique === depense.id_fiche_technique) {
+          // Multiplier la dépense par la surface ou le nombre d'animaux
           coeffs.coeff_surface_ou_nombre_animaux =
             ftl.coeff_surface_ou_nombre_animaux;
 
-          if (depense.libelle === "Main d'oeuvre") {
+          // Diminuer les dépenses de main d'oeuvre temporaire si le travail est fait par de la main d'oeuvre familiale
+          if (depense.libelle === "Main d'oeuvre temporaire") {
             coeffs.coeff_main_oeuvre_familiale =
               ftl.coeff_main_oeuvre_familiale;
           }
         }
 
-        // Ajoute le coefficient d'intraconsommation sur certains catégories de dépenses
+        // Ajoute le coefficient d'intraconsommation sur certains catégories de dépenses exemple : Fumier, paille, concentrés
         if (ftl.coeff_depenses !== null) {
           ftl.coeff_depenses.forEach((coeff_dep) => {
             if (depense.libelle === coeff_dep.libelle_categorie) {
@@ -542,6 +545,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
 
     // Boucler sur l'array des ventes pour appliquer les coefficients
     let ventesMoisReelsAvecCoeff = ventesMoisReels.map((vente) => {
+      // Coefficients par défaut
       let coeffs = {
         coeff_surface_ou_nombre_animaux: 1,
         coeff_rendement: 1,
@@ -549,17 +553,28 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         coeff_intraconsommation: 0,
       };
 
-      // Insérer les coefficients surface et main d'oeuvre familiale
+      // Insérer les coefficients surface
       fiches_techniques_libres.forEach((ftl) => {
-        if (ftl.id_fiche_technique === vente.id_fiche_technique) {
+        if (ftl.id_fiche_technique == vente.id_fiche_technique) {
+          console.log(
+            'Match',
+            ftl.id_ftl,
+            ' et ',
+            vente.id,
+            ' ont ',
+            ftl.id_fiche_technique,
+            ' en commun'
+          );
           coeffs.coeff_surface_ou_nombre_animaux =
             ftl.coeff_surface_ou_nombre_animaux;
 
-          //TODO : Ici les coefficients ne s'appliquent pas comme il faudrait
+          console.log(ftl.coeff_ventes);
+
+          //TODO : Ici il faudrait renommer libelle_categorie par id_marche, le match est bizarre mais fonctionne
           // Ajoute le coefficient d'intraconsommation sur certains catégories de dépenses
           if (ftl.coeff_ventes !== null) {
             ftl.coeff_ventes.forEach((coeff_ven) => {
-              if (vente.libelle_categorie === coeff_ven.libelle_categorie) {
+              if (vente.id_marche == coeff_ven.libelle_categorie) {
                 coeffs.coeff_rendement = coeff_ven.coeff_rendement;
                 coeffs.coeff_intraconsommation =
                   coeff_ven.coeff_intraconsommation;
@@ -573,6 +588,8 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
 
       return Object.assign(vente, coeffs);
     });
+
+    console.log('1 ventesMoisReels', ventesMoisReelsAvecCoeff);
 
     // Calculer les valeurs en appliquant les coefficients sur les ventes
     const fluxVentes = ventesMoisReelsAvecCoeff.map((vente) => {
