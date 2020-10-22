@@ -357,11 +357,20 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
     date_ini_formatted
   ) => {
     return new Promise((resolve, reject) => {
-      const getVenteFicheQuery = `SELECT 
+      // TODO : le calcul du mois réel devrait prendre en compte une année de référence. Là on prend l'année en cours par défaut ce qui cause des problèmes sur les cycles qui sont sur plusieurs années civiles
+      const getVenteFicheQuery = `SELECT
       CASE
         WHEN v.mois IS NOT NULL THEN CONCAT('prix_',TO_char(to_date(CONCAT(to_char($2::timestamp,'YYYY'), '-', LPAD(v.mois::text,2, '0')), 'YYYY-MM')::timestamp,'month')) 
         ELSE CONCAT('prix_',TO_CHAR($2::timestamp + interval '1 month' * v.mois_relatif::integer,'month'))
-      END as col_prix_marche
+      END as mois_prix, 
+      v.*, 
+      m.*,              
+      CASE
+        WHEN v.mois IS NOT NULL THEN to_date(CONCAT(to_char($2::timestamp,'YYYY'), '-', v.mois), 'YYYY-MM')
+        ELSE $2::timestamp + interval '1 month' * v.mois_relatif::integer
+      END as mois_reel,  
+      CONCAT((SELECT p.libelle FROM fiche.produit p WHERE id=m.id_produit ),' ', m.type_marche, ' ', m.localisation) libelle_marche
+
       FROM fiche.vente v JOIN fiche.marche m ON v.id_marche = m.id WHERE v.id_fiche_technique=$1`;
       dbConn.pool.query(
         getVenteFicheQuery,
@@ -376,52 +385,21 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
           if (res.rows[0] === undefined) {
             resolve(res.rows);
           } else {
+            // TODO : Modifier ça en dessous pour le boucler sur chaque vente
             // Si aucun prix n'est défini, il pourrait y avoir une erreur qui renverrait col_prix_marche === null, on lui donne la valeur de 0 pour ne faire buguer l'application
-            if (res.rows[0].col_prix_marche === undefined) {
-              res.rows[0].col_prix_marche = 0;
+            if (res.rows[0].mois_prix === undefined) {
+              res.rows[0].mois_prix = 0;
             }
 
-            // TODO : Le problème se trouve ici, ça prend le premier seulement
-            // Il faut créer une Promise et faire des Promise all
-            const prix_marche = res.rows[0].col_prix_marche;
+            // TODO : Boucler pour calculer le montant
+            let ventes = res.rows;
+            ventes.map((v) => {
+              v.montant = v[v.mois_prix.trim()] * v.rendement;
+              // TODO Ajouter le coeff rendement ?
+            });
 
-            const getVenteMoisReelsByIdQuery = `
-            WITH subquery AS(
-              SELECT 
-                CASE
-                  WHEN v.mois IS NOT NULL THEN to_date(CONCAT(to_char($2::timestamp,'YYYY'), '-', v.mois), 'YYYY-MM')
-                  ELSE $2::timestamp + interval '1 month' * v.mois_relatif::integer
-                END mois_reel,
-                v.id_fiche_technique id_fiche_technique,
-                SUM(m.${prix_marche}*v.rendement) total_ventes_categorie,
-                CONCAT((SELECT p.libelle FROM fiche.produit p WHERE id=m.id_produit ),' ', m.type_marche, ' ', m.localisation) libelle_marche
-              FROM 
-                fiche.vente v 
-              JOIN 
-                fiche.marche m ON v.id_marche = m.id
-              WHERE 
-                v.id_fiche_technique=$1 
-              GROUP BY 
-                id_fiche_technique, 
-                libelle_marche,
-                mois_reel 
-              ORDER BY 
-                mois_reel
-            )
-            SELECT id_fiche_technique::integer, mois_reel ,SUM(total_ventes_categorie)::integer montant,libelle_marche as libelle_categorie FROM subquery
-            GROUP BY id_fiche_technique, mois_reel, libelle_marche ORDER BY mois_reel`;
-
-            dbConn.pool.query(
-              getVenteMoisReelsByIdQuery,
-              [id_fiche, date_ini_formatted],
-              (error, res) => {
-                if (error) {
-                  console.log(err);
-                  reject(err);
-                }
-                resolve(res.rows);
-              }
-            );
+            console.log(res.rows);
+            resolve(res.rows);
           }
         }
       );
@@ -580,6 +558,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
           coeffs.coeff_surface_ou_nombre_animaux =
             ftl.coeff_surface_ou_nombre_animaux;
 
+          //TODO : Ici les coefficients ne s'appliquent pas comme il faudrait
           // Ajoute le coefficient d'intraconsommation sur certains catégories de dépenses
           if (ftl.coeff_ventes !== null) {
             ftl.coeff_ventes.forEach((coeff_ven) => {
