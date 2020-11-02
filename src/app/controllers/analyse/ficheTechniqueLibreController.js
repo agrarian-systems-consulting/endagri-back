@@ -253,7 +253,7 @@ const getFicheTechniqueLibre = (request, response) => {
             ven.coeff_rendement,
              m.localisation,
              m.type_marche,
-            prod.libelle
+            prod.libelle          
           FROM 
             analyse_fiche.fiche_technique_libre ftl
           LEFT JOIN analyse_fiche.coeff_vente ven
