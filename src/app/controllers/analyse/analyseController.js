@@ -224,7 +224,7 @@ const deleteAnalyseById = (request, response) => {
   );
 };
 
-// --- RECUPERER LE FLUX FINANCIER --- //
+// --- RECUPERER LE FLUX FINANCIER DE L'ANALYSE DE TRESORERIE --- //
 const getAnalyseFluxFichesLibresById = async (request, response) => {
   const id_analyse = request.params.id;
 
@@ -306,7 +306,6 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
   };
 
   // Construction d'une Promise pour récupérer les dépenses associées à une fiche technique
-  // TODO : Erreur, ne prend pas en compte les dépenses de mois relatifs si dépenses mois absolus apparemment... Pas vérifié encore.
   const promiseGetDepensesMoisReelsFicheTechnique = (
     id_fiche,
     date_ini_formatted
@@ -356,17 +355,26 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
   };
 
   // Construction d'une Promise pour récupérer les ventes associées à une fiche technique
-  // TODO : On doit avoir la même erreur ici probablement
   const promiseGetVentesMoisReelsFicheTechnique = (
     id_fiche,
     date_ini_formatted
   ) => {
     return new Promise((resolve, reject) => {
-      const getVenteFicheQuery = `SELECT 
+      // TODO : le calcul du mois réel devrait prendre en compte une année de référence. Là on prend l'année en cours par défaut ce qui cause des problèmes sur les cycles qui sont sur plusieurs années civiles
+      const getVenteFicheQuery = `SELECT
       CASE
         WHEN v.mois IS NOT NULL THEN CONCAT('prix_',TO_char(to_date(CONCAT(to_char($2::timestamp,'YYYY'), '-', LPAD(v.mois::text,2, '0')), 'YYYY-MM')::timestamp,'month')) 
         ELSE CONCAT('prix_',TO_CHAR($2::timestamp + interval '1 month' * v.mois_relatif::integer,'month'))
-      END as col_prix_marche
+      END as mois_prix, 
+       
+      m.*,
+      v.*,              
+      CASE
+        WHEN v.mois IS NOT NULL THEN to_date(CONCAT(to_char($2::timestamp,'YYYY'), '-', v.mois), 'YYYY-MM')
+        ELSE $2::timestamp + interval '1 month' * v.mois_relatif::integer
+      END as mois_reel,  
+      CONCAT((SELECT p.libelle FROM fiche.produit p WHERE id=m.id_produit ),' ', m.type_marche, ' ', m.localisation) libelle_marche
+
       FROM fiche.vente v JOIN fiche.marche m ON v.id_marche = m.id WHERE v.id_fiche_technique=$1`;
       dbConn.pool.query(
         getVenteFicheQuery,
@@ -381,50 +389,18 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
           if (res.rows[0] === undefined) {
             resolve(res.rows);
           } else {
-            // Si aucun prix n'est défini, il pourrait y avoir une erreur qui renverrait col_prix_marche === null, on lui donne la valeur de 0 pour ne faire buguer l'application
-            if (res.rows[0].col_prix_marche === undefined) {
-              res.rows[0].col_prix_marche = 0;
-            }
+            let ventes = res.rows;
 
-            const prix_marche = res.rows[0].col_prix_marche;
-
-            const getVenteMoisReelsByIdQuery = `
-            WITH subquery AS(
-              SELECT 
-                CASE
-                  WHEN v.mois IS NOT NULL THEN to_date(CONCAT(to_char($2::timestamp,'YYYY'), '-', v.mois), 'YYYY-MM')
-                  ELSE $2::timestamp + interval '1 month' * v.mois_relatif::integer
-                END mois_reel,
-                v.id_fiche_technique id_fiche_technique,
-                SUM(m.${prix_marche}*v.rendement) total_ventes_categorie,
-                CONCAT((SELECT p.libelle FROM fiche.produit p WHERE id=m.id_produit ),' ', m.type_marche, ' ', m.localisation) libelle_marche
-              FROM 
-                fiche.vente v 
-              JOIN 
-                fiche.marche m ON v.id_marche = m.id
-              WHERE 
-                v.id_fiche_technique=$1 
-              GROUP BY 
-                id_fiche_technique, 
-                libelle_marche,
-                mois_reel 
-              ORDER BY 
-                mois_reel
-            )
-            SELECT id_fiche_technique::integer, mois_reel ,SUM(total_ventes_categorie)::integer montant,libelle_marche as libelle_categorie FROM subquery
-            GROUP BY id_fiche_technique, mois_reel, libelle_marche ORDER BY mois_reel`;
-
-            dbConn.pool.query(
-              getVenteMoisReelsByIdQuery,
-              [id_fiche, date_ini_formatted],
-              (error, res) => {
-                if (error) {
-                  console.log(err);
-                  reject(err);
-                }
-                resolve(res.rows);
+            ventes.map((v) => {
+              // Si aucun prix n'est défini, on lui donne la valeur de 0 pour ne faire buguer l'application (probablement inutile mais par précaution)
+              if (v.mois_prix === undefined) {
+                v.mois_prix = 0;
               }
-            );
+              // Calculer le montant de la vente
+              v.montant = v[v.mois_prix.trim()] * v.rendement;
+            });
+
+            resolve(res.rows);
           }
         }
       );
@@ -506,16 +482,18 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       // Insérer les coefficients surface et main d'oeuvre familiale
       fiches_techniques_libres.forEach((ftl) => {
         if (ftl.id_fiche_technique === depense.id_fiche_technique) {
+          // Multiplier la dépense par la surface ou le nombre d'animaux
           coeffs.coeff_surface_ou_nombre_animaux =
             ftl.coeff_surface_ou_nombre_animaux;
 
-          if (depense.libelle === "Main d'oeuvre") {
+          // Diminuer les dépenses de main d'oeuvre temporaire si le travail est fait par de la main d'oeuvre familiale
+          if (depense.libelle === "Main d'oeuvre temporaire") {
             coeffs.coeff_main_oeuvre_familiale =
               ftl.coeff_main_oeuvre_familiale;
           }
         }
 
-        // Ajoute le coefficient d'intraconsommation sur certains catégories de dépenses
+        // Ajoute le coefficient d'intraconsommation sur certains catégories de dépenses exemple : Fumier, paille, concentrés
         if (ftl.coeff_depenses !== null) {
           ftl.coeff_depenses.forEach((coeff_dep) => {
             if (depense.libelle === coeff_dep.libelle_categorie) {
@@ -570,6 +548,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
 
     // Boucler sur l'array des ventes pour appliquer les coefficients
     let ventesMoisReelsAvecCoeff = ventesMoisReels.map((vente) => {
+      // Coefficients par défaut
       let coeffs = {
         coeff_surface_ou_nombre_animaux: 1,
         coeff_rendement: 1,
@@ -577,16 +556,28 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         coeff_intraconsommation: 0,
       };
 
-      // Insérer les coefficients surface et main d'oeuvre familiale
+      // Insérer les coefficients surface
       fiches_techniques_libres.forEach((ftl) => {
-        if (ftl.id_fiche_technique === vente.id_fiche_technique) {
+        if (ftl.id_fiche_technique == vente.id_fiche_technique) {
+          console.log(
+            'Match',
+            ftl.id_ftl,
+            ' et ',
+            vente.id,
+            ' ont ',
+            ftl.id_fiche_technique,
+            ' en commun'
+          );
           coeffs.coeff_surface_ou_nombre_animaux =
             ftl.coeff_surface_ou_nombre_animaux;
 
+          console.log(ftl.coeff_ventes);
+
+          //TODO : Ici il faudrait renommer libelle_categorie par id_marche, le match est bizarre mais fonctionne
           // Ajoute le coefficient d'intraconsommation sur certains catégories de dépenses
           if (ftl.coeff_ventes !== null) {
             ftl.coeff_ventes.forEach((coeff_ven) => {
-              if (vente.libelle_categorie === coeff_ven.libelle_categorie) {
+              if (vente.id_marche == coeff_ven.libelle_categorie) {
                 coeffs.coeff_rendement = coeff_ven.coeff_rendement;
                 coeffs.coeff_intraconsommation =
                   coeff_ven.coeff_intraconsommation;
@@ -600,6 +591,8 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
 
       return Object.assign(vente, coeffs);
     });
+
+    console.log('1 ventesMoisReels', ventesMoisReelsAvecCoeff);
 
     // Calculer les valeurs en appliquant les coefficients sur les ventes
     const fluxVentes = ventesMoisReelsAvecCoeff.map((vente) => {

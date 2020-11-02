@@ -22,7 +22,10 @@ const login = (request, response) => {
       console.error(error);
       response.sendStatus(500);
     }
-
+    // Si aucun utilisateur n'est trouvé
+    if (results.rows[0] === undefined) {
+      return response.sendStatus(401);
+    }
     // Récupère le mot de passe chiffré dans la base de données
     const hashedPassword = results.rows[0].password;
 
