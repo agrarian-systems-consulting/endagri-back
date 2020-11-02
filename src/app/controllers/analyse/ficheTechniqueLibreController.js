@@ -80,7 +80,7 @@ const postFicheTechniqueLibre = (request, response) => {
         ],
         (error, results) => {
           if (error) {
-            console.error(error)
+            console.error(error);
             reject(error);
           }
           resolve(results.rows[0]);
@@ -114,7 +114,7 @@ const postFicheTechniqueLibre = (request, response) => {
         [libelle_categorie, coeff_intraconsommation],
         (error, results) => {
           if (error) {
-            console.error(error)
+            console.error(error);
             reject(error);
           }
           resolve('Coeff Dépense ajoutée', results.rows[0]);
@@ -173,7 +173,7 @@ const postFicheTechniqueLibre = (request, response) => {
         [id_fiche_technique_libre],
         (error, results) => {
           if (error) {
-            console.error(error)
+            console.error(error);
             reject(error);
           }
           resolve(results.rows[0]);
@@ -248,7 +248,6 @@ const getFicheTechniqueLibre = (request, response) => {
       dbConn.pool.query(
         ` SELECT 
             ven.id,
-            ven.libelle_categorie,
             ven.coeff_intraconsommation,
             ven.coeff_autoconsommation,
             ven.coeff_rendement,
@@ -362,7 +361,7 @@ const deleteFicheTechniqueLibre = (request, response) => {
         [id_fiche_technique_libre],
         (error, results) => {
           if (error) {
-            console.error(error)
+            console.error(error);
             reject(error);
           }
           resolve(results.rows[0]);
@@ -380,7 +379,7 @@ const deleteFicheTechniqueLibre = (request, response) => {
         [id_fiche_technique_libre],
         (error, results) => {
           if (error) {
-            console.error(error)
+            console.error(error);
             reject(error);
           }
           resolve(results.rows[0]);
@@ -559,7 +558,7 @@ const postCoeffVente = (request, response) => {
             cv.*,
             m.localisation,
             m.type_marche,
-            p.libelle libelle_produit
+            p.libelle libelle
           FROM analyse_fiche.coeff_vente cv
           LEFT JOIN analyse_fiche.fiche_technique_libre ftl
             ON ftl.id = cv.id_fiche_technique_libre::integer
