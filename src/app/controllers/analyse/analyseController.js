@@ -55,7 +55,7 @@ const postAnalyse = (request, response) => {
   );
 };
 
-// ---- RECUPERER LES INFORMATIONS PRINCIPALES D'UNE ANALYSE ---- //
+// ---- RECUPERER TOUTES LES INFORMATIONS D'UNE ANALYSE ---- //
 const getAnalyseById = (request, response) => {
   const id = request.params.id;
 
@@ -171,6 +171,7 @@ const putAnalyseById = (request, response) => {
     montant_tresorerie_initiale,
     date_debut_analyse,
     date_fin_analyse,
+    modified,
   } = request.body;
 
   dbConn.pool.query(
@@ -179,7 +180,8 @@ const putAnalyseById = (request, response) => {
       nom_client = $3,
       montant_tresorerie_initiale = $4,
       date_debut_analyse = $5,
-      date_fin_analyse = $6 
+      date_fin_analyse = $6,
+      modified = $7 
       WHERE id=$1 RETURNING *`,
     [
       id_analyse,
@@ -188,6 +190,7 @@ const putAnalyseById = (request, response) => {
       montant_tresorerie_initiale,
       date_debut_analyse,
       date_fin_analyse,
+      modified,
     ],
     (error, results) => {
       if (error) {

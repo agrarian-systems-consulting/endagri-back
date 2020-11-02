@@ -55,7 +55,8 @@ router.put(
     'SUPER_ADMIN',
     'ADMINISTRATEUR_ENDAGRI',
     'AGRONOME_REGIONAL',
-    'SUPERVISEUR_AGENCE'
+    'SUPERVISEUR_AGENCE',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
   ),
   analyseController.putAnalyseById
 );
