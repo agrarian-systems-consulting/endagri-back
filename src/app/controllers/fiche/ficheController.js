@@ -16,9 +16,8 @@ const getFiches = (request, response) => {
     // Envoi de la requête
     dbConn.pool.query(getFichesQuery, [id_utilisateur], (error, results) => {
       if (error) {
-        console.error(error)
+        console.error(error);
         response.sendStatus(500);
-
       }
 
       // Renvoi un array avec les fiches techniques de l'auteur
@@ -26,13 +25,23 @@ const getFiches = (request, response) => {
     });
   } else {
     // Construction de la requête pour récupérer la liste des fiches techniques associées à l'id_utilisateur
-    const getFichesQuery = `SELECT f.id, f.id_production, f.id_utilisateur, f.libelle, p.libelle as libelle_production FROM fiche.fiche_technique f 
-    JOIN fiche.production p ON f.id_production = p.id ORDER BY f.id ASC`;
+    const getFichesQuery = `
+    SELECT 
+    f.id, 
+    f.id_production, 
+    f.id_utilisateur, 
+    f.libelle, 
+    p.libelle as libelle_production,
+    p.type_production
+    FROM fiche.fiche_technique f 
+    JOIN fiche.production p 
+    ON f.id_production = p.id 
+    ORDER BY f.id ASC`;
 
     // Envoi de la requête
     dbConn.pool.query(getFichesQuery, (error, results) => {
       if (error) {
-        console.error(error)
+        console.error(error);
         response.sendStatus(500);
       }
 
@@ -61,7 +70,7 @@ const postFiche = (request, response) => {
     [id_utilisateur, libelle, id_production, ini_debut, ini_fin, commentaire],
     (err, res) => {
       if (err) {
-        console.error(error)
+        console.error(error);
         response.sendStatus(500);
       }
 
@@ -98,7 +107,7 @@ const postFiche = (request, response) => {
       //         (error, results) => {
       //           if (error) {
       //                     console.error(error)
-        // response.sendStatus(500);
+      // response.sendStatus(500);
       //           }
       //         }
       //       );
@@ -118,8 +127,8 @@ const postFiche = (request, response) => {
       //       [id_fiche_technique, libelle_activite, mois_relatif, mois],
       //       (error, results) => {
       //         if (error) {
-        // console.error(error)
-        // response.sendStatus(500);
+      // console.error(error)
+      // response.sendStatus(500);
       //         }
       //         // Récupère l'id de la nouvelle activité
       //         const id_activite = results.rows[0].id;
@@ -137,7 +146,7 @@ const postFiche = (request, response) => {
       //               (error, results) => {
       //                 if (error) {
       //                    console.error(error)
-        // response.sendStatus(500);
+      // response.sendStatus(500);
       //                 }
       //               }
       //             );
@@ -197,7 +206,7 @@ const getFicheById = (request, response) => {
         [id],
         (err, res) => {
           if (err) {
-            console.error(err)
+            console.error(err);
             reject(err);
           }
           resolve(res.rows);
@@ -274,7 +283,10 @@ const getFicheById = (request, response) => {
     .then((res) => {
       response.status(200).json(res);
     })
-    .catch((err) => {console.error(err);response.sendStatus(500)});
+    .catch((err) => {
+      console.error(err);
+      response.sendStatus(500);
+    });
 };
 
 // ------ MODIFIER UNE FICHE ------ //
@@ -287,7 +299,7 @@ const putFicheById = (request, response) => {
     [libelle_fiche, ini_debut, ini_fin, commentaire, id_fiche],
     (err, res) => {
       if (err) {
-        console.error(error)
+        console.error(error);
         response.sendStatus(500);
       }
       if (res.rows[0] !== undefined) {
@@ -312,7 +324,7 @@ const deleteFicheById = (request, response) => {
         [id_fiche],
         (err, res) => {
           if (err) {
-            console.error(err)
+            console.error(err);
             reject(err);
           }
 
@@ -353,7 +365,8 @@ const deleteFicheById = (request, response) => {
         [id_fiche],
         (err, res) => {
           if (err) {
-            console.error(err) ;           reject(err);
+            console.error(err);
+            reject(err);
           }
 
           resolve();
