@@ -670,7 +670,10 @@ const getProduitsFromFicheTechniqueLibre = (request, response) => {
       m.type_marche,
       m.localisation,
       p.libelle libelle_produit,
-      m.id id_marche
+      m.id id_marche,
+      v.rendement,
+      v.rendement_min,
+      v.rendement_max
       FROM 
         analyse_fiche.fiche_technique_libre f
       LEFT JOIN 
