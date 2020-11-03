@@ -197,7 +197,7 @@ const getFicheById = (request, response) => {
     });
   };
 
-  // Récupère les ventes séparèment pour un éventuel graphique
+  // Récupère les dépenses séparèment pour un éventuel graphique
   const promiseGetDepenses = (id) => {
     return new Promise((resolve, reject) => {
       dbConn.pool.query(
@@ -224,6 +224,7 @@ const getFicheById = (request, response) => {
             v.id_fiche_technique,
             v.mois,
             v.mois_relatif,
+            v.annee,
             v.rendement,
             v.rendement_min, 
             v.rendement_max,

@@ -11,11 +11,12 @@ const postVente = (request, response) => {
     rendement_min,
     rendement,
     rendement_max,
+    annee,
   } = request.body;
 
   dbConn.pool.query(
-    `INSERT INTO fiche.vente(id, id_fiche_technique, id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max) 
-  VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7) RETURNING id, id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max`,
+    `INSERT INTO fiche.vente(id, id_fiche_technique, id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max,annee) 
+  VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7,$8) RETURNING id, id_marche, mois, mois_relatif, rendement_min, rendement, rendement_max,annee`,
     [
       id_fiche_technique,
       id_marche,
@@ -24,6 +25,7 @@ const postVente = (request, response) => {
       rendement_min,
       rendement,
       rendement_max,
+      annee,
     ],
     (err, res) => {
       if (err) {
@@ -39,6 +41,7 @@ const postVente = (request, response) => {
           v.rendement_min, 
           v.rendement, 
           v.rendement_max,
+          v.annee,
           m.localisation,
           m.type_marche,
           p.libelle libelle_produit,
