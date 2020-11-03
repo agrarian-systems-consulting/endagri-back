@@ -7,18 +7,18 @@ const postActivite = (request, response) => {
   const id_fiche_technique = request.params.id_fiche_technique;
 
   // Destructure les données contenues dans la requête
-  const { libelle, mois, mois_relatif, depenses } = request.body;
+  const { libelle, mois, mois_relatif, annee, depenses } = request.body;
 
   // Construction d'une Promise pour l'ajout d'une activité
   const promiseAjoutActivite = () => {
     return new Promise((resolve, reject) => {
       // Construction de la requête pour créer la fiche technique
-      const postActiviteQuery = `INSERT INTO fiche.activite(id, id_fiche_technique, libelle, mois, mois_relatif) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING *`;
+      const postActiviteQuery = `INSERT INTO fiche.activite(id, id_fiche_technique, libelle, mois, mois_relatif, annee) VALUES (DEFAULT, $1, $2, $3, $4,$5) RETURNING *`;
 
       // Envoi de la requête asynchrone
       dbConn.pool.query(
         postActiviteQuery,
-        [id_fiche_technique, libelle, mois, mois_relatif],
+        [id_fiche_technique, libelle, mois, mois_relatif, annee],
         (err, res) => {
           if (err) {
             console.error(err);
@@ -80,7 +80,7 @@ const postActivite = (request, response) => {
         [id_activite],
         (error, results) => {
           if (error) {
-            console.error(error)
+            console.error(error);
             reject(error);
           }
 
@@ -130,7 +130,7 @@ const putActivite = (request, response) => {
         [libelle_activite, mois_relatif, mois, id_activite],
         (err, res) => {
           if (err) {
-            console.error(err)
+            console.error(err);
             reject(err);
           }
           resolve(res.rows[0]);
@@ -147,7 +147,7 @@ const putActivite = (request, response) => {
         [id_activite],
         (err, res) => {
           if (err) {
-            console.error(err)
+            console.error(err);
             reject(err);
           }
           resolve(res.rows);
@@ -165,7 +165,7 @@ const putActivite = (request, response) => {
         [id_activite, libelle_depense, montant],
         (err, res) => {
           if (err) {
-            console.error(err)
+            console.error(err);
             reject(err);
           }
           resolve(res.rows[0]);
@@ -192,7 +192,7 @@ const putActivite = (request, response) => {
         [id_activite],
         (err, res) => {
           if (err) {
-            console.error(err)
+            console.error(err);
             reject(err);
           }
           resolve(res.rows[0]);
@@ -234,7 +234,7 @@ const deleteActivite = (request, response) => {
     [id_activite],
     (err, res) => {
       if (err) {
-        console.error(err)
+        console.error(err);
         response.sendStatus(500);
       }
       // Supprimer les dépenses associées. A améliorer avec des Promises
