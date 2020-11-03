@@ -361,7 +361,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
     date_ini_formatted
   ) => {
     return new Promise((resolve, reject) => {
-      // TODO : le calcul du mois réel devrait prendre en compte une année de référence. Là on prend l'année en cours par défaut ce qui cause des problèmes sur les cycles qui sont sur plusieurs années civiles
+      // TODO : le calcul du mois réel devrait prendre en compte une année de référence n ou n+1
       const getVenteFicheQuery = `SELECT
       CASE
         WHEN v.mois IS NOT NULL THEN CONCAT('prix_',TO_char(to_date(CONCAT(to_char($2::timestamp,'YYYY'), '-', LPAD(v.mois::text,2, '0')), 'YYYY-MM')::timestamp,'month')) 
@@ -371,7 +371,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       m.*,
       v.*,              
       CASE
-        WHEN v.mois IS NOT NULL THEN to_date(CONCAT(to_char($2::timestamp,'YYYY'), '-', v.mois), 'YYYY-MM')
+        WHEN v.mois IS NOT NULL THEN to_date(CONCAT(to_char($2::timestamp + interval '1 year' * v.annee::integer,'YYYY'), '-', v.mois), 'YYYY-MM')
         ELSE $2::timestamp + interval '1 month' * v.mois_relatif::integer
       END as mois_reel,  
       CONCAT((SELECT p.libelle FROM fiche.produit p WHERE id=m.id_produit ),' ', m.type_marche, ' ', m.localisation) libelle_marche
