@@ -306,6 +306,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
   };
 
   // Construction d'une Promise pour récupérer les dépenses associées à une fiche technique
+  // TODO : Il faut mettre une année n ou n+1
   const promiseGetDepensesMoisReelsFicheTechnique = (
     id_fiche,
     date_ini_formatted
@@ -315,7 +316,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
         ` SELECT 
             CASE
               WHEN act.mois IS NOT NULL 
-                THEN to_date(CONCAT(to_char($2::timestamp,'YYYY'), '-', act.mois), 'YYYY-MM')
+                THEN to_date(CONCAT(to_char($2::timestamp + interval '1 year' * act.annee::integer,'YYYY'), '-', act.mois), 'YYYY-MM')
                 ELSE $2::timestamp + interval '1 month' * act.mois_relatif::integer
               END as mois_reel,
             d.id,
@@ -326,7 +327,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
           FROM fiche.depense d 
             JOIN fiche.activite act ON act.id=d.id_activite 
           WHERE act.id_fiche_technique=$1 
-          GROUP BY act.mois, act.mois_relatif, act.id_fiche_technique, d.id
+          GROUP BY act.mois, act.mois_relatif, act.id_fiche_technique, d.id, act.annee
           `,
         [id_fiche, date_ini_formatted],
         (err, res) => {
@@ -559,19 +560,19 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       // Insérer les coefficients surface
       fiches_techniques_libres.forEach((ftl) => {
         if (ftl.id_fiche_technique == vente.id_fiche_technique) {
-          console.log(
-            'Match',
-            ftl.id_ftl,
-            ' et ',
-            vente.id,
-            ' ont ',
-            ftl.id_fiche_technique,
-            ' en commun'
-          );
+          // console.log(
+          //   'Match',
+          //   ftl.id_ftl,
+          //   ' et ',
+          //   vente.id,
+          //   ' ont ',
+          //   ftl.id_fiche_technique,
+          //   ' en commun'
+          // );
           coeffs.coeff_surface_ou_nombre_animaux =
             ftl.coeff_surface_ou_nombre_animaux;
 
-          console.log(ftl.coeff_ventes);
+          // console.log(ftl.coeff_ventes);
 
           //TODO : Ici il faudrait renommer libelle_categorie par id_marche, le match est bizarre mais fonctionne
           // Ajoute le coefficient d'intraconsommation sur certains catégories de dépenses
@@ -592,7 +593,7 @@ const getAnalyseFluxFichesLibresById = async (request, response) => {
       return Object.assign(vente, coeffs);
     });
 
-    console.log('1 ventesMoisReels', ventesMoisReelsAvecCoeff);
+    // console.log('1 ventesMoisReels', ventesMoisReelsAvecCoeff);
 
     // Calculer les valeurs en appliquant les coefficients sur les ventes
     const fluxVentes = ventesMoisReelsAvecCoeff.map((vente) => {
