@@ -5,50 +5,32 @@ import dbConn from '../../db/pool';
 // ----- RECUPERE LA LISTE DES FICHES ----- //
 // On pourrait ajouter un param optionnel selon la catégorie de production
 const getFiches = (request, response) => {
-  // Récupère le paramètre optionnel id_utilisateur pour filtrer les fiches techniques
-  const id_utilisateur = request.query.id_utilisateur;
-
-  if (id_utilisateur !== undefined) {
-    // Construction de la requête pour récupérer la liste des fiches techniques associées à l'id_utilisateur
-    const getFichesQuery =
-      'SELECT f.id, f.id_production, f.id_utilisateur, f.libelle, p.libelle as libelle_production FROM fiche.fiche_technique f LEFT JOIN fiche.production p ON f.id_production = p.id  WHERE f.id_utilisateur=$1 ORDER BY f.id ASC';
-
-    // Envoi de la requête
-    dbConn.pool.query(getFichesQuery, [id_utilisateur], (error, results) => {
-      if (error) {
-        console.error(error);
-        response.sendStatus(500);
-      }
-
-      // Renvoi un array avec les fiches techniques de l'auteur
-      response.status(200).send(results.rows);
-    });
-  } else {
-    // Construction de la requête pour récupérer la liste des fiches techniques associées à l'id_utilisateur
-    const getFichesQuery = `
+  // Construction de la requête pour récupérer la liste des fiches techniques associées à l'id_utilisateur
+  const getFichesQuery = `
     SELECT 
     f.id, 
     f.id_production, 
     f.id_utilisateur, 
     f.libelle, 
     p.libelle as libelle_production,
-    p.type_production
+    p.type_production,
+    f.ini_debut,
+    f.ini_fin
     FROM fiche.fiche_technique f 
     JOIN fiche.production p 
     ON f.id_production = p.id 
     ORDER BY f.id ASC`;
 
-    // Envoi de la requête
-    dbConn.pool.query(getFichesQuery, (error, results) => {
-      if (error) {
-        console.error(error);
-        response.sendStatus(500);
-      }
+  // Envoi de la requête
+  dbConn.pool.query(getFichesQuery, (error, results) => {
+    if (error) {
+      console.error(error);
+      response.sendStatus(500);
+    }
 
-      // Renvoi un array avec les fiches techniques de l'auteur
-      response.status(200).send(results.rows);
-    });
-  }
+    // Renvoi un array avec les fiches techniques de l'auteur
+    response.status(200).send(results.rows);
+  });
 };
 
 // ------ CREER UNE NOUVELLE FICHE ------ //
