@@ -27,7 +27,7 @@ const postUtilisateur = (request, response) => {
   bcrypt.genSalt(saltRounds, function (err, salt) {
     bcrypt.hash(password, salt, function (err, hashedPassword) {
       if (err) {
-        console.error(error);
+        console.error(err);
         return response.status(500).json({ err });
       }
 
