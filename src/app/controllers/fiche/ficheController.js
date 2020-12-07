@@ -52,7 +52,7 @@ const postFiche = (request, response) => {
     [id_utilisateur, libelle, id_production, ini_debut, ini_fin, commentaire],
     (err, res) => {
       if (err) {
-        console.error(error);
+        console.error(err);
         response.sendStatus(500);
       }
 
@@ -282,7 +282,7 @@ const putFicheById = (request, response) => {
     [libelle_fiche, ini_debut, ini_fin, commentaire, id_fiche],
     (err, res) => {
       if (err) {
-        console.error(error);
+        console.error(err);
         response.sendStatus(500);
       }
       if (res.rows[0] !== undefined) {
