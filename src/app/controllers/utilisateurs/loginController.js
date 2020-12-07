@@ -45,7 +45,7 @@ const login = (request, response) => {
             role: results.rows[0].role,
           },
           SECRET,
-          { expiresIn: '3 hours' }
+          { expiresIn: '3600 hours' }
         );
 
         // Renvoyer le token
