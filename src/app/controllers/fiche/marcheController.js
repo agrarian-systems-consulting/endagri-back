@@ -65,6 +65,8 @@ const postMarche = (request, response) => {
 
     commentaire,
   } = request.body;
+
+  // Workaround, should be rewritten in a nice way... Could be fixed on the front-end.
   let {
     prix_january,
     prix_february,
