@@ -30,7 +30,12 @@ router.post(
 router.get(
   '/marche/:id',
   authenticate,
-  permit('SUPER_ADMIN', 'ADMINISTRATEUR_ENDAGRI', 'AGRONOME_REGIONAL'),
+  permit(
+    'SUPER_ADMIN',
+    'ADMINISTRATEUR_ENDAGRI',
+    'AGRONOME_REGIONAL',
+    'GESTIONNAIRE_DE_PORTEFEUILLE'
+  ),
   marcheController.getMarcheById
 );
 
