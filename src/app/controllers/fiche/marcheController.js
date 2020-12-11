@@ -198,9 +198,10 @@ const getMarcheById = (request, response) => {
 // ----- MODIFIER UN MARCHE ----- //
 const putMarcheById = (request, response) => {
   const id_marche = request.params.id;
-  const {
-    localisation,
-    type_marche,
+  const { localisation, type_marche, commentaire } = request.body;
+
+  // Workaround, should be rewritten in a nice way... Could be fixed on the front-end.
+  let {
     prix_january,
     prix_february,
     prix_march,
@@ -213,8 +214,44 @@ const putMarcheById = (request, response) => {
     prix_october,
     prix_november,
     prix_december,
-    commentaire,
   } = request.body;
+
+  if (prix_january === undefined) {
+    prix_january = 0;
+  }
+  if (prix_february === undefined) {
+    prix_february = 0;
+  }
+  if (prix_march === undefined) {
+    prix_march = 0;
+  }
+  if (prix_april === undefined) {
+    prix_april = 0;
+  }
+  if (prix_may === undefined) {
+    prix_may = 0;
+  }
+  if (prix_june === undefined) {
+    prix_june = 0;
+  }
+  if (prix_july === undefined) {
+    prix_july = 0;
+  }
+  if (prix_august === undefined) {
+    prix_august = 0;
+  }
+  if (prix_september === undefined) {
+    prix_september = 0;
+  }
+  if (prix_october === undefined) {
+    prix_october = 0;
+  }
+  if (prix_november === undefined) {
+    prix_november = 0;
+  }
+  if (prix_december === undefined) {
+    prix_december = 0;
+  }
 
   const putMarcheByIdQuery = `UPDATE fiche.marche SET localisation = $2,
     type_marche = $3,
