@@ -198,6 +198,7 @@ const getMarcheById = (request, response) => {
 // ----- MODIFIER UN MARCHE ----- //
 const putMarcheById = (request, response) => {
   const id_marche = request.params.id;
+
   const { localisation, type_marche, commentaire } = request.body;
 
   // Workaround, should be rewritten in a nice way... Could be fixed on the front-end.
