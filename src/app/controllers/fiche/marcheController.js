@@ -153,7 +153,6 @@ const postMarche = (request, response) => {
 };
 
 // ------ LIRE LES VALEURS D'UN MARCHE ----- //
-// Problème : Retourne les valeurs de prix sous la forme de strings
 const getMarcheById = (request, response) => {
   const id_marche = request.params.id;
 
@@ -182,7 +181,6 @@ const getMarcheById = (request, response) => {
     FROM fiche.marche  m
     LEFT JOIN fiche.produit p ON m.id_produit = p.id
     LEFT JOIN fiche.production prod ON p.id_production = prod.id
-
     WHERE m.id=$1`,
     [id_marche],
     (err, res) => {
